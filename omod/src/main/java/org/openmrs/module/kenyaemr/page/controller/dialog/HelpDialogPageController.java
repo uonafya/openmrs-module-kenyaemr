@@ -26,7 +26,7 @@ public class HelpDialogPageController {
 	public void controller(@RequestParam(value = "appId", required = false) String appId,
 						   PageModel model) {
 		try {
-			Context.addProxyPrivilege(PrivilegeConstants.VIEW_GLOBAL_PROPERTIES);
+			Context.addProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
 
 			String facilityCode = Context.getService(KenyaEmrService.class).getDefaultLocationMflCode();
 			String supportNumber = Context.getAdministrationService().getGlobalProperty(EmrConstants.GP_SUPPORT_PHONE_NUMBER, EmrConstants.DEFAULT_SUPPORT_PHONE_NUMBER);
@@ -40,7 +40,7 @@ public class HelpDialogPageController {
 			model.put("externalHelpUrl", externalHelpUrl);
 		}
 		finally {
-			Context.removeProxyPrivilege(PrivilegeConstants.VIEW_GLOBAL_PROPERTIES);
+			Context.removeProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
 		}
 	}
 }

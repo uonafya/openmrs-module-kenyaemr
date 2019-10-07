@@ -32,6 +32,7 @@ import org.openmrs.module.reporting.report.ReportData;
 import org.openmrs.module.reporting.report.ReportRequest;
 import org.openmrs.module.reporting.report.definition.ReportDefinition;
 import org.openmrs.module.reporting.report.service.ReportService;
+import org.openmrs.module.reportingcompatibility.service.ReportingCompatibilityService;
 import org.openmrs.ui.framework.UiUtils;
 import org.openmrs.ui.framework.annotation.SpringBean;
 import org.openmrs.ui.framework.page.PageModel;
@@ -79,7 +80,9 @@ public class CohortDialogPageController {
             cohort = (Cohort) result;
         }
 
-        List<Patient> patients = Context.getPatientSetService().getPatients(cohort.getMemberIds());
+        // List<Patient> patients = Context.getPatientSetService().getPatients(cohort.getMemberIds());
+
+        List<Patient> patients = Context.getService(ReportingCompatibilityService.class).getPatients(cohort.getMemberIds());
 
         PatientCalculationService calculationService = Context.getService(PatientCalculationService.class);
         PatientCalculationContext calculationContext = calculationService.createCalculationContext();
