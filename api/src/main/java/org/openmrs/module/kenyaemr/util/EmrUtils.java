@@ -304,8 +304,7 @@ public class EmrUtils {
 		return subCountyList;
 	}
 
-	public static int getFacilityByLoggedInUser() {
-		int facility = 0;
+	public static List<Location> getFacilityByLoggedInUser() {
 		Person user = Context.getAuthenticatedUser().getPerson();
 
 		Collection<Provider> provider = Context.getProviderService().getProvidersByPerson(user);
@@ -315,11 +314,11 @@ public class EmrUtils {
 				if (at.getAttributeType().getUuid().equals(CommonMetadata._ProviderAttributeType.PRIMARY_FACILITY)) {
 
 					Location primaryFacility = (Location) at.getValue();
-					facility = primaryFacility.getLocationId();
+					return Arrays.asList(primaryFacility);
 				}
 			}
 		}
-		return facility;
+		return new ArrayList<>();
 	}
 
 }
