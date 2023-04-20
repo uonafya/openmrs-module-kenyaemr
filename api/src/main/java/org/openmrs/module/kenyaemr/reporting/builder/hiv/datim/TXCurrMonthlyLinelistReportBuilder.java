@@ -43,14 +43,15 @@ public class TXCurrMonthlyLinelistReportBuilder extends AbstractReportBuilder {
     @Override
     protected List<Parameter> getParameters(ReportDescriptor reportDescriptor) {
         return Arrays.asList(
-                new Parameter("endDate", "End Date", Date.class)
+                new Parameter("endDate", "End Date", Date.class),
+                new Parameter("defaultLocation", "Facility", String.class)
         );
     }
 
     @Override
     protected List<Mapped<DataSetDefinition>> buildDataSets(ReportDescriptor reportDescriptor, ReportDefinition reportDefinition) {
         return Arrays.asList(
-                ReportUtils.map(suppresion(), "endDate=${endDate}")
+                ReportUtils.map(suppresion(), "endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -60,8 +61,9 @@ public class TXCurrMonthlyLinelistReportBuilder extends AbstractReportBuilder {
         cohortDsd.setName("TX Curr Line Lists - Monthly Indicator");
         cohortDsd.setDescription("Shows differences between two reporting dates in terms of patients include/excluded");
 
-        String indParams = "endDate=${endDate}";
+        String indParams = "endDate=${endDate},defaultLocation=${defaultLocation}";
         cohortDsd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cohortDsd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cohortDsd.addColumn("Number of patients present in the current report but missing in previous report", "", ReportUtils.map(suppressionIndicatorLibrary.txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly(), indParams), "");
         cohortDsd.addColumn("New on ART", "", ReportUtils.map(suppressionIndicatorLibrary.txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthlyNewlyEnrolled(), indParams), "");
         cohortDsd.addColumn("Return to Care", "", ReportUtils.map(suppressionIndicatorLibrary.txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthlyReEnrollment(), indParams), "");
