@@ -51,7 +51,7 @@ public class ActivePatientsSnapshotCohortDefinitionEvaluator implements CohortDe
 
 		Cohort newCohort = new Cohort();
 
-		int facility = EmrUtils.getFacilityByLoggedInUser();
+		int facility = EmrUtils.getFacilityByLoggedInUser().get(0).getLocationId();
 
 		String qry="select t.patient_id\n" +
 				"from(\n" +

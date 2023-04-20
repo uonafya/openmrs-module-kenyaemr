@@ -13,11 +13,19 @@
 	def useDateBasedPeriodField = params.containsKey("startDate") && params.containsKey("endDate") && params.containsKey("dateBasedReporting")
 
 	def subCountyListOptions = []
+	def defaultFacilityOption = []
+	def allFacilitiesOption = []
 
 	subCountyList.each { location ->
 		subCountyListOptions.add([ value: location, label: location ])
 	}
-
+	defaultFacility.each { location ->
+		defaultFacilityOption.add([ value: location.getLocationId().toString(), label: location.getName() ])
+	}
+	allFacilities.each { location ->
+		allFacilitiesOption.add([ value: location.getLocationId().toString(), label: location.getName() ])
+	}
+	
 	if (useMonthBasedPeriodField || useYearBasedPeriodField) {
 		params.remove("startDate")
 		params.remove("endDate")
@@ -109,17 +117,32 @@
 		<% } %>
 
 		<% params.each { name, param -> %>
-		<div class="ke-field-label">${ param.label }</div>
-		<div class="ke-field-content">
-			<% def configOptions = (param.name == "location") ? [ options: subCountyListOptions ] : [] %>
-			${ ui.includeFragment("kenyaui", "widget/field", [
-					formFieldName: "param[" + param.name + "]",
-					class: param.type,
-					required: true,
-					initialValue: param.defaultValue,
-					config: configOptions
-			]) }
-		</div>
+			<% if(param.name == "defaultLocation") { %>
+			<div>
+				<div class="ke-field-label">${ param.label }</div>
+				<div class="ke-field-content">
+							<% def configOptions =  [ options: defaultFacilityOption ]  %>
+							${ ui.includeFragment("kenyaui", "widget/field", [
+									formFieldName: "param[" + param.name + "]",
+									class: param.type,
+									required: true,
+									initialValue: param.defaultValue ?: defaultFacilityOption.get(0).value,
+									config: configOptions
+							]) }
+				</div>
+			</div>
+			<%} else {%>
+			<div class="ke-field-label">${ param.label }</div>
+			<div class="ke-field-content">
+				${ ui.includeFragment("kenyaui", "widget/field", [
+						formFieldName: "param[" + param.name + "]",
+						class: param.type,
+						required: true,
+						initialValue: param.defaultValue,
+						config: []
+				]) }
+			</div>
+			<%}%>
 		<% } %>
 	</form>
 </div>

@@ -45,7 +45,7 @@ public class ProviderDetailsFragmentController {
 		Location primaryFacility = null;
 		
 		List<ProviderAttribute> attributes = new ArrayList<ProviderAttribute>(provider.getActiveAttributes());
-		if (attributes.size() > 0) {
+		if (!attributes.isEmpty()) {
 			for (ProviderAttribute attribute : attributes) {
 				if (attribute.getAttributeType().getUuid().equals(CommonMetadata._ProviderAttributeType.PRIMARY_FACILITY)) {
 					primaryFacility = (Location) attribute.getValue();

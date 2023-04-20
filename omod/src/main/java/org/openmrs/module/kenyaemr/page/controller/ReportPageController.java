@@ -135,6 +135,8 @@ public class ReportPageController {
 
 		// Showing list of subcounties
 		List<String> subCountyList = new ArrayList<String>();
+		List<Location> defaultFacility = new ArrayList<Location>();
+		List<Location> allFacilities = new ArrayList<Location>();
 
 		String userRole = null;
 		for (Role role : userRoles) {
@@ -145,8 +147,13 @@ public class ReportPageController {
 		}
 		if (isSuperUser || userRole != null) {
 			subCountyList = EmrUtils.getSubCountyList();
-		     }
+			defaultFacility = EmrUtils.getFacilityByLoggedInUser();
+			allFacilities = Context.getLocationService().getAllLocations(false);
+		}
+
 		model.addAttribute("subCountyList", subCountyList.size() > 0 ? subCountyList : Collections.emptyList());
+		model.addAttribute("defaultFacility", defaultFacility.size() > 0 ? defaultFacility : allFacilities);
+		model.addAttribute("allFacilities", allFacilities.size() > 0 ? allFacilities : Collections.emptyList());
 		}
 
 		/**

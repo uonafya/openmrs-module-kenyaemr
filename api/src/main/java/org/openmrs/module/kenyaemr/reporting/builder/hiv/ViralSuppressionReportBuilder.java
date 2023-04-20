@@ -22,7 +22,6 @@ import org.openmrs.module.reporting.report.definition.ReportDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -42,13 +41,14 @@ public class ViralSuppressionReportBuilder extends AbstractReportBuilder {
     @Override
     protected List<Parameter> getParameters(ReportDescriptor reportDescriptor) {
         return Arrays.asList(new Parameter("endDate", "End Date", Date.class),
+                new Parameter("defaultLocation", "Facility", String.class),
                 new Parameter("dateBasedReporting", "", String.class)
-        );
+                );
     }
 
     @Override
     protected List<Mapped<DataSetDefinition>> buildDataSets(ReportDescriptor reportDescriptor, ReportDefinition reportDefinition) {
-        return Arrays.asList(ReportUtils.map(suppresion(), "endDate=${endDate}")
+        return Arrays.asList(ReportUtils.map(suppresion(), "endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -57,7 +57,8 @@ public class ViralSuppressionReportBuilder extends AbstractReportBuilder {
         CohortIndicatorDataSetDefinition cohortDsd = new CohortIndicatorDataSetDefinition();
         cohortDsd.setName("Viral-suppression");
         cohortDsd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        String indParams = "endDate=${endDate}";
+        cohortDsd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        String indParams = "endDate=${endDate},defaultLocation=${defaultLocation}";
         cohortDsd.setDescription("Viral suppression report");
         cohortDsd.addColumn("Number Suppressed", "", ReportUtils.map(suppressionIndicatorLibrary.suppressed(), indParams),"");
         cohortDsd.addColumn("Number Un-suppressed", "", ReportUtils.map(suppressionIndicatorLibrary.unsuppressed(), indParams),"");
