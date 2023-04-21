@@ -98,7 +98,7 @@ public class TXCurrLinelistCohortLibrary {
         String sqlQuery="select e.patient_id from\n" +
                 "(Select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where e.location_id in (:defaultLocation)  group by e.patient_id having max(e.visit_date) < DATE_SUB(date(:endDate),INTERVAL 3 MONTH))e\n" +
                 "inner join (select f.patient_id from kenyaemr_etl.etl_patient_hiv_followup f where f.visit_date <= date(:endDate) and f.location_id in (:defaultLocation) group by patient_id\n" +
-                " having min(f.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate)  and d.location_id in (:defaultLocation))f\n" +
+                " having min(f.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate))f\n" +
                 " on e.patient_id = f.patient_id;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("TX_Curr_Missing_in_previous_rtt_no_prev_hiv_encounter");
@@ -353,7 +353,7 @@ public class TXCurrLinelistCohortLibrary {
                 "                         d.patient_id as disc_patient,\n" +
                 "                         d.effective_disc_date as effective_disc_date,\n" +
                 "                         max(d.visit_date) as date_discontinued,\n" +
-                "                         de.patient_id as started_on_drugs, fup.location_id as loc_id,\n" +
+                "                         de.patient_id as started_on_drugs, fup.location_id as loc_id\n" +
                 "                  from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 "                         join kenyaemr_etl.etl_patient_demographics p on p.patient_id=fup.patient_id\n" +
                 "                         join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id and e.location_id = fup.location_id\n" +
@@ -404,7 +404,7 @@ public class TXCurrLinelistCohortLibrary {
                 "              where date(visit_date) <= date_sub(DATE(:endDate), interval 3 MONTH) and program_name='HIV' and location_id in (:defaultLocation)\n" +
                 "              group by patient_id\n" +
                 "             ) d on d.patient_id = fup.patient_id\n" +
-                "        where fup.visit_date <= date_sub(DATE(:endDate), interval 3 MONTH) and fub.location_id in (:defaultLocation)\n" +
+                "        where fup.visit_date <= date_sub(DATE(:endDate), interval 3 MONTH) and fup.location_id in (:defaultLocation)\n" +
                 "        group by patient_id\n" +
                 "        having (started_on_drugs is not null and started_on_drugs <> '') and (\n" +
                 "            (\n" +
@@ -504,7 +504,7 @@ public class TXCurrLinelistCohortLibrary {
      * Patients present in previous period but missing in current period due to death
      */
     public CohortDefinition patientsDied() {
-        String sqlQuery = "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.program_name = 'HIV' and d.discontinuation_reason = 160034 and d.visit_date <= date(:endDate)  and location_id in (:defaultLocation);";
+        String sqlQuery = "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.program_name = 'HIV' and d.discontinuation_reason = 160034 and d.visit_date <= date(:endDate)  and d.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("patientsDied");
         cd.setQuery(sqlQuery);
@@ -518,7 +518,7 @@ public class TXCurrLinelistCohortLibrary {
      */
     public CohortDefinition patientsTrfOut() {
         String sqlQuery = "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.program_name = 'HIV' and d.discontinuation_reason = 159492\n" +
-                "                    and coalesce(effective_discontinuation_date,d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate) and location_id in (:defaultLocation);";
+                "                    and coalesce(effective_discontinuation_date,d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate) and d.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("patientsTrfOut");
         cd.setQuery(sqlQuery);
@@ -532,7 +532,7 @@ public class TXCurrLinelistCohortLibrary {
      */
     public CohortDefinition patientsTrfOutQuarter() {
         String sqlQuery = "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.program_name = 'HIV' and d.discontinuation_reason = 159492\n" +
-                "                    and coalesce(effective_discontinuation_date,d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate) and location_id in (:defaultLocation);";
+                "                    and coalesce(effective_discontinuation_date,d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate) and d.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("patientsTrfOutQuarter");
         cd.setQuery(sqlQuery);
@@ -545,9 +545,9 @@ public class TXCurrLinelistCohortLibrary {
      * Patients present in previous period but missing in current period due to stopping treatment
      */
     public CohortDefinition patientStoppedTxWithinMonth() {
-        String sqlQuery = "select dt.patient_id from kenyaemr_etl.etl_ccc_defaulter_tracing dt where dt.is_final_trace =1267 and dt.true_status =164435 and date(dt.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate) and location_id in (:defaultLocation)\n" +
+        String sqlQuery = "select dt.patient_id from kenyaemr_etl.etl_ccc_defaulter_tracing dt where dt.is_final_trace =1267 and dt.true_status =164435 and date(dt.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate) and dt.location_id in (:defaultLocation)\n" +
                 "union\n" +
-                "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.discontinuation_reason =164349 and date(d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate) and location_id in (:defaultLocation);";
+                "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.discontinuation_reason =164349 and date(d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate) and d.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("patientStoppedTxWithinMonth");
         cd.setQuery(sqlQuery);
@@ -560,9 +560,9 @@ public class TXCurrLinelistCohortLibrary {
      * Patients present in previous period but missing in current period due to stopping treatment
      */
     public CohortDefinition patientStoppedTxWithinQuarter() {
-        String sqlQuery = "select dt.patient_id from kenyaemr_etl.etl_ccc_defaulter_tracing dt where dt.is_final_trace =1267 and dt.true_status =164435 and date(dt.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate) and location_id in (:defaultLocation);\n" +
+        String sqlQuery = "select dt.patient_id from kenyaemr_etl.etl_ccc_defaulter_tracing dt where dt.is_final_trace =1267 and dt.true_status =164435 and date(dt.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate) and dt.location_id in (:defaultLocation)\n" +
                 "union\n" +
-                "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.discontinuation_reason =164435 and date(d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate) and location_id in (:defaultLocation);";
+                "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.discontinuation_reason =164435 and date(d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate) and d.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("patientStoppedTxWithinQuarter");
         cd.setQuery(sqlQuery);
