@@ -27,10 +27,16 @@ import static org.openmrs.module.kenyaemr.reporting.EmrReportingUtils.cohortIndi
  */
 @Component
 public class ETLMoh731GreenCardIndicatorLibrary {
+
+    private final ETLMoh731GreenCardCohortLibrary moh731Cohorts;
+
+    private final DatimCohortLibrary datimCohorts;
+
     @Autowired
-    private ETLMoh731GreenCardCohortLibrary moh731Cohorts;
-    @Autowired
-    private DatimCohortLibrary datimCohorts;
+    public ETLMoh731GreenCardIndicatorLibrary(ETLMoh731GreenCardCohortLibrary moh731Cohorts, DatimCohortLibrary datimCohorts) {
+        this.moh731Cohorts = moh731Cohorts;
+        this.datimCohorts = datimCohorts;
+    }
 
     // Green card additions
 
@@ -342,8 +348,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
     }
 
     /**
-     * Number of infant patients who took pcr test aged between 7 weeks and 6 months and confirmed Positive
-     * Positive PNC >6 Weeks to 6 months HV02-15
+     * Number of infant patients who took pcr test aged between 7 weeks and 6 months and confirmed Positive     *  PNC >6 Weeks to 6 months HV02-15
      *
      * @return the indicator
      */
@@ -461,8 +466,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
     }
 
     /**
-     * Number of Patients screened positive for syphilis
-     * Syphilis screened positive HV02-25
+     * Number of Patients screened positive for syphilis     *  screened positive HV02-25
      *
      * @return the indicator
      */

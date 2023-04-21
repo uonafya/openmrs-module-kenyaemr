@@ -2068,14 +2068,15 @@ public class DatimCohortLibrary {
     public CohortDefinition testedPositivePmtctANC1() {
         String sqlQuery = "select v.patient_id\n" +
                 "from kenyaemr_etl.etl_mch_antenatal_visit v\n" +
-                "  left join (select t.patient_id, t.visit_date from kenyaemr_etl.etl_hts_test t where t.test_type = 2 and t.final_test_result = 'Positive' and t.hts_entry_point = 160538 and  t.visit_date <= date(:endDate))t\n" +
+                "  left join (select t.patient_id, t.visit_date from kenyaemr_etl.etl_hts_test t where t.test_type = 2 and t.final_test_result = 'Positive' and t.hts_entry_point = 160538 and  t.visit_date <= date(:endDate) AND t.location_id=:defaultLocation)t\n" +
                 "    on v.patient_id = t.patient_id and v.visit_date = t.visit_date\n" +
-                "where v.anc_visit_number = 1 and v.visit_date between date (:startDate) and date(:endDate) and (v.final_test_result = 'Positive' or t.patient_id is not null);";
+                "where v.anc_visit_number = 1 and v.visit_date between date (:startDate) and date(:endDate) and (v.final_test_result = 'Positive' or t.patient_id is not null) AND v.location_id=:defaultLocation";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("HTS_TST");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("HTS Positive at PMTCT ANC-1");
         return cd;
     }
@@ -2085,14 +2086,15 @@ public class DatimCohortLibrary {
     public CohortDefinition testedNegativePmtctANC1() {
         String sqlQuery = "select v.patient_id\n" +
                 "from kenyaemr_etl.etl_mch_antenatal_visit v\n" +
-                "  left join (select t.patient_id, t.visit_date from kenyaemr_etl.etl_hts_test t where t.test_type = 1 and t.final_test_result = 'Negative' and t.hts_entry_point = 160538 and  t.visit_date <= date(:endDate))t\n" +
+                "  left join (select t.patient_id, t.visit_date from kenyaemr_etl.etl_hts_test t where t.test_type = 1 and t.final_test_result = 'Negative' and t.hts_entry_point = 160538 and  t.visit_date <= date(:endDate) AND t.location_id=:defaultLocation)t\n" +
                 "    on v.patient_id = t.patient_id and v.visit_date = t.visit_date\n" +
-                "where v.anc_visit_number = 1 and v.visit_date between date (:startDate) and date(:endDate) and (v.final_test_result = 'Negative' or t.patient_id is not null);";
+                "where v.anc_visit_number = 1 and v.visit_date between date (:startDate) and date(:endDate) and (v.final_test_result = 'Negative' or t.patient_id is not null) AND v.location_id=:defaultLocation";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("HTS_TST");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("HTS Negative at PMTCT ANC-1");
         return cd;
     }
@@ -2301,13 +2303,14 @@ public class DatimCohortLibrary {
                 "                where hts.test_strategy =161557\n" +
                 "                and hts.patient_given_result ='Yes'\n" +
                 "                and hts.voided =0 and hts.visit_date\n" +
-                "                between date(:startDate) and date(:endDate) group by hts.patient_id;";
+                "                between date(:startDate) and date(:endDate) AND hts.location_id=:defaultLocation group by hts.patient_id;";
 
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("HTS_TST_IT");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Tested IT");
         return cd;
     }
@@ -2324,13 +2327,14 @@ public class DatimCohortLibrary {
                 "                where hts.test_strategy =166606\n" +
                 "                and hts.patient_given_result ='Yes'\n" +
                 "                and hts.voided =0 and hts.visit_date\n" +
-                "                between date(:startDate) and date(:endDate) group by hts.patient_id;";
+                "                between date(:startDate) and date(:endDate) AND hts.location_id=:defaultLocation group by hts.patient_id ";
 
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("HTS_TST_SNS");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Tested SNS");
         return cd;
     }
@@ -2708,12 +2712,13 @@ public class DatimCohortLibrary {
      * @return
      */
     public CohortDefinition malesCircumcised() {
-        String sqlQuery = "select p.patient_id from kenyaemr_etl.etl_vmmc_circumcision_procedure p where p.visit_date between date(:startDate) and date(:endDate);";
+        String sqlQuery = "select p.patient_id from kenyaemr_etl.etl_vmmc_circumcision_procedure p where p.visit_date between date(:startDate) and date(:endDate) AND p.location_id=:defaultLocation";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("VMMC_CIRC");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Number of males circumcised");
         return cd;
     }
@@ -2727,20 +2732,21 @@ public class DatimCohortLibrary {
                 "         left join (select h.patient_id, h.hiv_test_date\n" +
                 "                    from kenyaemr_etl.etl_vmmc_medical_history h\n" +
                 "                    where h.hiv_status = 703\n" +
-                "                      and date(h.hiv_test_date) between date(:startDate) and date(:endDate)) h\n" +
+                "                      and date(h.hiv_test_date) between date(:startDate) and date(:endDate) AND h.location_id=:defaultLocation) h\n" +
                 "                   on e.patient_id = h.patient_id\n" +
                 "         left join (select t.patient_id,t.visit_date\n" +
                 "                    from kenyaemr_etl.etl_hts_test t\n" +
                 "                    where t.final_test_result = 'Positive'\n" +
                 "                      and t.test_type = 2\n" +
                 "                      and t.hts_entry_point = 162223\n" +
-                "                      and t.visit_date between date(:startDate) and date(:endDate)) t on e.patient_id = t.patient_id\n" +
-                "where e.visit_date between date(:startDate) and date(:endDate) and ((h.patient_id is not null and e.visit_date >= date(h.hiv_test_date)) or (t.patient_id is not null and e.visit_date >= date(t.visit_date)));";
+                "                      and t.visit_date between date(:startDate) and date(:endDate) AND t.location_id=:defaultLocation) t on e.patient_id = t.patient_id\n" +
+                "where e.visit_date between date(:startDate) and date(:endDate) AND e.location_id=:defaultLocation AND ((h.patient_id is not null and e.visit_date >= date(h.hiv_test_date)) or (t.patient_id is not null and e.visit_date >= date(t.visit_date)));";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("VMMC_SITE_HIV_POSITIVE");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Number tested HIV POSITIVE at VMMC site");
         return cd;
     }
@@ -2754,19 +2760,20 @@ public class DatimCohortLibrary {
                 "         left join (select h.patient_id, h.hiv_test_date\n" +
                 "                    from kenyaemr_etl.etl_vmmc_medical_history h\n" +
                 "                    where h.hiv_status = 664\n" +
-                "                      and date(h.hiv_test_date) between date(:startDate) and date(:endDate)) h\n" +
+                "                      and date(h.hiv_test_date) between date(:startDate) and date(:endDate) AND h.location_id=:defaultLocation) h\n" +
                 "                   on e.patient_id = h.patient_id\n" +
                 "         left join (select t.patient_id,t.visit_date\n" +
                 "                    from kenyaemr_etl.etl_hts_test t\n" +
                 "                    where t.final_test_result = 'Negative'\n" +
                 "                      and t.hts_entry_point = 162223\n" +
-                "                      and t.visit_date between date(:startDate) and date(:endDate)) t on e.patient_id = t.patient_id\n" +
-                "where e.visit_date between date(:startDate) and date(:endDate) and ((h.patient_id is not null and e.visit_date >= date(h.hiv_test_date)) or (t.patient_id is not null and e.visit_date >= date(t.visit_date)));";
+                "                      and t.visit_date between date(:startDate) and date(:endDate) AND t.location_id=:defaultLocation) t on e.patient_id = t.patient_id\n" +
+                "where e.visit_date between date(:startDate) AND e.location_id=:defaultLocation and date(:endDate) and ((h.patient_id is not null and e.visit_date >= date(h.hiv_test_date)) or (t.patient_id is not null and e.visit_date >= date(t.visit_date)));";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("VMMC_SITE_HIV_NEGATIVE");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Number tested HIV NEGATIVE at VMMC site");
         return cd;
     }
@@ -2779,8 +2786,9 @@ public class DatimCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("malesCircumcised",ReportUtils.map(malesCircumcised(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("testedHIVPositiveAtVMMCSite",ReportUtils.map(testedHIVPositiveAtVMMCSite(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("malesCircumcised",ReportUtils.map(malesCircumcised(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("testedHIVPositiveAtVMMCSite",ReportUtils.map(testedHIVPositiveAtVMMCSite(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("malesCircumcised AND testedHIVPositiveAtVMMCSite");
         return cd;
     }
@@ -2792,8 +2800,9 @@ public class DatimCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("malesCircumcised",ReportUtils.map(malesCircumcised(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("testedHIVNegativeAtVMMCSite",ReportUtils.map(testedHIVNegativeAtVMMCSite(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("malesCircumcised",ReportUtils.map(malesCircumcised(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("testedHIVNegativeAtVMMCSite",ReportUtils.map(testedHIVNegativeAtVMMCSite(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("malesCircumcised AND testedHIVNegativeAtVMMCSite");
         return cd;
     }
@@ -2805,9 +2814,10 @@ public class DatimCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("malesCircumcised",ReportUtils.map(malesCircumcised(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("testedHIVPositiveAtVMMCSite",ReportUtils.map(testedHIVPositiveAtVMMCSite(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("testedHIVNegativeAtVMMCSite",ReportUtils.map(testedHIVNegativeAtVMMCSite(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("malesCircumcised",ReportUtils.map(malesCircumcised(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("testedHIVPositiveAtVMMCSite",ReportUtils.map(testedHIVPositiveAtVMMCSite(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("testedHIVNegativeAtVMMCSite",ReportUtils.map(testedHIVNegativeAtVMMCSite(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("malesCircumcised AND NOT (testedHIVPositiveAtVMMCSite OR testedHIVNegativeAtVMMCSite)");
         return cd;
     }
@@ -2817,12 +2827,13 @@ public class DatimCohortLibrary {
      */
     public CohortDefinition vmmcSurgical() {
         String sqlQuery = "select e.patient_id from kenyaemr_etl.etl_vmmc_enrolment e inner join kenyaemr_etl.etl_vmmc_circumcision_procedure c on e.patient_id = c.patient_id\n" +
-                "where c.visit_date between date(:startDate) and date(:endDate) and c.circumcision_method = 167119;";
+                "where c.visit_date between date(:startDate) and date(:endDate) and c.circumcision_method = 167119 AND e.location_id=:defaultLocation AND c.location_id=:defaultLocation";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("VMMC_SURGICAL");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Number of males circumcised through surgical procedure");
         return cd;
     }
@@ -2832,12 +2843,13 @@ public class DatimCohortLibrary {
      */
     public CohortDefinition vmmcDevice() {
         String sqlQuery = "select e.patient_id from kenyaemr_etl.etl_vmmc_enrolment e inner join kenyaemr_etl.etl_vmmc_circumcision_procedure c on e.patient_id = c.patient_id\n" +
-                "where c.visit_date between date(:startDate) and date(:endDate) and c.circumcision_method = 167120;";
+                "where c.visit_date between date(:startDate) and date(:endDate) and c.circumcision_method = 167120 AND e.location_id=:defaultLocation AND c.location_id=:defaultLocation";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("VMMC_DEVICE");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Number of males circumcised using device");
         return cd;
     }
@@ -2848,12 +2860,13 @@ public class DatimCohortLibrary {
     public CohortDefinition followedUpWithin14daysOfVMMCProcedure() {
         String sqlQuery = "select c.patient_id from kenyaemr_etl.etl_vmmc_circumcision_procedure c\n" +
                 "inner join kenyaemr_etl.etl_vmmc_client_followup f on c.patient_id = f.patient_id\n" +
-                "where c.visit_date between date(:startDate) and date(:endDate) and timestampdiff(DAY ,c.visit_date,f.visit_date) <= 14;";
+                "where c.visit_date between date(:startDate) and date(:endDate) and timestampdiff(DAY ,c.visit_date,f.visit_date) <= 14 AND c.location_id=:defaultLocation AND f.location_id=:defaultLocation";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("VMMC_FOLLOWUP_WITHIN_14_DAYS");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Number of clients who followed up within 14 days of VMMC procedure");
         return cd;
     }
@@ -4718,9 +4731,10 @@ public class DatimCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("testedNegativePmtctANC1",ReportUtils.map(testedNegativePmtctANC1(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("testedIndexTesting",ReportUtils.map(testedIndexTesting(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("testedSocialNetworks",ReportUtils.map(testedSocialNetworks(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("testedNegativePmtctANC1",ReportUtils.map(testedNegativePmtctANC1(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("testedIndexTesting",ReportUtils.map(testedIndexTesting(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("testedSocialNetworks",ReportUtils.map(testedSocialNetworks(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("testedNegativePmtctANC1 AND NOT (testedIndexTesting OR testedSocialNetworks)");
         return cd;
 
@@ -4731,9 +4745,10 @@ public class DatimCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("testedPositivePmtctANC1",ReportUtils.map(testedPositivePmtctANC1(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("testedIndexTesting",ReportUtils.map(testedIndexTesting(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("testedSocialNetworks",ReportUtils.map(testedSocialNetworks(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("testedPositivePmtctANC1",ReportUtils.map(testedPositivePmtctANC1(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("testedIndexTesting",ReportUtils.map(testedIndexTesting(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("testedSocialNetworks",ReportUtils.map(testedSocialNetworks(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("testedPositivePmtctANC1 AND NOT (testedIndexTesting OR testedSocialNetworks)");
         return cd;
 
