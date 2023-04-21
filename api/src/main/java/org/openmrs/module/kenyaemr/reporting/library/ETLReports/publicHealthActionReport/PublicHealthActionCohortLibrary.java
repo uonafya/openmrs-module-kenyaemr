@@ -36,7 +36,7 @@ public class PublicHealthActionCohortLibrary {
      */
     public CohortDefinition noCurrentVLResults() {
         String sqlQuery = "select a.patient_id as patient_id\n" +
-                "        from(select t.patient_id,vl.vl_date,vl.lab_test,vl.vl_result,vl.urgency from (\n" +
+                "        from(select t.patient_id,vl.vl_date,vl.lab_test,vl.vl_result,vl.urgency,loc_id from (\n" +
                 "        select fup.visit_date,fup.patient_id, max(e.visit_date) as enroll_date,\n" +
                 "           greatest(max(e.visit_date), ifnull(max(date(e.transfer_in_date)),'0000-00-00')) as latest_enrolment_date,\n" +
                 "           greatest(max(fup.visit_date), ifnull(max(d.visit_date),'0000-00-00')) as latest_vis_date,\n" +
@@ -45,17 +45,17 @@ public class PublicHealthActionCohortLibrary {
                 "           d.effective_disc_date as effective_disc_date,\n" +
                 "           max(d.visit_date) as date_discontinued,\n" +
                 "           de.patient_id as started_on_drugs,\n" +
-                "           de.date_started\n" +
+                "           de.date_started, fup.location_id as loc_id\n" +
                 "        from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 "           join kenyaemr_etl.etl_patient_demographics p on p.patient_id=fup.patient_id\n" +
-                "           join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id\n" +
+                "           join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id and e.location_id = fup.location_id\n" +
                 "           left outer join kenyaemr_etl.etl_drug_event de on e.patient_id = de.patient_id and de.program='HIV' and date(date_started) <= date(:endDate)\n" +
                 "           left outer JOIN\n" +
                 "         (select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "          where date(visit_date) <= date(:endDate) and program_name='HIV'\n" +
+                "          where date(visit_date) <= date(:endDate) and program_name='HIV' and location_id in (:defaultLocation) \n" +
                 "          group by patient_id\n" +
                 "         ) d on d.patient_id = fup.patient_id\n" +
-                "        where fup.visit_date <= date(:endDate)\n" +
+                "        where fup.visit_date <= date(:endDate) and fup.location_id in (:defaultLocation)\n" +
                 "        group by patient_id\n" +
                 "        having (started_on_drugs is not null and started_on_drugs <> '') and (\n" +
                 "        (\n" +
@@ -73,17 +73,18 @@ public class PublicHealthActionCohortLibrary {
                 "           if(mid(max(concat(b.visit_date,b.lab_test)),11) = 856, mid(max(concat(b.visit_date,b.test_result)),11), if(mid(max(concat(b.visit_date,b.lab_test)),11)=1305 and mid(max(concat(visit_date,test_result)),11) = 1302, 'LDL','')) as vl_result,\n" +
                 "           mid(max(concat(b.visit_date,b.urgency)),11) as urgency\n" +
                 "           from (select x.patient_id as patient_id,x.visit_date as visit_date,x.lab_test as lab_test, x.test_result as test_result,urgency as urgency\n" +
-                "           from kenyaemr_etl.etl_laboratory_extract x where x.lab_test in (1305,856)\n" +
+                "           from kenyaemr_etl.etl_laboratory_extract x where x.lab_test in (1305,856) and x.location_id in (:defaultLocation)\n" +
                 "           group by x.patient_id,x.visit_date order by visit_date desc)b\n" +
                 "         group by patient_id\n" +
                 "         having max(visit_date) < date_sub(date(:endDate) , interval 12 MONTH)\n" +
                 "         )vl\n" +
-                "        on t.patient_id = vl.patient_id)a;";
+                "        on t.patient_id = vl.patient_id) a where a.loc_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("noCurrentVLResults");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("ART clients with no current VL results");
         return cd;
     }
@@ -95,7 +96,7 @@ public class PublicHealthActionCohortLibrary {
      */
     public CohortDefinition unSuppressed() {
         String sqlQuery = "select a.patient_id as patient_id\n" +
-                "            from(select t.patient_id,vl.vl_date,vl.lab_test,vl.vl_result,vl.urgency from (\n" +
+                "            from(select t.patient_id,vl.vl_date,vl.lab_test,vl.vl_result,vl.urgency,loc_id from (\n" +
                 "            select fup.visit_date,fup.patient_id, max(e.visit_date) as enroll_date,\n" +
                 "                   greatest(max(e.visit_date), ifnull(max(date(e.transfer_in_date)),'0000-00-00')) as latest_enrolment_date,\n" +
                 "                   greatest(max(fup.visit_date), ifnull(max(d.visit_date),'0000-00-00')) as latest_vis_date,\n" +
@@ -104,17 +105,17 @@ public class PublicHealthActionCohortLibrary {
                 "                   d.effective_disc_date as effective_disc_date,\n" +
                 "                   max(d.visit_date) as date_discontinued,\n" +
                 "                   de.patient_id as started_on_drugs,\n" +
-                "                   de.date_started\n" +
+                "                   de.date_started, fup.location_id as loc_id\n" +
                 "            from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 "                   join kenyaemr_etl.etl_patient_demographics p on p.patient_id=fup.patient_id\n" +
-                "                   join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id\n" +
+                "                   join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id and e.location_id = fup.location_id\n" +
                 "                   left outer join kenyaemr_etl.etl_drug_event de on e.patient_id = de.patient_id and de.program='HIV' and date(date_started) <= date(:endDate)\n" +
                 "                   left outer JOIN\n" +
                 "                     (select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "                      where date(visit_date) <= date(:endDate) and program_name='HIV'\n" +
+                "                      where date(visit_date) <= date(:endDate) and program_name='HIV' and location_id in (:defaultLocation)\n" +
                 "                      group by patient_id\n" +
                 "                     ) d on d.patient_id = fup.patient_id\n" +
-                "            where fup.visit_date <= date(:endDate)\n" +
+                "            where fup.visit_date <= date(:endDate) and fup.location_id in (:defaultLocation)\n" +
                 "            group by patient_id\n" +
                 "            having (started_on_drugs is not null and started_on_drugs <> '') and (\n" +
                 "                (\n" +
@@ -132,18 +133,19 @@ public class PublicHealthActionCohortLibrary {
                 "               if(mid(max(concat(b.visit_date,b.lab_test)),11) = 856, mid(max(concat(b.visit_date,b.test_result)),11), if(mid(max(concat(b.visit_date,b.lab_test)),11)=1305 and mid(max(concat(visit_date,test_result)),11) = 1302, \"LDL\",\"\")) as vl_result,\n" +
                 "               mid(max(concat(b.visit_date,b.urgency)),11) as urgency\n" +
                 "                               from (select x.patient_id as patient_id,x.visit_date as visit_date,x.lab_test as lab_test, x.test_result as test_result,urgency as urgency\n" +
-                "                               from kenyaemr_etl.etl_laboratory_extract x where x.lab_test in (1305,856)\n" +
+                "                               from kenyaemr_etl.etl_laboratory_extract x where x.lab_test in (1305,856) and x.location_id in (:defaultLocation)\n" +
                 "                               group by x.patient_id,x.visit_date order by visit_date desc)b\n" +
                 "                         group by patient_id\n" +
                 "                         having max(visit_date) between\n" +
                 "            date_sub(date(:endDate) , interval 12 MONTH) and date(:endDate)\n" +
                 "                         )vl\n" +
-                "                on t.patient_id = vl.patient_id where vl_result >= 1000)a;";
+                "                on t.patient_id = vl.patient_id where vl_result >= 1000) a where a.loc_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("unSuppressed");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Clients currently on ART with unSuppressed VL");
         return cd;
     }
@@ -155,13 +157,14 @@ public class PublicHealthActionCohortLibrary {
     public CohortDefinition notLinked() {
         SqlCohortDefinition cd = new SqlCohortDefinition();
         String sqlQuery = "select t.patient_id from kenyaemr_etl.etl_hts_test t left join\n" +
-                "   (select l.patient_id, l.ccc_number from kenyaemr_etl.etl_hts_referral_and_linkage l where date(l.visit_date) <= date(:endDate) group by l.patient_id) l on t.patient_id = l.patient_id\n" +
-                "left join (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where date(e.visit_date) <= date(:endDate))e on e.patient_id = t.patient_id\n" +
+                "   (select l.patient_id, l.ccc_number from kenyaemr_etl.etl_hts_referral_and_linkage l where date(l.visit_date) <= date(:endDate) and l.encounter_location in (@defaultLocation) group by l.patient_id) l on t.patient_id = l.patient_id\n" +
+                "left join (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where date(e.visit_date) <= date(:endDate) and e.location_id in (@defaultLocation)) e on e.patient_id = t.patient_id\n" +
                 "where t.final_test_result='Positive' and t.test_type = 2 and date(t.visit_date) between date(:startDate) and date(:endDate) and l.ccc_number is null and e.patient_id is null;";
         cd.setName("notLinked");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("HIV+ patients not linked to care");
         return cd;
     }
@@ -173,11 +176,12 @@ public class PublicHealthActionCohortLibrary {
     public CohortDefinition allHEIsAgedBetween6And24Weeks() {
         SqlCohortDefinition cd = new SqlCohortDefinition();
         String sqlQuery = "select e.patient_id from kenyaemr_etl.etl_hei_enrollment e inner join kenyaemr_etl.etl_patient_demographics d on d.patient_id = e.patient_id\n" +
-                "and timestampdiff(WEEK,d.dob,date(:endDate)) between 6 and 96;";
+                "where timestampdiff(WEEK,d.dob,date(:endDate)) between 6 and 96 and e.location_id in (:defaultLocation);";
         cd.setName("allHEIsAgedBetween6And24Weeks");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Number of HEIs aged between 6 and 24 weeks");
         return cd;
     }
@@ -189,11 +193,12 @@ public class PublicHealthActionCohortLibrary {
     public CohortDefinition childrenBetween6And24WeeksInHIVProgram() {
         SqlCohortDefinition cd = new SqlCohortDefinition();
         String sqlQuery = " select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e inner join kenyaemr_etl.etl_patient_demographics d on e.patient_id = d.patient_id\n" +
-                "    where date(visit_date) <= date(:endDate) and timestampdiff(WEEK,d.dob,date(:endDate)) between 6 and 96;";
+                "    where date(visit_date) <= date(:endDate) and timestampdiff(WEEK,d.dob,date(:endDate)) between 6 and 96 and e.location_id in (:defaultLocation);";
         cd.setName("childrenBetween6And24WeeksInHIVProgram");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Number of HEIs aged between 6 and 24 weeks in HIV program");
         return cd;
     }
@@ -204,11 +209,12 @@ public class PublicHealthActionCohortLibrary {
     public CohortDefinition allHEIsWithAHIVTestResult() {
         SqlCohortDefinition cd = new SqlCohortDefinition();
         String sqlQuery = "select v.patient_id from kenyaemr_etl.etl_hei_follow_up_visit v where v.dna_pcr_result is not null or v.first_antibody_result is not null or\n" +
-                "v.final_antibody_result is not null group by v.patient_id;";
+                "v.final_antibody_result is not null and v.location_id in (:defaultLocation) group by v.patient_id;";
         cd.setName("allHEIsWithAHIVTestResult");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Number of HEIs with a HIV test result");
         return cd;
     }
@@ -221,9 +227,10 @@ public class PublicHealthActionCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("allHEIsAgedBetween6And24Weeks", ReportUtils.map(allHEIsAgedBetween6And24Weeks(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("allHEIsWithAHIVTestResult", ReportUtils.map(allHEIsWithAHIVTestResult(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("childrenBetween6And24WeeksInHIVProgram", ReportUtils.map(childrenBetween6And24WeeksInHIVProgram(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("allHEIsAgedBetween6And24Weeks", ReportUtils.map(allHEIsAgedBetween6And24Weeks(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("allHEIsWithAHIVTestResult", ReportUtils.map(allHEIsWithAHIVTestResult(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("childrenBetween6And24WeeksInHIVProgram", ReportUtils.map(childrenBetween6And24WeeksInHIVProgram(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("(allHEIsAgedBetween6And24Weeks AND NOT allHEIsWithAHIVTestResult) AND NOT childrenBetween6And24WeeksInHIVProgram");
         return cd;
     }
@@ -237,7 +244,8 @@ public class PublicHealthActionCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("invalidVl", ReportUtils.map(noCurrentVLResults(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("invalidVl", ReportUtils.map(noCurrentVLResults(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("invalidVl");
         return cd;
     }
@@ -250,7 +258,8 @@ public class PublicHealthActionCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("unSupressedValidVl", ReportUtils.map(unSuppressed(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("unSupressedValidVl", ReportUtils.map(unSuppressed(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("unSupressedValidVl");
         return cd;
     }
@@ -261,7 +270,7 @@ public class PublicHealthActionCohortLibrary {
      */
     public CohortDefinition unsuppressedWithoutValidVL() {
         String query = "select a.patient_id as patient_id\n" +
-                "from(select t.patient_id,vl.vl_date,vl.lab_test,vl.vl_result,vl.urgency from (\n" +
+                "from(select t.patient_id,vl.vl_date,vl.lab_test,vl.vl_result,vl.urgency,loc_id from (\n" +
                 "select fup.visit_date,fup.patient_id, max(e.visit_date) as enroll_date,\n" +
                 " greatest(max(e.visit_date), ifnull(max(date(e.transfer_in_date)),'0000-00-00')) as latest_enrolment_date,\n" +
                 " greatest(max(fup.visit_date), ifnull(max(d.visit_date),'0000-00-00')) as latest_vis_date,\n" +
@@ -270,17 +279,17 @@ public class PublicHealthActionCohortLibrary {
                 " d.effective_disc_date as effective_disc_date,\n" +
                 " max(d.visit_date) as date_discontinued,\n" +
                 " de.patient_id as started_on_drugs,\n" +
-                " de.date_started\n" +
+                " de.date_started,fup.location_id as loc_id\n" +
                 "from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 " join kenyaemr_etl.etl_patient_demographics p on p.patient_id=fup.patient_id\n" +
-                " join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id\n" +
+                " join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id and e.location_id = fup.location_id\n" +
                 " left outer join kenyaemr_etl.etl_drug_event de on e.patient_id = de.patient_id and de.program='HIV' and date(date_started) <= date(:endDate)\n" +
                 " left outer JOIN\n" +
                 "   (select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "    where date(visit_date) <= date(:endDate) and program_name='HIV'\n" +
+                "    where date(visit_date) <= date(:endDate) and program_name='HIV' and location_id in (:defaultLocation) \n" +
                 "    group by patient_id\n" +
                 "   ) d on d.patient_id = fup.patient_id\n" +
-                "where fup.visit_date <= date(:endDate)\n" +
+                "where fup.visit_date <= date(:endDate)  and fup.location_id in (:defaultLocation)\n" +
                 "group by patient_id\n" +
                 "having (started_on_drugs is not null and started_on_drugs <> '') and (\n" +
                 "(\n" +
@@ -298,18 +307,19 @@ public class PublicHealthActionCohortLibrary {
                 "if(mid(max(concat(b.visit_date,b.lab_test)),11) = 856, mid(max(concat(b.visit_date,b.test_result)),11), if(mid(max(concat(b.visit_date,b.lab_test)),11)=1305 and mid(max(concat(visit_date,test_result)),11) = 1302, \"LDL\",\"\")) as vl_result,\n" +
                 "mid(max(concat(b.visit_date,b.urgency)),11) as urgency\n" +
                 "             from (select x.patient_id as patient_id,x.visit_date as visit_date,x.lab_test as lab_test, x.test_result as test_result,urgency as urgency\n" +
-                "             from kenyaemr_etl.etl_laboratory_extract x where x.lab_test in (1305,856)\n" +
+                "             from kenyaemr_etl.etl_laboratory_extract x where x.lab_test in (1305,856) and x.location_id in (:defaultLocation)\n" +
                 "             group by x.patient_id,x.visit_date order by visit_date desc)b\n" +
                 "       group by patient_id\n" +
                 "       having max(visit_date) <\n" +
                 "date_sub(date(:endDate) , interval 12 MONTH)\n" +
                 "       )vl\n" +
-                "on t.patient_id = vl.patient_id where vl_result >= 1000)a;";
+                "on t.patient_id = vl.patient_id where vl_result >= 1000) a where a.loc_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("unsuppressedWithoutValidVL");
         cd.setQuery(query);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Unsuppressed without current VL");
         return cd;
     }
@@ -337,10 +347,10 @@ public class PublicHealthActionCohortLibrary {
                 "                d.effective_disc_date                                           as effective_disc_date,\n" +
                 "                d.visit_date                                                    as date_discontinued,\n" +
                 "                d.discontinuation_reason,\n" +
-                "                de.patient_id                                                   as started_on_drugs\n" +
+                "                de.patient_id                                                   as started_on_drugs,fup.location_id as loc_id\n" +
                 "         from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 "                  join kenyaemr_etl.etl_patient_demographics p on p.patient_id = fup.patient_id\n" +
-                "                  join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id = e.patient_id\n" +
+                "                  join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id = e.patient_id and e.location_id = fup.location_id\n" +
                 "                  left outer join kenyaemr_etl.etl_drug_event de\n" +
                 "                                  on e.patient_id = de.patient_id and de.program = 'HIV' and\n" +
                 "                                     date(date_started) <= date(curdate())\n" +
@@ -351,10 +361,10 @@ public class PublicHealthActionCohortLibrary {
                 "                      discontinuation_reason\n" +
                 "               from kenyaemr_etl.etl_patient_program_discontinuation\n" +
                 "               where date(visit_date) <= date(:endDate)\n" +
-                "                 and program_name = 'HIV'\n" +
+                "                 and program_name = 'HIV' and location_id in (:defaultLocation) \n" +
                 "               group by patient_id\n" +
                 "              ) d on d.patient_id = fup.patient_id\n" +
-                "         where fup.visit_date <= date(:endDate)\n" +
+                "         where fup.visit_date <= date(:endDate) and fup.location_id in (:defaultLocation)\n" +
                 "         group by patient_id\n" +
                 "         having (\n" +
                 "                        (timestampdiff(DAY, date(latest_fup_tca), date(:startDate)) <= 30) and\n" +
@@ -365,12 +375,13 @@ public class PublicHealthActionCohortLibrary {
                 "                                 date(latest_fup_tca) > date(d.visit_date))\n" +
                 "                                or disc_patient is null)\n" +
                 "                    )\n" +
-                "     ) t;";
+                "     ) t where t.loc_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("undocumentedLTFU");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Undocumented LTFU patients");
         return cd;
     }
@@ -390,28 +401,29 @@ public class PublicHealthActionCohortLibrary {
                 "d.effective_disc_date as effective_disc_date,\n" +
                 "max(d.visit_date) as date_discontinued,\n" +
                 "d.discontinuation_reason,\n" +
-                "de.patient_id as started_on_drugs\n" +
+                "de.patient_id as started_on_drugs, fup.location_id as loc_id\n" +
                 "from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 "join kenyaemr_etl.etl_patient_demographics p on p.patient_id=fup.patient_id\n" +
-                "join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id\n" +
+                "join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id and e.location_id = fup.location_id\n" +
                 "left outer join kenyaemr_etl.etl_drug_event de on e.patient_id = de.patient_id and de.program='HIV' and date(date_started) <= date(:endDate)\n" +
                 "left outer JOIN\n" +
                 "(select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date,discontinuation_reason from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "where date(visit_date) <= date(:endDate) and program_name='HIV'\n" +
+                "where date(visit_date) <= date(:endDate) and program_name='HIV' and location_id in (:defaultLocation) \n" +
                 "group by patient_id\n" +
                 ") d on d.patient_id = fup.patient_id\n" +
-                "where fup.visit_date <= date(:endDate)\n" +
+                "where fup.visit_date <= date(:endDate) and fup.location_id in (:defaultLocation)\n" +
                 "group by patient_id\n" +
                 "having (\n" +
                 "(timestampdiff(DAY,date(latest_tca),date(:endDate)) between 1 and 30) and ((date(d.effective_disc_date) > date(:endDate) or date(enroll_date) > date(d.effective_disc_date)) or d.effective_disc_date is null)\n" +
                 "and (date(latest_vis_date) > date(date_discontinued) and date(latest_tca) > date(date_discontinued) or disc_patient is null)\n" +
                 ")\n" +
-                ") t;";
+                ") t where t.loc_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("recentDefaulters");
         cd.setQuery(queryString);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Missed appointment");
         return cd;
     }
@@ -424,9 +436,10 @@ public class PublicHealthActionCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("allHEIsUnder24MonthsOld", ReportUtils.map(allHEIsUnder24MonthsOld(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("allHEIsLinkedToMothers", ReportUtils.map(allHEIsLinkedToMothers(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("allHEIsLinkedToMothersInHEIEnrolment", ReportUtils.map(allHEIsLinkedToMothersInHEIEnrolment(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("allHEIsUnder24MonthsOld", ReportUtils.map(allHEIsUnder24MonthsOld(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("allHEIsLinkedToMothers", ReportUtils.map(allHEIsLinkedToMothers(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("allHEIsLinkedToMothersInHEIEnrolment", ReportUtils.map(allHEIsLinkedToMothersInHEIEnrolment(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("allHEIsUnder24MonthsOld AND NOT (allHEIsLinkedToMothers OR allHEIsLinkedToMothersInHEIEnrolment) ");
         return cd;
     }
@@ -502,6 +515,7 @@ public class PublicHealthActionCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("HEIs who have missed HIV Tests");
         return cd;
     }
@@ -510,12 +524,13 @@ public class PublicHealthActionCohortLibrary {
      * @return
      */
     public CohortDefinition allHEIsUnder24MonthsOld() {
-        String sqlQuery = "select e.patient_id from kenyaemr_etl.etl_hei_enrollment e inner join kenyaemr_etl.etl_patient_demographics d on d.patient_id = e.patient_id and timestampdiff(MONTH,d.dob,date(:endDate)) <= 24;";
+        String sqlQuery = "select e.patient_id from kenyaemr_etl.etl_hei_enrollment e inner join kenyaemr_etl.etl_patient_demographics d on d.patient_id = e.patient_id and timestampdiff(MONTH,d.dob,date(:endDate)) <= 24 and e.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("allHEIsUnder24MonthsOld");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("HEIs under 24 months old");
         return cd;
     }
@@ -525,13 +540,13 @@ public class PublicHealthActionCohortLibrary {
      * @return
      */
     public CohortDefinition allHEIsLinkedToMothersInHEIEnrolment() {
-        String sqlQuery = "select e.patient_id from kenyaemr_etl.etl_hei_enrollment e inner join kenyaemr_etl.etl_patient_demographics d on d.unique_patient_no = e.parent_ccc_number and d.gender = 'F'\n" +
-                "where e.parent_ccc_number is not null;";
+        String sqlQuery = "select e.patient_id from kenyaemr_etl.etl_hei_enrollment e inner join kenyaemr_etl.etl_patient_demographics d on d.unique_patient_no = e.parent_ccc_number and d.gender = 'F' and e.location_id in (:defaultLocation) where e.parent_ccc_number is not null;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("allHEIsLinkedToMothersInHEIEnrolment");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("HEIs linked to mothers in HEI enrolment");
         return cd;
     }
@@ -545,12 +560,13 @@ public class PublicHealthActionCohortLibrary {
                 "                             inner join kenyaemr_etl.etl_patient_demographics d on d.patient_id = e.patient_id\n" +
                 "                             left join relationship r on e.patient_id = r.person_b\n" +
                 "                          inner join (select d.patient_id, d.gender from kenyaemr_etl.etl_patient_demographics d where d.gender = 'F')m on m.patient_id = r.person_a \n" +
-                "inner join relationship_type t on r.relationship = t.relationship_type_id and t.uuid='8d91a210-c2cc-11de-8d13-0010c6dffd0f';";
+                "inner join relationship_type t on r.relationship = t.relationship_type_id and t.uuid='8d91a210-c2cc-11de-8d13-0010c6dffd0f' where e.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("allHEIsLinkedToMothers");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("HEIs linked to Mothers");
         return cd;
     }
@@ -564,15 +580,16 @@ public class PublicHealthActionCohortLibrary {
                 "join kenyaemr_etl.etl_patient_demographics dm on dm.patient_id =enr.patient_id and timestampdiff(YEAR,dm.DOB,date(:endDate)) between 10 and  19\n" +
                 "left join\n" +
                 "  (select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "  where date(visit_date) <= date(:endDate) and program_name='HIV'\n" +
+                "  where date(visit_date) <= date(:endDate) and program_name='HIV' and location_id in (:defaultLocation)\n" +
                 "   group by patient_id\n" +
                 "   ) d on d.patient_id = enr.patient_id\n" +
-                "where enr.patient_id not in (select ot.patient_id from kenyaemr_etl.etl_otz_enrollment ot) and d.patient_id is null;";
+                "where enr.location_id in (:defaultLocation) and enr.patient_id not in (select ot.patient_id from kenyaemr_etl.etl_otz_enrollment ot where ot.location_id in (:defaultLocation)) and d.patient_id is null;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("adolescentsNotInOTZ");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Adolescents not in OTZ");
         return cd;
     }
@@ -585,8 +602,9 @@ public class PublicHealthActionCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("adolescentsNotInOTZSql", ReportUtils.map(adolescentsNotInOTZSql(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("currentlyOnART", ReportUtils.map(datimCohortLibrary.currentlyOnArt(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("adolescentsNotInOTZSql", ReportUtils.map(adolescentsNotInOTZSql(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("currentlyOnART", ReportUtils.map(datimCohortLibrary.currentlyOnArt(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("currentlyOnART AND adolescentsNotInOTZSql");
         return cd;
     }
@@ -599,15 +617,16 @@ public class PublicHealthActionCohortLibrary {
                 "  join kenyaemr_etl.etl_patient_demographics dm on dm.patient_id =enr.patient_id and timestampdiff(YEAR,dm.DOB,date(:endDate)) <= 17\n" +
                 "  left join\n" +
                 "  (select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "  where date(visit_date) <= date(:endDate) and program_name='HIV'\n" +
+                "  where date(visit_date) <= date(:endDate) and program_name='HIV' and location_id in (:defaultLocation)\n" +
                 "  group by patient_id\n" +
                 "  ) d on d.patient_id = enr.patient_id\n" +
-                "where enr.patient_id not in (select ov.patient_id from kenyaemr_etl.etl_ovc_enrolment ov) and d.patient_id is null;";
+                "where enr.location_id in (:defaultLocation) and enr.patient_id not in (select ov.patient_id from kenyaemr_etl.etl_ovc_enrolment ov where ov.location_id in (:defaultLocation)) and d.patient_id is null;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("calhivNotInOVC");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("CALHIV not in OVC");
         return cd;
     }
@@ -620,8 +639,9 @@ public class PublicHealthActionCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("calhivNotInOVCSql", ReportUtils.map(calhivNotInOVCSql(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("currentlyOnART", ReportUtils.map(datimCohortLibrary.currentlyOnArt(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("calhivNotInOVCSql", ReportUtils.map(calhivNotInOVCSql(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("currentlyOnART", ReportUtils.map(datimCohortLibrary.currentlyOnArt(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("currentlyOnART AND calhivNotInOVCSql");
         return cd;
     }
@@ -637,6 +657,7 @@ public class PublicHealthActionCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Patients on DTG");
         return cd;
     }
@@ -645,15 +666,16 @@ public class PublicHealthActionCohortLibrary {
      * Criteria: Less than 1 month old and weight less than 3 kgs
      */
     public CohortDefinition ineligibleForDTGRegimen() {
-        String sqlQuery = "select d.patient_id from kenyaemr_etl.etl_patient_demographics d left join (select t.patient_id,mid(max(concat(t.visit_date,t.weight)),11) as weight from kenyaemr_etl.etl_patient_triage t\n" +
-                "                where date(t.visit_date) <= date(:endDate) group by t.patient_id)t on d.patient_id = t.patient_id\n" +
-                "              where date(d.dob) <= date(:endDate) and timestampdiff(DAY, date(d.DOB), date(:endDate)) < 30 and (t.patient_id is null or t.weight < 3)\n" +
+        String sqlQuery = "select d.patient_id from kenyaemr_etl.etl_patient_demographics d left join (select t.patient_id,mid(max(concat(t.visit_date,t.weight)),11) as weight,location_id from kenyaemr_etl.etl_patient_triage t\n" +
+                "                where date(t.visit_date) <= date(:endDate) and t.location_id in (:defaultLocation) group by t.patient_id)t on d.patient_id = t.patient_id\n" +
+                "              where date(d.dob) <= date(:endDate) and timestampdiff(DAY, date(d.DOB), date(:endDate)) < 30 and (t.patient_id is null or t.weight < 3) and t.location_id in (:defaultLocation)\n" +
                 "              group by d.patient_id;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("ineligibleForDTGRegimen");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Not eligible for DTG");
         return cd;
     }
@@ -666,15 +688,16 @@ public class PublicHealthActionCohortLibrary {
                 "                            join kenyaemr_etl.etl_patient_demographics dm on dm.patient_id =enr.patient_id and timestampdiff(MONTH,dm.DOB,date(:endDate)) >= 1 and timestampdiff(YEAR,dm.DOB,date(:endDate)) <= 14\n" +
                 "                            left join\n" +
                 "                            (select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "                            where date(visit_date) <= date(:endDate) and program_name='HIV'\n" +
+                "                            where date(visit_date) <= date(:endDate) and program_name='HIV' and location_id in (:defaultLocation)\n" +
                 "                            group by patient_id\n" +
                 "                            ) d on d.patient_id = enr.patient_id\n" +
-                "                          where d.patient_id is null;";
+                "                          where d.patient_id is null and enr.location_id not in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("calhivCohort");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Children and adolescents living with HIV");
         return cd;
     }
@@ -687,10 +710,11 @@ public class PublicHealthActionCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("currentlyOnART", ReportUtils.map(datimCohortLibrary.currentlyOnArt(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("calhivCohort", ReportUtils.map(calhivCohort(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("patientsOnDTGRegimen", ReportUtils.map(patientsOnDTGRegimen(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("ineligibleForDTGRegimen", ReportUtils.map(ineligibleForDTGRegimen(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("currentlyOnART", ReportUtils.map(datimCohortLibrary.currentlyOnArt(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("calhivCohort", ReportUtils.map(calhivCohort(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientsOnDTGRegimen", ReportUtils.map(patientsOnDTGRegimen(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("ineligibleForDTGRegimen", ReportUtils.map(ineligibleForDTGRegimen(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("currentlyOnART AND (calhivCohort AND NOT patientsOnDTGRegimen) AND NOT ineligibleForDTGRegimen");
         return cd;
     }
@@ -698,7 +722,7 @@ public class PublicHealthActionCohortLibrary {
      * Sexual Contacts with undocumented HIV status - Includes spouse, sexual partner, co-wife
      * @return
      */
-    public CohortDefinition contactsUndocumentedHIVStatus() {
+    public CohortDefinition contactsUndocumentedHIVStatus() { //SKIP
         String sqlQuery = "select pc.id\n" +
                 "from openmrs.kenyaemr_hiv_testing_patient_contact pc\n" +
                 "         inner join openmrs.patient p on p.patient_id = pc.patient_related_to and p.voided = 0\n" +
@@ -714,6 +738,7 @@ public class PublicHealthActionCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Contacts with undocumented HIV status");
         return cd;
     }
@@ -757,6 +782,7 @@ public class PublicHealthActionCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Contacts with undocumented HIV status");
         return cd;
     }
@@ -764,7 +790,7 @@ public class PublicHealthActionCohortLibrary {
     /**
      * Number of SNS Contacts with undocumented HIV status
      */
-    public CohortDefinition snsContactsUndocumentedHIVStatus() {
+    public CohortDefinition snsContactsUndocumentedHIVStatus() { //SKIP
         String sqlQuery = "select pc.id\n" +
                 "from kenyaemr_hiv_testing_patient_contact pc\n" +
                 "         inner join patient p on p.patient_id = pc.patient_related_to and p.voided = 0\n" +
@@ -780,6 +806,7 @@ public class PublicHealthActionCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Number of SNS Contacts with undocumented HIV status");
         return cd;
     }
@@ -802,6 +829,7 @@ public class PublicHealthActionCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Clients without NUPI");
         return cd;
     }
@@ -817,6 +845,7 @@ public class PublicHealthActionCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Clients with NUPI");
         return cd;
     }
@@ -829,8 +858,9 @@ public class PublicHealthActionCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txcurr", ReportUtils.map(datimCohortLibrary.currentlyOnArt(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("clientsWithNUPI", ReportUtils.map(clientsWithNUPI(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("txcurr", ReportUtils.map(datimCohortLibrary.currentlyOnArt(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("clientsWithNUPI", ReportUtils.map(clientsWithNUPI(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txcurr AND NOT clientsWithNUPI");
         return cd;
     }
@@ -841,26 +871,28 @@ public class PublicHealthActionCohortLibrary {
      */
     public CohortDefinition numberOfDeaths() {
         String sqlQuery = "select patient_id from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "                where program_name='HIV' and discontinuation_reason = 160034\n" +
+                "                where program_name='HIV' and discontinuation_reason = 160034  and location_id in (:defaultLocation)\n" +
                 "                  and coalesce(date(date_died),date(effective_discontinuation_date),date(visit_date)) between date(:startDate) and date(:endDate);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("numberOfDeaths");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Patients who died");
         return cd;
     }
 
     public CohortDefinition partiallyVaccinated() {
         SqlCohortDefinition cd = new SqlCohortDefinition();
-        String sqlQuery = "select patient_id from kenyaemr_etl.etl_covid19_assessment group by patient_id\n"
+        String sqlQuery = "select patient_id from kenyaemr_etl.etl_covid19_assessment where location_id in (:defaultLocation) group by patient_id\n"
                 + "        having mid(max(concat(visit_date,final_vaccination_status)),11) = 166192\n"
                 + "        and max(visit_date) <= date(CURRENT_DATE());";
         cd.setName("partiallyVaccinated;");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("partiallyVaccinated");
 
         return cd;
@@ -869,22 +901,24 @@ public class PublicHealthActionCohortLibrary {
 
     public static CohortDefinition fullyVaccinated() {
         SqlCohortDefinition cd = new SqlCohortDefinition();
-        String sqlQuery = "select patient_id from kenyaemr_etl.etl_covid19_assessment a where a.final_vaccination_status = 5585 and a.visit_date <= date(CURRENT_DATE());";
+        String sqlQuery = "select patient_id from kenyaemr_etl.etl_covid19_assessment a where a.final_vaccination_status = 5585 and location_id in (:defaultLocation) and a.visit_date <= date(CURRENT_DATE());";
         cd.setName("fullyVaccinated");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("fullyVaccinated");
         return cd;
     }
 
     public CohortDefinition covid19AssessedPatients() {
         SqlCohortDefinition cd = new SqlCohortDefinition();
-        String sqlQuery = "select a.patient_id from kenyaemr_etl.etl_covid19_assessment a;";
+        String sqlQuery = "select a.patient_id from kenyaemr_etl.etl_covid19_assessment a where location_id in (:defaultLocation);";
         cd.setName("covid19AssessedPatients;");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("covid19AssessedPatients");
         return cd;
     }
@@ -897,6 +931,7 @@ public class PublicHealthActionCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("covidVaccineAgeCohort");
         return cd;
     }
@@ -909,12 +944,13 @@ public class PublicHealthActionCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.addSearch("txcurr",
-                ReportUtils.map(datimCohortLibrary.currentlyOnArt(), "startDate=${startDate},endDate=${endDate}"));
+                ReportUtils.map(datimCohortLibrary.currentlyOnArt(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.addSearch("partiallyVaccinated",
-                ReportUtils.map(partiallyVaccinated(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("fullyVaccinated", ReportUtils.map(fullyVaccinated(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("covidVaccineAgeCohort", ReportUtils.map(covidVaccineAgeCohort(), "startDate=${startDate},endDate=${endDate}"));
+                ReportUtils.map(partiallyVaccinated(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("fullyVaccinated", ReportUtils.map(fullyVaccinated(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("covidVaccineAgeCohort", ReportUtils.map(covidVaccineAgeCohort(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txcurr AND covidVaccineAgeCohort AND NOT (partiallyVaccinated OR fullyVaccinated)");
         return cd;
     }
@@ -927,11 +963,12 @@ public class PublicHealthActionCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.addSearch("txcurr",
-                ReportUtils.map(datimCohortLibrary.currentlyOnArt(), "startDate=${startDate},endDate=${endDate}"));
+                ReportUtils.map(datimCohortLibrary.currentlyOnArt(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.addSearch("covid19AssessedPatients",
-                ReportUtils.map(covid19AssessedPatients(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("covidVaccineAgeCohort", ReportUtils.map(covidVaccineAgeCohort(), "startDate=${startDate},endDate=${endDate}"));
+                ReportUtils.map(covid19AssessedPatients(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("covidVaccineAgeCohort", ReportUtils.map(covidVaccineAgeCohort(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txcurr AND covidVaccineAgeCohort AND NOT covid19AssessedPatients");
         return cd;
     }

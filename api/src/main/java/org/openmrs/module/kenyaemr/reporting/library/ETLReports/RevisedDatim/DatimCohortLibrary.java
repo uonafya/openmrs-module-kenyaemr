@@ -220,17 +220,17 @@ public class DatimCohortLibrary {
                 "           d.patient_id as disc_patient,\n" +
                 "           d.effective_disc_date as effective_disc_date,\n" +
                 "           max(d.visit_date) as date_discontinued,\n" +
-                "           de.patient_id as started_on_drugs\n" +
+                "           de.patient_id as started_on_drugs, fup.location_id as loc_id\n" +
                 "    from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 "           join kenyaemr_etl.etl_patient_demographics p on p.patient_id=fup.patient_id\n" +
-                "           join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id\n" +
+                "           join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id and e.location_id = fup.location_id\n" +
                 "           left outer join kenyaemr_etl.etl_drug_event de on e.patient_id = de.patient_id and de.program='HIV' and date(date_started) <= date(:endDate)\n" +
                 "           left outer JOIN\n" +
                 "             (select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "              where date(visit_date) <= date(:endDate) and program_name='HIV'\n" +
+                "              where date(visit_date) <= date(:endDate) and program_name='HIV' and location_id in (:defaultLocation)\n" +
                 "              group by patient_id\n" +
                 "             ) d on d.patient_id = fup.patient_id\n" +
-                "    where fup.visit_date <= date(:endDate)\n" +
+                "    where fup.visit_date <= date(:endDate) and fup.location_id in (:defaultLocation)\n" +
                 "    group by patient_id\n" +
                 "    having (started_on_drugs is not null and started_on_drugs <> '') and (\n" +
                 "        (\n" +
@@ -238,12 +238,13 @@ public class DatimCohortLibrary {
                 "              and (date(latest_vis_date) >= date(date_discontinued) or date(latest_tca) >= date(date_discontinued) or disc_patient is null)\n" +
                 "            )\n" +
                 "        )\n" +
-                "    ) t;";
+                "    ) t where t.loc_id in (:defaultLocation);";
 
         cd.setName("TX_Curr");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("currently on ART");
         return cd;
     }
@@ -3384,19 +3385,19 @@ public class DatimCohortLibrary {
                 "                max(fup_prev_period.visit_date) as prev_period_latest_vis_date,\n" +
                 "                mid(max(concat(fup_prev_period.visit_date,fup_prev_period.next_appointment_date)),11) as prev_period_latest_tca,\n" +
                 "                max(d.visit_date) as date_discontinued,\n" +
-                "                d.patient_id as disc_patient,\n" +
+                "                d.patient_id as disc_patient, fup_prev_period.location_id as loc_id,\n" +
                 "                fup_reporting_period.first_visit_after_IIT as first_visit_after_IIT,\n" +
                 "                fup_reporting_period.first_tca_after_IIT as first_tca_after_IIT\n" +
                 "         from kenyaemr_etl.etl_patient_hiv_followup fup_prev_period\n" +
                 "                  join (select fup_reporting_period.patient_id,min(fup_reporting_period.visit_date) as first_visit_after_IIT,min(fup_reporting_period.next_appointment_date) as first_tca_after_IIT from kenyaemr_etl.etl_patient_hiv_followup fup_reporting_period where fup_reporting_period.visit_date >= date_sub(date(:endDate) , interval 3 MONTH) group by fup_reporting_period.patient_id)fup_reporting_period on fup_reporting_period.patient_id = fup_prev_period.patient_id\n" +
                 "                  join kenyaemr_etl.etl_patient_demographics p on p.patient_id=fup_prev_period.patient_id\n" +
-                "                  join kenyaemr_etl.etl_hiv_enrollment e on fup_prev_period.patient_id=e.patient_id\n" +
+                "                  join kenyaemr_etl.etl_hiv_enrollment e on fup_prev_period.patient_id=e.patient_id and e.location_id = fup_prev_period.location_id\n" +
                 "                  left outer JOIN\n" +
                 "              (select patient_id, visit_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "               where date(visit_date) <= curdate()  and program_name='HIV'\n" +
+                "               where date(visit_date) <= curdate()  and program_name='HIV' and location_id in (:defaultLocation)\n" +
                 "               group by patient_id\n" +
                 "              ) d on d.patient_id = fup_prev_period.patient_id\n" +
-                "         where fup_prev_period.visit_date < date_sub(date(:endDate) , interval 3 MONTH)\n" +
+                "         where fup_prev_period.visit_date < date_sub(date(:endDate) , interval 3 MONTH) and fup_prev_period.location_id in (:defaultLocation)\n" +
                 "         group by patient_id\n" +
                 "         having (\n" +
                 "                        (((date(prev_period_latest_tca) < date(:endDate)) and\n" +
@@ -3405,13 +3406,14 @@ public class DatimCohortLibrary {
                 "                          date(fup_reporting_period.first_tca_after_IIT) > date(date_discontinued)) or\n" +
                 "                         disc_patient is null)\n" +
                 "                     and timestampdiff(day, date(prev_period_latest_tca),DATE_SUB(date(:endDate),INTERVAL 3 MONTH)) > 30)\n" +
-                "     )e;";
+                "     ) e where e.loc_id in (:defaultLocation);";
 
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("experiencedIITPreviousReportingPeriod");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Experienced IIT in previous reporting period");
         return cd;
 

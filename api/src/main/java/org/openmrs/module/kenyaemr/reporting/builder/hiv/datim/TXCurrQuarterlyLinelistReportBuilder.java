@@ -43,14 +43,15 @@ public class TXCurrQuarterlyLinelistReportBuilder extends AbstractReportBuilder 
     @Override
     protected List<Parameter> getParameters(ReportDescriptor reportDescriptor) {
         return Arrays.asList(
-                new Parameter("endDate", "End Date", Date.class)
+                new Parameter("endDate", "End Date", Date.class),
+                new Parameter("defaultLocation", "Facility", String.class)
         );
     }
 
     @Override
     protected List<Mapped<DataSetDefinition>> buildDataSets(ReportDescriptor reportDescriptor, ReportDefinition reportDefinition) {
         return Arrays.asList(
-                ReportUtils.map(suppresion(), "endDate=${endDate}")
+                ReportUtils.map(suppresion(), "endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -62,8 +63,9 @@ public class TXCurrQuarterlyLinelistReportBuilder extends AbstractReportBuilder 
         cohortDsd.setDescription("Shows differences between two reporting dates in terms of patients include/excluded");
 
         cohortDsd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cohortDsd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
 
-        String indParams = "endDate=${endDate}";
+        String indParams = "endDate=${endDate},defaultLocation=${defaultLocation}";
 
         cohortDsd.addColumn("Number of patients present in the current report but missing in previous report", "", ReportUtils.map(suppressionIndicatorLibrary.txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport(), indParams), "");
         cohortDsd.addColumn("New on ART", "", ReportUtils.map(suppressionIndicatorLibrary.txCurLinelistForPatientsPresentInCurrentButMissingInPreviousQuarterlyNewlyEnrolledReport(), indParams), "");

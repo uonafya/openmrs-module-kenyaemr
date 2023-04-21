@@ -36,12 +36,13 @@ public class TXCurrLinelistCohortLibrary {
      * Patients transferred in within the reporting month
      */
     public  CohortDefinition transferInReportingMonth() {
-        String sqlQuery="Select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where e.patient_type = 160563 and\n" +
+        String sqlQuery="Select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where e.patient_type = 160563 and e.location_id in (:defaultLocation) and\n" +
                 "                coalesce(e.transfer_in_date,e.visit_date) between DATE_SUB(date(:endDate),INTERVAL DAYOFMONTH(date(:endDate))-1 DAY) and date(:endDate);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("TX_Curr_Missing_in_previous_TI");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("TI Present in current report but missing in previous report");
         return cd;
     }
@@ -49,13 +50,14 @@ public class TXCurrLinelistCohortLibrary {
      *Patients transferred in within the quarter
      */
     public  CohortDefinition transferInReportingQuarter() {
-        String sqlQuery="Select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where\n" +
+        String sqlQuery="Select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where e.location_id in (:defaultLocation) and \n" +
                 "coalesce(e.transfer_in_date,e.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate)\n" +
                 "and e.patient_type = 160563;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("TX_Curr_Missing_in_previous_TI");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("TI Present in current report but missing in previous report");
         return cd;
     }
@@ -65,11 +67,12 @@ public class TXCurrLinelistCohortLibrary {
     public  CohortDefinition reEnrollmentToHIVReportingMonth() {
         String sqlQuery="Select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where\n" +
                 "e.visit_date between DATE_SUB(date(:endDate),INTERVAL DAYOFMONTH(date(:endDate))-1 DAY) and date(:endDate)\n" +
-                "and e.patient_type = 159833;";
+                "and e.patient_type = 159833  and e.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("reEnrollmentToHIVReportingMonth");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Returned to Tx");
         return cd;
     }
@@ -79,11 +82,12 @@ public class TXCurrLinelistCohortLibrary {
     public  CohortDefinition reEnrollmentToHIVReportingQuarter() {
         String sqlQuery="Select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where\n" +
                 "e.visit_date between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate)\n" +
-                "and e.patient_type = 159833;";
+                "and e.patient_type = 159833 and e.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("reEnrollmentToHIVReportingQuarter");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Returned to Tx Present in current report but missing in previous report");
         return cd;
     }
@@ -92,14 +96,15 @@ public class TXCurrLinelistCohortLibrary {
      */
     public  CohortDefinition noPrevHIVFUPEncQuarterly() {
         String sqlQuery="select e.patient_id from\n" +
-                "(Select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e group by e.patient_id having max(e.visit_date) < DATE_SUB(date(:endDate),INTERVAL 3 MONTH))e\n" +
-                "inner join (select f.patient_id from kenyaemr_etl.etl_patient_hiv_followup f where f.visit_date <= date(:endDate) group by patient_id\n" +
+                "(Select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where e.location_id in (:defaultLocation)  group by e.patient_id having max(e.visit_date) < DATE_SUB(date(:endDate),INTERVAL 3 MONTH))e\n" +
+                "inner join (select f.patient_id from kenyaemr_etl.etl_patient_hiv_followup f where f.visit_date <= date(:endDate) and f.location_id in (:defaultLocation) group by patient_id\n" +
                 " having min(f.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate))f\n" +
                 " on e.patient_id = f.patient_id;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("TX_Curr_Missing_in_previous_rtt_no_prev_hiv_encounter");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Returned to Tx Present in current report but missing in previous report - had no previous hiv fup encounter");
         return cd;
     }
@@ -108,14 +113,15 @@ public class TXCurrLinelistCohortLibrary {
      */
     public  CohortDefinition noPrevHIVFUPEncMonthly() {
         String sqlQuery="select e.patient_id from\n" +
-                "(Select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e group by e.patient_id having max(e.visit_date) < DATE_SUB(date(:endDate),INTERVAL 1 MONTH))e\n" +
-                "inner join (select f.patient_id,DATE_SUB(date(:endDate),INTERVAL 1 MONTH) ,min(f.visit_date) from kenyaemr_etl.etl_patient_hiv_followup f where f.visit_date <= date(:endDate) group by patient_id\n" +
+                "(Select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where e.location_id in (:defaultLocation) group by e.patient_id having max(e.visit_date) < DATE_SUB(date(:endDate),INTERVAL 1 MONTH))e\n" +
+                "inner join (select f.patient_id,DATE_SUB(date(:endDate),INTERVAL 1 MONTH) ,min(f.visit_date) from kenyaemr_etl.etl_patient_hiv_followup f where f.visit_date <= date(:endDate)  and f.location_id in (:defaultLocation) group by patient_id\n" +
                 "having min(f.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate))f\n" +
                 "on e.patient_id = f.patient_id;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("TX_Curr_Missing_in_previous_rtt_no_prev_hiv_enc");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Returned to Tx Present in current report but missing in previous report - had no previous hiv fup encounter");
         return cd;
     }
@@ -124,7 +130,7 @@ public class TXCurrLinelistCohortLibrary {
      * @return
      */
     public  CohortDefinition newlyOnARTMonthly() {
-        String sqlQuery="select e.patient_id from (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e group by e.patient_id having mid(max(concat(date(e.visit_date),e.patient_type)),11) = 164144)e\n" +
+        String sqlQuery="select e.patient_id from (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where e.location_id in (:defaultLocation)  group by e.patient_id having mid(max(concat(date(e.visit_date),e.patient_type)),11) = 164144)e\n" +
                 "                    inner join (select d.patient_id,min(d.date_started) as date_started from kenyaemr_etl.etl_drug_event d where d.program= 'HIV'\n" +
                 "                    group by d.patient_id)d on e.patient_id = d.patient_id\n" +
                 "              where\n" +
@@ -133,6 +139,7 @@ public class TXCurrLinelistCohortLibrary {
         cd.setName("newlyOnARTMonthly");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Newly on ART in the reporting month");
         return cd;
     }
@@ -143,12 +150,13 @@ public class TXCurrLinelistCohortLibrary {
     public  CohortDefinition discWithFutureEffectiveDate() {
         String sqlQuery="select patient_id from kenyaemr_etl.etl_patient_program_discontinuation\n" +
                 "                where program_name='HIV' and date(visit_date) <= date(:endDate)\n" +
-                "                  and date(effective_discontinuation_date) > date(:endDate)\n" +
+                "                  and date(effective_discontinuation_date) > date(:endDate) and location_id in (:defaultLocation)\n" +
                 "                group by patient_id;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("discInReportMonthWithFutureEffectiveDate");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Discontinued with a future effective discontinuation date");
         return cd;
     }
@@ -158,15 +166,16 @@ public class TXCurrLinelistCohortLibrary {
      */
     public  CohortDefinition discInReportMonthWithFutureReenrollment() {
         String sqlQuery="select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d\n" +
-                "left join (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where date(e.visit_date) > date(:endDate)) e on d.patient_id = e.patient_id\n" +
-                "where d.program_name='HIV' and date(d.visit_date) <= date(:endDate)\n" +
-                "  and date(effective_discontinuation_date) between date_sub(DATE(:endDate), interval 1 MONTH) and date(:endDate)\n" +
-                "and e.patient_id is not null\n" +
-                "group by patient_id;";
+                " left join (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where date(e.visit_date) > date(:endDate) and e.location_id in (:defaultLocation)) e on d.patient_id = e.patient_id \n" +
+                " where d.program_name='HIV' and date(d.visit_date) <= date(:endDate) and d.location_id in (:defaultLocation)\n" +
+                " and date(effective_discontinuation_date) between date_sub(DATE(:endDate), interval 1 MONTH) and date(:endDate)\n" +
+                " and e.patient_id is not null\n" +
+                " group by patient_id;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("discInReportMonthWithFutureReenrollment");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Discontinued within the month with a future re-enrollment");
         return cd;
     }
@@ -176,8 +185,8 @@ public class TXCurrLinelistCohortLibrary {
      */
     public  CohortDefinition discInReportQuarterWithFutureReenrollment() {
         String sqlQuery="select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d\n" +
-                "        left join (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where date(e.visit_date) > date(:endDate)) e on d.patient_id = e.patient_id\n" +
-                "        where d.program_name='HIV' and date(d.visit_date) <= date(:endDate)\n" +
+                "        left join (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where date(e.visit_date) > date(:endDate) and e.location_id in (:defaultLocation)) e on d.patient_id = e.patient_id\n" +
+                "        where d.program_name='HIV' and date(d.visit_date) <= date(:endDate) and d.location_id in (:defaultLocation)\n" +
                 "          and date(effective_discontinuation_date) between DATE_SUB(DATE_SUB(date(:endDate),INTERVAL DAYOFMONTH(date(:endDate))-1 DAY), interval 2 MONTH) and date(:endDate)\n" +
                 "        and e.patient_id is not null\n" +
                 "        group by patient_id;";
@@ -185,6 +194,7 @@ public class TXCurrLinelistCohortLibrary {
         cd.setName("discInReportQuarterWithFutureReenrollment");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Discontinued within the quarter with a future re-enrollment");
         return cd;
     }
@@ -194,8 +204,8 @@ public class TXCurrLinelistCohortLibrary {
      */
     public  CohortDefinition discInPastMonthWithFutureReenrollment() {
         String sqlQuery="select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d\n" +
-                "left join (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where date(e.visit_date) > date_sub(DATE(:endDate), interval 1 MONTH)) e on d.patient_id = e.patient_id\n" +
-                "where d.program_name='HIV' and date(d.visit_date) <= date(:endDate)\n" +
+                "left join (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where date(e.visit_date) > date_sub(DATE(:endDate), interval 1 MONTH) and e.location_id in (:defaultLocation)) e on d.patient_id = e.patient_id\n" +
+                "where d.program_name='HIV' and date(d.visit_date) <= date(:endDate) and d.location_id in (:defaultLocation) \n" +
                 "  and date(effective_discontinuation_date) between date_sub(DATE(:endDate), interval 2 MONTH) and date_sub(DATE(:endDate), interval 1 MONTH)\n" +
                 "and e.patient_id is not null\n" +
                 "group by patient_id;";
@@ -203,6 +213,7 @@ public class TXCurrLinelistCohortLibrary {
         cd.setName("discInPastMonthWithFutureReenrollment");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Discontinued within the past month with a future re-enrollment");
         return cd;
     }
@@ -212,8 +223,8 @@ public class TXCurrLinelistCohortLibrary {
      */
     public  CohortDefinition discInPastQuarterWithFutureReenrollment() {
         String sqlQuery="select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d\n" +
-                "left join (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where date(e.visit_date) > date_sub(DATE(:endDate), interval 3 MONTH)) e on d.patient_id = e.patient_id\n" +
-                "where d.program_name='HIV' and date(d.visit_date) <= date(:endDate)\n" +
+                "left join (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e where date(e.visit_date) > date_sub(DATE(:endDate), interval 3 MONTH) and e.location_id in (:defaultLocation)) e on d.patient_id = e.patient_id\n" +
+                "where d.program_name='HIV' and date(d.visit_date) <= date(:endDate) and d.location_id in (:defaultLocation)\n" +
                 "  and date(effective_discontinuation_date) between date_sub(DATE(:endDate), interval 6 MONTH) and date_sub(DATE(:endDate), interval 3 MONTH)\n" +
                 "and e.patient_id is not null\n" +
                 "group by patient_id;";
@@ -221,6 +232,7 @@ public class TXCurrLinelistCohortLibrary {
         cd.setName("discInPastQuarterWithFutureReenrollment");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Discontinued within the past quarter with a future re-enrollment");
         return cd;
     }
@@ -235,19 +247,19 @@ public class TXCurrLinelistCohortLibrary {
                 "  max(fup_prev_period.visit_date) as prev_period_latest_vis_date,\n" +
                 "  mid(max(concat(fup_prev_period.visit_date,fup_prev_period.next_appointment_date)),11) as prev_period_latest_tca,\n" +
                 "  max(d.visit_date) as date_discontinued,\n" +
-                "  d.patient_id as disc_patient,\n" +
+                "  d.patient_id as disc_patient,fup_prev_period.location_id as loc_id,\n" +
                 "  fup_reporting_period.first_visit_after_IIT as first_visit_after_IIT,\n" +
                 "  fup_reporting_period.first_tca_after_IIT as first_tca_after_IIT\n" +
                 "from kenyaemr_etl.etl_patient_hiv_followup fup_prev_period\n" +
-                "    join (select fup_reporting_period.patient_id,min(fup_reporting_period.visit_date) as first_visit_after_IIT,min(fup_reporting_period.next_appointment_date) as first_tca_after_IIT from kenyaemr_etl.etl_patient_hiv_followup fup_reporting_period where fup_reporting_period.visit_date >= date_sub(date(:endDate) , interval 1 MONTH) group by fup_reporting_period.patient_id)fup_reporting_period on fup_reporting_period.patient_id = fup_prev_period.patient_id\n" +
+                "    join (select fup_reporting_period.patient_id,min(fup_reporting_period.visit_date) as first_visit_after_IIT,min(fup_reporting_period.next_appointment_date) as first_tca_after_IIT from kenyaemr_etl.etl_patient_hiv_followup fup_reporting_period where fup_reporting_period.visit_date >= date_sub(date(:endDate) , interval 1 MONTH)  and location_id in (:defaultLocation) group by fup_reporting_period.patient_id)fup_reporting_period on fup_reporting_period.patient_id = fup_prev_period.patient_id\n" +
                 "    join kenyaemr_etl.etl_patient_demographics p on p.patient_id=fup_prev_period.patient_id\n" +
-                "    join kenyaemr_etl.etl_hiv_enrollment e on fup_prev_period.patient_id=e.patient_id\n" +
+                "    join kenyaemr_etl.etl_hiv_enrollment e on fup_prev_period.patient_id=e.patient_id and e.location_id = fup_prev_period.location_id\n" +
                 "    left outer JOIN\n" +
                 "(select patient_id, visit_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                " where date(visit_date) <= curdate()  and program_name='HIV'\n" +
+                " where date(visit_date) <= curdate()  and program_name='HIV' and location_id in (:defaultLocation)\n" +
                 " group by patient_id\n" +
                 ") d on d.patient_id = fup_prev_period.patient_id\n" +
-                "where fup_prev_period.visit_date < date_sub(date(:endDate) , interval 1 MONTH)\n" +
+                "where fup_prev_period.visit_date < date_sub(date(:endDate) , interval 1 MONTH) and fup_prev_period.location_id in (:defaultLocation) \n" +
                 "group by patient_id\n" +
                 "having (\n" +
                 "          (((date(prev_period_latest_tca) < date(:endDate)) and\n" +
@@ -256,11 +268,12 @@ public class TXCurrLinelistCohortLibrary {
                 "            date(fup_reporting_period.first_tca_after_IIT) > date(date_discontinued)) or\n" +
                 "           disc_patient is null)\n" +
                 "       and timestampdiff(day, date(prev_period_latest_tca),DATE_SUB(date(:endDate),INTERVAL 1 MONTH)) > 30)\n" +
-                ")e;";
+                ") e where loc_id in (:defaultLocation) ;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("iit_previous_reporting_month");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Experienced IIT Previous reporting month");
         return cd;
     }
@@ -269,7 +282,7 @@ public class TXCurrLinelistCohortLibrary {
      * @return
      */
     public  CohortDefinition newlyARTReportingQuarter() {
-        String sqlQuery="select e.patient_id from (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e group by e.patient_id having mid(max(concat(date(e.visit_date),e.patient_type)),11) = 164144)e\n" +
+        String sqlQuery="select e.patient_id from (select e.patient_id from kenyaemr_etl.etl_hiv_enrollment e  where e.location_id in (:defaultLocation)  group by e.patient_id having mid(max(concat(date(e.visit_date),e.patient_type)),11) = 164144)e\n" +
                 "              inner join (select d.patient_id,min(d.date_started) as date_started from kenyaemr_etl.etl_drug_event d where d.program= 'HIV'\n" +
                 "                       group by d.patient_id)d on e.patient_id = d.patient_id\n" +
                 "              where\n" +
@@ -278,6 +291,7 @@ public class TXCurrLinelistCohortLibrary {
         cd.setName("newlyARTReportingQuarter");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Patients newly on ART in the reporting quarter");
         return cd;
     }
@@ -289,8 +303,9 @@ public class TXCurrLinelistCohortLibrary {
     public CohortDefinition txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthlyNewlyEnrolled() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly(), "endDate=${endDate}"));
-        cd.addSearch("newlyOnARTMonthly", ReportUtils.map(newlyOnARTMonthly(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("newlyOnARTMonthly", ReportUtils.map(newlyOnARTMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly AND newlyOnARTMonthly)");
         return cd;
 
@@ -301,8 +316,9 @@ public class TXCurrLinelistCohortLibrary {
     public CohortDefinition txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthlyTrfIn() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly(), "endDate=${endDate}"));
-        cd.addSearch("transferInReportingMonth", ReportUtils.map(transferInReportingMonth(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("transferInReportingMonth", ReportUtils.map(transferInReportingMonth(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly AND transferInReportingMonth");
         return cd;
 
@@ -313,16 +329,17 @@ public class TXCurrLinelistCohortLibrary {
     public CohortDefinition txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthlyReEnrollment() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly(), "endDate=${endDate}"));
-        cd.addSearch("reEnrollmentToHIVReportingMonth", ReportUtils.map(reEnrollmentToHIVReportingMonth(), "endDate=${endDate}"));
-        cd.addSearch("experiencedIITPreviousReportingMonth", ReportUtils.map(experiencedIITPreviousReportingMonth(), "endDate=${endDate}"));
-        cd.addSearch("noPrevHIVFUPEncMonthly", ReportUtils.map(noPrevHIVFUPEncMonthly(), "endDate=${endDate}"));
-        cd.addSearch("transferInReportingMonth", ReportUtils.map(transferInReportingMonth(), "endDate=${endDate}"));
-        cd.addSearch("discWithFutureEffectiveDate", ReportUtils.map(discWithFutureEffectiveDate(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("reEnrollmentToHIVReportingMonth", ReportUtils.map(reEnrollmentToHIVReportingMonth(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("experiencedIITPreviousReportingMonth", ReportUtils.map(experiencedIITPreviousReportingMonth(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("noPrevHIVFUPEncMonthly", ReportUtils.map(noPrevHIVFUPEncMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("transferInReportingMonth", ReportUtils.map(transferInReportingMonth(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("discWithFutureEffectiveDate", ReportUtils.map(discWithFutureEffectiveDate(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly AND (reEnrollmentToHIVReportingMonth OR experiencedIITPreviousReportingMonth OR noPrevHIVFUPEncMonthly OR discWithFutureEffectiveDate) AND NOT transferInReportingMonth");
         return cd;
     }
-     /**
+    /**
      * Patients included in the current report- quarter
      * @return
      */
@@ -336,17 +353,17 @@ public class TXCurrLinelistCohortLibrary {
                 "                         d.patient_id as disc_patient,\n" +
                 "                         d.effective_disc_date as effective_disc_date,\n" +
                 "                         max(d.visit_date) as date_discontinued,\n" +
-                "                         de.patient_id as started_on_drugs\n" +
+                "                         de.patient_id as started_on_drugs, fup.location_id as loc_id\n" +
                 "                  from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 "                         join kenyaemr_etl.etl_patient_demographics p on p.patient_id=fup.patient_id\n" +
-                "                         join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id\n" +
+                "                         join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id and e.location_id = fup.location_id\n" +
                 "                         left outer join kenyaemr_etl.etl_drug_event de on e.patient_id = de.patient_id and de.program='HIV' and date(date_started) <= date(:endDate)\n" +
                 "                         left outer JOIN\n" +
                 "                           (select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "                            where date(visit_date) <= date(:endDate) and program_name='HIV'\n" +
+                "                            where date(visit_date) <= date(:endDate) and program_name='HIV' and location_id in (:defaultLocation)\n" +
                 "                            group by patient_id\n" +
                 "                           ) d on d.patient_id = fup.patient_id\n" +
-                "                  where fup.visit_date <= date(:endDate)\n" +
+                "                  where fup.visit_date <= date(:endDate) and fup.location_id in (:defaultLocation)\n" +
                 "                  group by patient_id\n" +
                 "                  having (started_on_drugs is not null and started_on_drugs <> '') and (\n" +
                 "                      (\n" +
@@ -354,11 +371,12 @@ public class TXCurrLinelistCohortLibrary {
                 "                            and (date(latest_vis_date) >= date(date_discontinued) or date(latest_tca) >= date(date_discontinued) or disc_patient is null)\n" +
                 "                          )\n" +
                 "                      )\n" +
-                "                  ) t;";
+                "                  ) t where loc_id in (:defaultLocation) ;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("TX_Curr_current_report");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("TX Curr current quarter");
         return cd;
     }
@@ -373,7 +391,7 @@ public class TXCurrLinelistCohortLibrary {
                 "               greatest(max(e.visit_date), ifnull(max(date(e.transfer_in_date)),'0000-00-00')) as latest_enrolment_date,\n" +
                 "               greatest(max(fup.visit_date), ifnull(max(d.visit_date),'0000-00-00')) as latest_vis_date,\n" +
                 "               greatest(mid(max(concat(fup.visit_date,fup.next_appointment_date)),11), ifnull(max(d.visit_date),'0000-00-00')) as latest_tca,\n" +
-                "               d.patient_id as disc_patient,\n" +
+                "               d.patient_id as disc_patient,fup.location_id as loc_id,\n" +
                 "               d.effective_disc_date as effective_disc_date,\n" +
                 "               max(d.visit_date) as date_discontinued,\n" +
                 "               de.patient_id as started_on_drugs\n" +
@@ -383,10 +401,10 @@ public class TXCurrLinelistCohortLibrary {
                 "                 left outer join kenyaemr_etl.etl_drug_event de on e.patient_id = de.patient_id and de.program='HIV' and date(date_started) <= date_sub(DATE(:endDate), interval 3 MONTH)\n" +
                 "                 left outer JOIN\n" +
                 "             (select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "              where date(visit_date) <= date_sub(DATE(:endDate), interval 3 MONTH) and program_name='HIV'\n" +
+                "              where date(visit_date) <= date_sub(DATE(:endDate), interval 3 MONTH) and program_name='HIV' and location_id in (:defaultLocation)\n" +
                 "              group by patient_id\n" +
                 "             ) d on d.patient_id = fup.patient_id\n" +
-                "        where fup.visit_date <= date_sub(DATE(:endDate), interval 3 MONTH)\n" +
+                "        where fup.visit_date <= date_sub(DATE(:endDate), interval 3 MONTH) and fup.location_id in (:defaultLocation)\n" +
                 "        group by patient_id\n" +
                 "        having (started_on_drugs is not null and started_on_drugs <> '') and (\n" +
                 "            (\n" +
@@ -394,11 +412,12 @@ public class TXCurrLinelistCohortLibrary {
                 "                    and (date(latest_vis_date) >= date(date_discontinued) or date(latest_tca) >= date(date_discontinued) or disc_patient is null)\n" +
                 "                )\n" +
                 "            )\n" +
-                "    ) t;";
+                "    ) t where loc_id in (:defaultLocation) ;";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("TX_Curr_previous_report");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("TX Curr previous quarter");
         return cd;
     }
@@ -409,8 +428,9 @@ public class TXCurrLinelistCohortLibrary {
     public CohortDefinition txCurLinelistForPatientsPresentInCurrentReport() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistCurrentQuarter", ReportUtils.map(txCurLinelistCurrentQuarter(), "endDate=${endDate}"));
-        cd.addSearch("discInReportQuarterWithFutureReenrollment", ReportUtils.map(discInReportQuarterWithFutureReenrollment(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistCurrentQuarter", ReportUtils.map(txCurLinelistCurrentQuarter(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("discInReportQuarterWithFutureReenrollment", ReportUtils.map(discInReportQuarterWithFutureReenrollment(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistCurrentQuarter AND NOT discInReportQuarterWithFutureReenrollment");
         return cd;
     }
@@ -420,8 +440,9 @@ public class TXCurrLinelistCohortLibrary {
     public CohortDefinition txCurLinelistForPatientsPresentInPreviousReport() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurInPreviousQuarter", ReportUtils.map(txCurInPreviousQuarter(), "endDate=${endDate}"));
-        cd.addSearch("discInPastQuarterWithFutureReenrollment", ReportUtils.map(discInPastQuarterWithFutureReenrollment(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurInPreviousQuarter", ReportUtils.map(txCurInPreviousQuarter(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("discInPastQuarterWithFutureReenrollment", ReportUtils.map(discInPastQuarterWithFutureReenrollment(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurInPreviousQuarter AND NOT discInPastQuarterWithFutureReenrollment");
         return cd;
     }
@@ -431,8 +452,9 @@ public class TXCurrLinelistCohortLibrary {
     public CohortDefinition txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInCurrentReport", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentReport(), "endDate=${endDate}"));
-        cd.addSearch("txCurLinelistForPatientsPresentInPreviousReport", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousReport(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInCurrentReport", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentReport(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("txCurLinelistForPatientsPresentInPreviousReport", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousReport(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInCurrentReport AND NOT txCurLinelistForPatientsPresentInPreviousReport");
         return cd;
     }
@@ -443,9 +465,10 @@ public class TXCurrLinelistCohortLibrary {
     public CohortDefinition txCurLinelistForPatientsPresentInCurrentButMissingInPreviousQuarterlyNewlyEnrolledReport() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport(), "endDate=${endDate}"));
-        cd.addSearch("newlyARTReportingQuarter", ReportUtils.map(newlyARTReportingQuarter(), "endDate=${endDate}"));
-        cd.addSearch("transferInReportingQuarter", ReportUtils.map(transferInReportingQuarter(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("newlyARTReportingQuarter", ReportUtils.map(newlyARTReportingQuarter(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("transferInReportingQuarter", ReportUtils.map(transferInReportingQuarter(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport AND (newlyARTReportingQuarter AND NOT transferInReportingQuarter)");
         return cd;
     }
@@ -455,8 +478,9 @@ public class TXCurrLinelistCohortLibrary {
     public CohortDefinition txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportTrfIn() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport(), "endDate=${endDate}"));
-        cd.addSearch("transferInReportingQuarter", ReportUtils.map(transferInReportingQuarter(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("transferInReportingQuarter", ReportUtils.map(transferInReportingQuarter(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport AND transferInReportingQuarter");
         return cd;
     }
@@ -466,37 +490,40 @@ public class TXCurrLinelistCohortLibrary {
     public CohortDefinition txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportReEnrollment() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport(), "endDate=${endDate}"));
-        cd.addSearch("reEnrollmentToHIVReportingQuarter", ReportUtils.map(reEnrollmentToHIVReportingQuarter(), "endDate=${endDate}"));
-        cd.addSearch("noPrevHIVFUPEncQuarterly", ReportUtils.map(noPrevHIVFUPEncQuarterly(), "endDate=${endDate}"));
-        cd.addSearch("experiencedIITPreviousReportingPeriod", ReportUtils.map(datimCohortLibrary.experiencedIITPreviousReportingPeriod(), "endDate=${endDate}"));
-        cd.addSearch("transferInReportingQuarter", ReportUtils.map(transferInReportingQuarter(), "endDate=${endDate}"));
-        cd.addSearch("discWithFutureEffectiveDate", ReportUtils.map(discWithFutureEffectiveDate(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("reEnrollmentToHIVReportingQuarter", ReportUtils.map(reEnrollmentToHIVReportingQuarter(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("noPrevHIVFUPEncQuarterly", ReportUtils.map(noPrevHIVFUPEncQuarterly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("experiencedIITPreviousReportingPeriod", ReportUtils.map(datimCohortLibrary.experiencedIITPreviousReportingPeriod(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("transferInReportingQuarter", ReportUtils.map(transferInReportingQuarter(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("discWithFutureEffectiveDate", ReportUtils.map(discWithFutureEffectiveDate(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReport AND (reEnrollmentToHIVReportingQuarter OR experiencedIITPreviousReportingPeriod OR noPrevHIVFUPEncQuarterly OR discWithFutureEffectiveDate) AND NOT transferInReportingQuarter");
         return cd;
     }
-/**
- * Patients present in previous period but missing in current period due to death
- */
-public CohortDefinition patientsDied() {
-    String sqlQuery = "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.program_name = 'HIV' and d.discontinuation_reason = 160034 and d.visit_date <= date(:endDate);";
-    SqlCohortDefinition cd = new SqlCohortDefinition();
-    cd.setName("patientsDied");
-    cd.setQuery(sqlQuery);
-    cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-    cd.setDescription("Patients present in previous period but missing in current period due to death");
-    return cd;
-}
+    /**
+     * Patients present in previous period but missing in current period due to death
+     */
+    public CohortDefinition patientsDied() {
+        String sqlQuery = "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.program_name = 'HIV' and d.discontinuation_reason = 160034 and d.visit_date <= date(:endDate)  and d.location_id in (:defaultLocation);";
+        SqlCohortDefinition cd = new SqlCohortDefinition();
+        cd.setName("patientsDied");
+        cd.setQuery(sqlQuery);
+        cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.setDescription("Patients present in previous period but missing in current period due to death");
+        return cd;
+    }
     /**
      * Patients present in previous period but missing in current period due to Transferring out
      */
     public CohortDefinition patientsTrfOut() {
         String sqlQuery = "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.program_name = 'HIV' and d.discontinuation_reason = 159492\n" +
-                "                    and coalesce(effective_discontinuation_date,d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate);";
+                "                    and coalesce(effective_discontinuation_date,d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate) and d.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("patientsTrfOut");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Patients present in previous period but missing in current period due to Transferring out");
         return cd;
     }
@@ -505,11 +532,12 @@ public CohortDefinition patientsDied() {
      */
     public CohortDefinition patientsTrfOutQuarter() {
         String sqlQuery = "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.program_name = 'HIV' and d.discontinuation_reason = 159492\n" +
-                "                    and coalesce(effective_discontinuation_date,d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate);";
+                "                    and coalesce(effective_discontinuation_date,d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate) and d.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("patientsTrfOutQuarter");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Patients present in previous period but missing in current period due to Transferring out within the quarter");
         return cd;
     }
@@ -517,13 +545,14 @@ public CohortDefinition patientsDied() {
      * Patients present in previous period but missing in current period due to stopping treatment
      */
     public CohortDefinition patientStoppedTxWithinMonth() {
-        String sqlQuery = "select dt.patient_id from kenyaemr_etl.etl_ccc_defaulter_tracing dt where dt.is_final_trace =1267 and dt.true_status =164435 and date(dt.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate)\n" +
+        String sqlQuery = "select dt.patient_id from kenyaemr_etl.etl_ccc_defaulter_tracing dt where dt.is_final_trace =1267 and dt.true_status =164435 and date(dt.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate) and dt.location_id in (:defaultLocation)\n" +
                 "union\n" +
-                "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.discontinuation_reason =164349 and date(d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate);";
+                "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.discontinuation_reason =164349 and date(d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 1 MONTH) and date(:endDate) and d.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("patientStoppedTxWithinMonth");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Patients present in previous period but missing in current period due to stopping treatment");
         return cd;
     }
@@ -531,13 +560,14 @@ public CohortDefinition patientsDied() {
      * Patients present in previous period but missing in current period due to stopping treatment
      */
     public CohortDefinition patientStoppedTxWithinQuarter() {
-        String sqlQuery = "select dt.patient_id from kenyaemr_etl.etl_ccc_defaulter_tracing dt where dt.is_final_trace =1267 and dt.true_status =164435 and date(dt.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate)\n" +
+        String sqlQuery = "select dt.patient_id from kenyaemr_etl.etl_ccc_defaulter_tracing dt where dt.is_final_trace =1267 and dt.true_status =164435 and date(dt.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate) and dt.location_id in (:defaultLocation)\n" +
                 "union\n" +
-                "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.discontinuation_reason =164435 and date(d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate);";
+                "select d.patient_id from kenyaemr_etl.etl_patient_program_discontinuation d where d.discontinuation_reason =164435 and date(d.visit_date) between DATE_SUB(date(:endDate),INTERVAL 3 MONTH) and date(:endDate) and d.location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("patientStoppedTxWithinQuarter");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Patients present in previous period but missing in current period due to stopping treatment");
         return cd;
     }
@@ -562,37 +592,38 @@ public CohortDefinition patientsDied() {
                 "            d.patient_id                                                    as disc_patient,\n" +
                 "            d.effective_disc_date                                           as effective_disc_date,\n" +
                 "            d.visit_date                                                    as date_discontinued,\n" +
-                "            d.discontinuation_reason,\n" +
+                "            d.discontinuation_reason, fup.location_id as loc_id,\n" +
                 "            de.patient_id                                                   as started_on_drugs\n" +
                 "     from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 "              join kenyaemr_etl.etl_patient_demographics p on p.patient_id = fup.patient_id\n" +
-                "              join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id = e.patient_id\n" +
+                "              join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id = e.patient_id and e.location_id = fup.location_id\n" +
                 "              left outer join kenyaemr_etl.etl_drug_event de\n" +
                 "                              on e.patient_id = de.patient_id and de.program = 'HIV' and\n" +
                 "                                 date(date_started) <= date(curdate())\n" +
                 "              left outer JOIN\n" +
                 "          (select patient_id,\n" +
                 "                  coalesce(max(date(effective_discontinuation_date)), max(date(visit_date))) as visit_date,\n" +
-                "                  max(date(effective_discontinuation_date))                                  as effective_disc_date,\n" +
+                "                  max(date(effective_discontinuation_date)) as effective_disc_date,\n" +
                 "                  discontinuation_reason\n" +
                 "           from kenyaemr_etl.etl_patient_program_discontinuation\n" +
                 "           where date(visit_date) <= date(:endDate)\n" +
-                "             and program_name = 'HIV'\n" +
+                "             and program_name = 'HIV' and location_id in (:defaultLocation)\n" +
                 "           group by patient_id\n" +
                 "          ) d on d.patient_id = fup.patient_id\n" +
-                "     where fup.visit_date <= date(:endDate)\n" +
+                "     where fup.visit_date <= date(:endDate)  and fup.location_id in (:defaultLocation)\n" +
                 "     group by patient_id\n" +
                 "     having (\n" +
                 "                             date(max_fup_vis_date) <= date(d.effective_disc_date) and\n" +
                 "                             date(latest_fup_tca) < date(d.effective_disc_date)\n" +
                 "                            and d.discontinuation_reason = 5240\n" +
                 "                )\n" +
-                " ) t;";
+                "  ) t where loc_id in (:defaultLocation) ;";
 
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("patientsLTFU");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Patients present in previous period but missing in current period - LTFU");
         return cd;
     }
@@ -618,11 +649,11 @@ public CohortDefinition patientsDied() {
                 "                d.patient_id                                                    as disc_patient,\n" +
                 "                d.effective_disc_date                                           as effective_disc_date,\n" +
                 "                d.visit_date                                                    as date_discontinued,\n" +
-                "                d.discontinuation_reason,\n" +
+                "                d.discontinuation_reason, fup.location_id as loc_id,\n" +
                 "                de.patient_id                                                   as started_on_drugs\n" +
                 "         from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 "                  join kenyaemr_etl.etl_patient_demographics p on p.patient_id = fup.patient_id\n" +
-                "                  join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id = e.patient_id\n" +
+                "                  join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id = e.patient_id and e.location_id = fup.location_id\n" +
                 "                  left outer join kenyaemr_etl.etl_drug_event de\n" +
                 "                                  on e.patient_id = de.patient_id and de.program = 'HIV' and\n" +
                 "                                     date(date_started) <= date(curdate())\n" +
@@ -633,10 +664,10 @@ public CohortDefinition patientsDied() {
                 "                      discontinuation_reason\n" +
                 "               from kenyaemr_etl.etl_patient_program_discontinuation\n" +
                 "               where date(visit_date) <= date(:endDate)\n" +
-                "                 and program_name = 'HIV'\n" +
+                "                 and program_name = 'HIV' and location_id in (:defaultLocation)\n" +
                 "               group by patient_id\n" +
                 "              ) d on d.patient_id = fup.patient_id\n" +
-                "         where fup.visit_date <= date(:endDate)\n" +
+                "         where fup.visit_date <= date(:endDate) and fup.location_id in (:defaultLocation)\n" +
                 "         group by patient_id\n" +
                 "         having (\n" +
                 "\n" +
@@ -648,12 +679,13 @@ public CohortDefinition patientsDied() {
                 "                                or disc_patient is null\n" +
                 "                                or (d.discontinuation_reason not in (159492,160034,5240,819,164349) or d.discontinuation_reason is null))\n" +
                 "                    )\n" +
-                "     ) t;";
+                "     ) t where loc_id in (:defaultLocation) ;";
 
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("patientsUndocumentedLTFU");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Patients undocumented LTFU");
         return cd;
     }
@@ -664,8 +696,9 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInCurrentReport", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentReport(), "endDate=${endDate}"));
-        cd.addSearch("txCurLinelistForPatientsPresentInPreviousReport", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousReport(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInCurrentReport", ReportUtils.map(txCurLinelistForPatientsPresentInCurrentReport(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("txCurLinelistForPatientsPresentInPreviousReport", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousReport(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInPreviousReport AND NOT txCurLinelistForPatientsPresentInCurrentReport");
         return cd;
     }
@@ -677,8 +710,9 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistForPatientsPresentInPreviousButMissingInCurrentDueToDeathReport() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport(), "endDate=${endDate}"));
-        cd.addSearch("patientsDied", ReportUtils.map(patientsDied(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientsDied", ReportUtils.map(patientsDied(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport AND patientsDied");
         return cd;
     }
@@ -689,10 +723,11 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistForPatientsPresentInPreviousButMissingInCurrentLTFUReport() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport(), "endDate=${endDate}"));
-        cd.addSearch("patientsLTFU", ReportUtils.map(patientsLTFU(), "endDate=${endDate}"));
-        cd.addSearch("patientsUndocumentedLTFU", ReportUtils.map(patientsUndocumentedLTFU(), "endDate=${endDate}"));
-        cd.addSearch("patientsTrfOutQuarter", ReportUtils.map(patientsTrfOutQuarter(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientsLTFU", ReportUtils.map(patientsLTFU(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientsUndocumentedLTFU", ReportUtils.map(patientsUndocumentedLTFU(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientsTrfOutQuarter", ReportUtils.map(patientsTrfOutQuarter(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport AND ((patientsLTFU OR patientsUndocumentedLTFU) AND NOT patientsTrfOutQuarter)");
         return cd;
     }
@@ -703,8 +738,9 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistForPatientsPresentInPreviousButMissingInCurrentTrfOutReport() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport(), "endDate=${endDate}"));
-        cd.addSearch("patientsTrfOutQuarter", ReportUtils.map(patientsTrfOutQuarter(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientsTrfOutQuarter", ReportUtils.map(patientsTrfOutQuarter(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport AND patientsTrfOutQuarter");
         return cd;
     }
@@ -715,8 +751,9 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportStoppedTxQuarterly() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport(), "endDate=${endDate}"));
-        cd.addSearch("patientStoppedTxPrevQuarter", ReportUtils.map(patientStoppedTxWithinQuarter(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientStoppedTxPrevQuarter", ReportUtils.map(patientStoppedTxWithinQuarter(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReport AND patientStoppedTxPrevQuarter");
         return cd;
     }
@@ -727,7 +764,7 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistCurrentMonthly() {
         String sqlQuery="select t.patient_id\n" +
                 "from(\n" +
-                "        select fup.visit_date,fup.patient_id, max(e.visit_date) as enroll_date,\n" +
+                "        select fup.visit_date,fup.patient_id, max(e.visit_date) as enroll_date,fup.location_id as parent_location_id,\n" +
                 "               greatest(max(e.visit_date), ifnull(max(date(e.transfer_in_date)),'0000-00-00')) as latest_enrolment_date,\n" +
                 "               greatest(max(fup.visit_date), ifnull(max(d.visit_date),'0000-00-00')) as latest_vis_date,\n" +
                 "               greatest(mid(max(concat(fup.visit_date,fup.next_appointment_date)),11), ifnull(max(d.visit_date),'0000-00-00')) as latest_tca,\n" +
@@ -737,14 +774,14 @@ public CohortDefinition patientsDied() {
                 "               de.patient_id as started_on_drugs\n" +
                 "        from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 "                 join kenyaemr_etl.etl_patient_demographics p on p.patient_id=fup.patient_id\n" +
-                "                 join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id\n" +
+                "                 join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id and e.location_id = fup.location_id\n" +
                 "                 left outer join kenyaemr_etl.etl_drug_event de on e.patient_id = de.patient_id and de.program='HIV' and date(date_started) <= date(:endDate)\n" +
                 "                 left outer JOIN\n" +
                 "             (select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "              where date(visit_date) <= date(:endDate) and program_name='HIV' and patient_id\n" +
+                "              where date(visit_date) <= date(:endDate) and program_name='HIV' and location_id in (:defaultLocation)\n" +
                 "              group by patient_id\n" +
                 "             ) d on d.patient_id = fup.patient_id\n" +
-                "        where fup.visit_date <= date(:endDate)\n" +
+                "        where fup.visit_date <= date(:endDate) and fup.location_id in ( :defaultLocation ) \n" +
                 "        group by patient_id\n" +
                 "        having (started_on_drugs is not null and started_on_drugs <> '')\n" +
                 "           and\n" +
@@ -754,11 +791,12 @@ public CohortDefinition patientsDied() {
                 "                    and\n" +
                 "                    (date(latest_vis_date) >= date(date_discontinued) or date(latest_tca) >= date(date_discontinued) or disc_patient is null)\n" +
                 "                )\n" +
-                "    )t;";
+                "    ) t where t.parent_location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("txCurLinelistCurrentReportMonthly");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Present in current report");
         return cd;
     }
@@ -769,7 +807,7 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurPrevReportMonthly() {
         String sqlQuery="select t.patient_id\n" +
                 "from(\n" +
-                "        select fup.visit_date,fup.patient_id, max(e.visit_date) as enroll_date,\n" +
+                "        select fup.visit_date,fup.patient_id, max(e.visit_date) as enroll_date,fup.location_id as parent_location_id,\n" +
                 "               greatest(max(e.visit_date), ifnull(max(date(e.transfer_in_date)),'0000-00-00')) as latest_enrolment_date,\n" +
                 "               greatest(max(fup.visit_date), ifnull(max(d.visit_date),'0000-00-00')) as latest_vis_date,\n" +
                 "               greatest(mid(max(concat(fup.visit_date,fup.next_appointment_date)),11), ifnull(max(d.visit_date),'0000-00-00')) as latest_tca,\n" +
@@ -779,14 +817,14 @@ public CohortDefinition patientsDied() {
                 "               de.patient_id as started_on_drugs\n" +
                 "        from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 "                 join kenyaemr_etl.etl_patient_demographics p on p.patient_id=fup.patient_id\n" +
-                "                 join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id\n" +
+                "                 join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id and e.location_id = fup.location_id\n" +
                 "                 left outer join kenyaemr_etl.etl_drug_event de on e.patient_id = de.patient_id and de.program='HIV' and date(date_started) <= date_sub(DATE(:endDate), interval 1 MONTH)\n" +
                 "                 left outer JOIN\n" +
                 "             (select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-                "              where date(visit_date) <= date_sub(DATE(:endDate), interval 1 MONTH) and program_name='HIV' and patient_id\n" +
+                "              where date(visit_date) <= date_sub(DATE(:endDate), interval 1 MONTH) and program_name='HIV' and location_id in (:defaultLocation)\n" +
                 "              group by patient_id\n" +
                 "             ) d on d.patient_id = fup.patient_id\n" +
-                "        where fup.visit_date <= date_sub(DATE(:endDate), interval 1 MONTH)\n" +
+                "        where fup.visit_date <= date_sub(DATE(:endDate), interval 1 MONTH) and fup.location_id in  ( :defaultLocation ) \n" +
                 "        group by patient_id\n" +
                 "        having (started_on_drugs is not null and started_on_drugs <> '')\n" +
                 "           and\n" +
@@ -796,11 +834,12 @@ public CohortDefinition patientsDied() {
                 "                    and\n" +
                 "                    (date(latest_vis_date) >= date(date_discontinued) or date(latest_tca) >= date(date_discontinued) or disc_patient is null)\n" +
                 "                )\n" +
-                "    )t;";
+                "     ) t where  t.parent_location_id in (:defaultLocation);";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("TX_Curr_Missing_in_previous");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         cd.setDescription("Present in previous report");
         return cd;
     }
@@ -811,8 +850,9 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistMonthly() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistCurrentMonthly", ReportUtils.map(txCurLinelistCurrentMonthly(), "endDate=${endDate}"));
-        cd.addSearch("discInReportMonthWithFutureReenrollment", ReportUtils.map(discInReportMonthWithFutureReenrollment(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistCurrentMonthly", ReportUtils.map(txCurLinelistCurrentMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("discInReportMonthWithFutureReenrollment", ReportUtils.map(discInReportMonthWithFutureReenrollment(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistCurrentMonthly AND NOT discInReportMonthWithFutureReenrollment");
         return cd;
     }
@@ -824,8 +864,9 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistMonthlyPrev() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurPrevReportMonthly", ReportUtils.map(txCurPrevReportMonthly(), "endDate=${endDate}"));
-        cd.addSearch("discInPastMonthWithFutureReenrollment", ReportUtils.map(discInPastMonthWithFutureReenrollment(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurPrevReportMonthly", ReportUtils.map(txCurPrevReportMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("discInPastMonthWithFutureReenrollment", ReportUtils.map(discInPastMonthWithFutureReenrollment(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurPrevReportMonthly AND NOT discInPastMonthWithFutureReenrollment");
         return cd;
     }
@@ -836,8 +877,9 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistForPatientsPresentInCurrentButMissingInPreviousReportMonthly() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistMonthly", ReportUtils.map(txCurLinelistMonthly(), "endDate=${endDate}"));
-        cd.addSearch("txCurLinelistMonthlyPrev", ReportUtils.map(txCurLinelistMonthlyPrev(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistMonthly", ReportUtils.map(txCurLinelistMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("txCurLinelistMonthlyPrev", ReportUtils.map(txCurLinelistMonthlyPrev(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistMonthly AND NOT txCurLinelistMonthlyPrev");
         return cd;
     }
@@ -849,8 +891,9 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistMonthlyPrev", ReportUtils.map(txCurLinelistMonthlyPrev(), "endDate=${endDate}"));
-        cd.addSearch("txCurLinelistMonthly", ReportUtils.map(txCurLinelistMonthly(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistMonthlyPrev", ReportUtils.map(txCurLinelistMonthlyPrev(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("txCurLinelistMonthly", ReportUtils.map(txCurLinelistMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistMonthlyPrev AND NOT txCurLinelistMonthly");
         return cd;
     }
@@ -862,8 +905,9 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportDueToDeathMonthly() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly(), "endDate=${endDate}"));
-        cd.addSearch("patientsDied", ReportUtils.map(patientsDied(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientsDied", ReportUtils.map(patientsDied(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly AND patientsDied");
         return cd;
     }
@@ -874,9 +918,10 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportDueToLTFUMonthly() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly(), "endDate=${endDate}"));
-        cd.addSearch("patientsLTFU", ReportUtils.map(patientsLTFU(), "endDate=${endDate}"));
-        cd.addSearch("patientsUndocumentedLTFU", ReportUtils.map(patientsUndocumentedLTFU(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientsLTFU", ReportUtils.map(patientsLTFU(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientsUndocumentedLTFU", ReportUtils.map(patientsUndocumentedLTFU(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly AND (patientsLTFU OR patientsUndocumentedLTFU)");
         return cd;
     }
@@ -887,10 +932,11 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportDueToTrfOutMonthly() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly(), "endDate=${endDate}"));
-        cd.addSearch("patientsTrfOut", ReportUtils.map(patientsTrfOut(), "endDate=${endDate}"));
-        cd.addSearch("patientsLTFU", ReportUtils.map(patientsLTFU(), "endDate=${endDate}"));
-        cd.addSearch("patientsUndocumentedLTFU", ReportUtils.map(patientsUndocumentedLTFU(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientsTrfOut", ReportUtils.map(patientsTrfOut(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientsLTFU", ReportUtils.map(patientsLTFU(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientsUndocumentedLTFU", ReportUtils.map(patientsUndocumentedLTFU(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly AND patientsTrfOut AND NOT (patientsLTFU OR patientsUndocumentedLTFU)");
         return cd;
     }
@@ -901,8 +947,9 @@ public CohortDefinition patientsDied() {
     public  CohortDefinition txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportStoppedTxMonthly() {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly(), "endDate=${endDate}"));
-        cd.addSearch("patientStoppedTxPrevMonth", ReportUtils.map(patientStoppedTxWithinMonth(), "endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
+        cd.addSearch("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly", ReportUtils.map(txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("patientStoppedTxPrevMonth", ReportUtils.map(patientStoppedTxWithinMonth(), "endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("txCurLinelistForPatientsPresentInPreviousButMissingInCurrentReportMonthly AND patientStoppedTxPrevMonth");
         return cd;
     }
