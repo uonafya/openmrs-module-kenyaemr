@@ -73,6 +73,7 @@ public class SGBVRegisterReportBuilder extends AbstractReportBuilder {
         return Arrays.asList(
         new Parameter("startDate", "Start Date", Date.class),
         new Parameter("endDate", "End Date", Date.class),
+        new Parameter("defaultLocation", "Facility", String.class),
         new Parameter("dateBasedReporting", "", String.class)
         );
     }
@@ -80,7 +81,7 @@ public class SGBVRegisterReportBuilder extends AbstractReportBuilder {
     @Override
     protected List<Mapped<DataSetDefinition>> buildDataSets(ReportDescriptor reportDescriptor, ReportDefinition reportDefinition) {
         return Arrays.asList(
-        ReportUtils.map(datasetColumns(), "startDate=${startDate},endDate=${endDate}")
+        ReportUtils.map(datasetColumns(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -91,6 +92,7 @@ public class SGBVRegisterReportBuilder extends AbstractReportBuilder {
         dsd.addSortCriteria("Visit Date", SortCriteria.SortDirection.ASC);
         dsd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         dsd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        dsd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
         DataConverter identifierFormatter = new ObjectFormatter("{identifier}");
 
         PatientIdentifierType upn = MetadataUtils.existing(PatientIdentifierType.class, HivMetadata._PatientIdentifierType.UNIQUE_PATIENT_NUMBER);
@@ -99,7 +101,7 @@ public class SGBVRegisterReportBuilder extends AbstractReportBuilder {
         PatientIdentifierType clinic_no = MetadataUtils.existing(PatientIdentifierType.class, CommonMetadata._PatientIdentifierType.PATIENT_CLINIC_NUMBER);
         DataDefinition identifierClinicNo = new ConvertedPatientDataDefinition("identifier", new PatientIdentifierDataDefinition(upn.getName(), upn), identifierFormatter);
 
-        String paramMapping = "startDate=${startDate},endDate=${endDate}";
+        String paramMapping = "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}";
 
         ActiveInOvcDataDefinition activeInOvcDataDefinition = new ActiveInOvcDataDefinition();
         activeInOvcDataDefinition.addParameter(new Parameter("endDate", "End Date", Date.class));
@@ -138,6 +140,7 @@ public class SGBVRegisterReportBuilder extends AbstractReportBuilder {
         SGBVRegisterCohortDefinition cd = new SGBVRegisterCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", String.class));
 
         dsd.addRowFilter(cd, paramMapping);
 
