@@ -43,12 +43,13 @@ public class ETLMoh731GreenCardCohortLibrary {
         String sqlQuery = "select e.patient_id\n" +
                 "from kenyaemr_etl.etl_hiv_enrollment e\n" +
                 "         join kenyaemr_etl.etl_patient_demographics p on p.patient_id = e.patient_id\n" +
-                "where date(e.visit_date) between date(:startDate) and date(:endDate)\n" +
+                "where date(e.visit_date) between date(:startDate) and date(:endDate) AND e.location_id=:defaultLocation" +
                 "  and (e.patient_type = 164144 or (e.patient_type is null and transfer_in_date is null));";
         cd.setName("newHhivEnrollment");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("New HIV Enrollment");
 
         return cd;
@@ -60,11 +61,12 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "where date(f.visit_date) <= date(:endDate)\n" +
                 "  and f.population_type is not null\n" +
                 "group by f.patient_id\n" +
-                "having mid(max(concat(f.visit_date, f.population_type)), 11) = 164929;";
+                "having mid(max(concat(f.visit_date, f.population_type)), 11) = 164929 AND f.location_id=:defaultLocation";
         cd.setName("kpsWithHIVFollowupVisit");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("KPS with HIV followup visit");
 
         return cd;
@@ -78,9 +80,10 @@ public class ETLMoh731GreenCardCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("enrolledKPs",ReportUtils.map(enrolledKPs(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("kpsWithHIVFollowupVisit",ReportUtils.map(kpsWithHIVFollowupVisit(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("hivEnrollment", ReportUtils.map(hivEnrollment(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("enrolledKPs",ReportUtils.map(enrolledKPs(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("kpsWithHIVFollowupVisit",ReportUtils.map(kpsWithHIVFollowupVisit(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("hivEnrollment", ReportUtils.map(hivEnrollment(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("(enrolledKPs or kpsWithHIVFollowupVisit) AND hivEnrollment");
         return cd;
     }
@@ -147,7 +150,7 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "  left outer join kenyaemr_etl.etl_patient_program_discontinuation d on d.patient_id=e.patient_id\n" +
                 "  left outer join kenyaemr_etl.etl_hiv_enrollment enr on enr.patient_id=e.patient_id\n" +
                 "  left outer join kenyaemr_etl.etl_patient_hiv_followup fup on fup.patient_id=e.patient_id\n" +
-                "  where date(e.date_started) between date(:startDate) and date(:endDate)\n" +
+                "  where date(e.date_started) between date(:startDate) and date(:endDate) AND e.location_id=:defaultLocation AND d.location_id=:defaultLocation AND enr.location_id=:defaultLocation AND fup.location_id=:defaultLocation\n" +
                 "  group by e.patient_id\n" +
                 "  having TI_on_art=0 and latest_patient_type in (164144,160563,159833)\n" +
                 "       )net;";
@@ -156,6 +159,7 @@ public class ETLMoh731GreenCardCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Started on ART");
         return cd;
     }
@@ -168,9 +172,10 @@ public class ETLMoh731GreenCardCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("kpsWithHIVFollowupVisit",ReportUtils.map(kpsWithHIVFollowupVisit(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("enrolledKPs",ReportUtils.map(enrolledKPs(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("startedOnART", ReportUtils.map(startedOnART(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("kpsWithHIVFollowupVisit",ReportUtils.map(kpsWithHIVFollowupVisit(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("enrolledKPs",ReportUtils.map(enrolledKPs(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("startedOnART", ReportUtils.map(startedOnART(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("(enrolledKPs or kpsWithHIVFollowupVisit) AND startedOnART");
         return cd;
     }
@@ -224,13 +229,14 @@ public class ETLMoh731GreenCardCohortLibrary {
     public CohortDefinition enrolledKPs() {
         SqlCohortDefinition cd = new SqlCohortDefinition();
         String sqlQuery="select c.client_id from kenyaemr_etl.etl_contact c\n" +
-                "                         where date(c.visit_date) <= date(:endDate)\n" +
+                "                         where date(c.visit_date) <= date(:endDate) AND c.location_id=:defaultLocation" +
                 "                         group by c.client_id having mid(max(concat(date(c.visit_date), c.key_population_type)), 11)\n" +
                 "                in ('FSW','MSM','MSW','PWUD','PWID','Transgender','People in prison and other closed settings');";
         cd.setName("enrolledKPs");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("KP clients");
         return cd;
     }
@@ -242,9 +248,10 @@ public class ETLMoh731GreenCardCohortLibrary {
         CompositionCohortDefinition cd = new CompositionCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        cd.addSearch("kpsWithHIVFollowupVisit",ReportUtils.map(kpsWithHIVFollowupVisit(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("enrolledKPs",ReportUtils.map(enrolledKPs(), "startDate=${startDate},endDate=${endDate}"));
-        cd.addSearch("currentlyOnArt", ReportUtils.map(currentlyOnArt(), "startDate=${startDate},endDate=${endDate}"));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
+        cd.addSearch("kpsWithHIVFollowupVisit",ReportUtils.map(kpsWithHIVFollowupVisit(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("enrolledKPs",ReportUtils.map(enrolledKPs(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
+        cd.addSearch("currentlyOnArt", ReportUtils.map(currentlyOnArt(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
         cd.setCompositionString("(enrolledKPs or kpsWithHIVFollowupVisit) AND currentlyOnArt");
         return cd;
     }
@@ -482,7 +489,7 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "   left outer join kenyaemr_etl.etl_patient_program_discontinuation d on d.patient_id=e.patient_id and d.program_uuid='2bdada65-4c72-4a48-8730-859890e25cee' \n" +
                 "   left outer join kenyaemr_etl.etl_hiv_enrollment enr on enr.patient_id=e.patient_id \n" +
                 "   left outer join kenyaemr_etl.etl_patient_hiv_followup fup on fup.patient_id=e.patient_id \n" +
-                "   where  date(e.date_started) between date_sub(date(:startDate) , interval 1 year) and date_sub(date(:endDate) , interval 1 year) \n" +
+                "   where  date(e.date_started) between date_sub(date(:startDate) , interval 1 year) and date_sub(date(:endDate) , interval 1 year) AND e.location_id=:defaultLocation AND d.location_id=:defaultLocation AND enr.location_id=:defaultLocation AND fup.location_id=:defaultLocation\n" +
                 "   group by e.patient_id \n" +
                 "   having   (dis_date>date(:endDate) or dis_date is null or TOut=0 ) \n" +
                 "   )net; ";
@@ -492,6 +499,7 @@ public class ETLMoh731GreenCardCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("art 12 Months Net Cohort");
         return cd;
 
@@ -605,7 +613,7 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "   left outer join kenyaemr_etl.etl_patient_program_discontinuation d on d.patient_id=e.patient_id and d.program_uuid='2bdada65-4c72-4a48-8730-859890e25cee' \n" +
                 "   left outer join kenyaemr_etl.etl_hiv_enrollment enr on enr.patient_id=e.patient_id \n" +
                 "   left outer join kenyaemr_etl.etl_patient_hiv_followup fup on fup.patient_id=e.patient_id \n" +
-                "   where  date(e.date_started) between date_sub(date(:startDate) , interval 1 year) and date_sub(date(:endDate) , interval 1 year) \n" +
+                "   where  date(e.date_started) between date_sub(date(:startDate) , interval 1 year) and date_sub(date(:endDate) , interval 1 year) AND e.location_id=:defaultLocation AND d.location_id=:defaultLocation AND enr.location_id=:defaultLocation AND fup.location_id=:defaultLocation\n" +
                 "   group by e.patient_id \n" +
                 "   having   (dis_date>date(:endDate) or dis_date is null or TOut=0 ) and (\n" +
                 "        (date(latest_tca) > date(:endDate) and (date(latest_tca) > date(dis_date) or dis_date is null ))  or \n" +
@@ -620,6 +628,7 @@ public class ETLMoh731GreenCardCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("on Therapy At 12 Months");
         return cd;
 
@@ -643,7 +652,7 @@ public class ETLMoh731GreenCardCohortLibrary {
                 " left outer join kenyaemr_etl.etl_patient_program_discontinuation d on d.patient_id=e.patient_id and d.program_uuid='2bdada65-4c72-4a48-8730-859890e25cee'\n" +
                 " left outer join kenyaemr_etl.etl_hiv_enrollment enr on enr.patient_id=e.patient_id\n" +
                 " left outer join kenyaemr_etl.etl_patient_hiv_followup fup on fup.patient_id=e.patient_id\n" +
-                " where  date(e.date_started) between date_sub(date(:startDate) , interval 1 year) and date_sub(date(:endDate) , interval 1 year)\n" +
+                " where  date(e.date_started) between date_sub(date(:startDate) , interval 1 year) and date_sub(date(:endDate) , interval 1 year) AND e.location_id=:defaultLocation AND d.location_id=:defaultLocation AND enr.location_id=:defaultLocation AND fup.location_id=:defaultLocation\n" +
                 " group by e.patient_id\n" +
                 "having   (dis_date>date(:endDate) or dis_date is null or TOut=0 ) and (\n" +
                 "    (date(latest_tca) > date(:endDate) and (date(latest_tca) > date(dis_date) or dis_date is null ))  or\n" +
@@ -674,6 +683,7 @@ public class ETLMoh731GreenCardCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Patients on ART with Suppressed VL within last 12 Months");
         return cd;
     }
@@ -696,7 +706,7 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "                   left outer join kenyaemr_etl.etl_patient_program_discontinuation d on d.patient_id=e.patient_id and d.program_uuid='2bdada65-4c72-4a48-8730-859890e25cee' \n" +
                 "                   left outer join kenyaemr_etl.etl_hiv_enrollment enr on enr.patient_id=e.patient_id \n" +
                 "                   left outer join kenyaemr_etl.etl_patient_hiv_followup fup on fup.patient_id=e.patient_id \n" +
-                "                   where  date(e.date_started) between date_sub(date(:startDate) , interval 1 year) and date_sub(date(:endDate) , interval 1 year) \n" +
+                "                   where  date(e.date_started) between date_sub(date(:startDate) , interval 1 year) and date_sub(date(:endDate) , interval 1 year) AND e.location_id=:defaultLocation AND d.location_id=:defaultLocation AND fup.location_id=:defaultLocation\n" +
                 "                   group by e.patient_id\n" +
                 "                  having   (dis_date>date(:endDate) or dis_date is null or TOut=0 ) and (\n" +
                 "                      (date(latest_tca) > date(:endDate) and (date(latest_tca) > date(dis_date) or dis_date is null ))  or\n" +
@@ -722,6 +732,7 @@ public class ETLMoh731GreenCardCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Patients on ART with VL results within last 12 Months");
         return cd;
     }
@@ -1520,7 +1531,7 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "      LEFT OUTER JOIN (select de.patient_id, de.date_started as date_started from kenyaemr_etl.etl_drug_event de group by de.patient_id)de ON e.patient_id = de.patient_id\n" +
                 "      LEFT OUTER JOIN\n" +
                 "         (select disc.patient_id,max(disc.visit_date) as disc_date from kenyaemr_etl.etl_patient_program_discontinuation disc where\n" +
-                "             program_name='HIV' group by patient_id) disc ON disc.patient_id = fup.patient_id\n" +
+                "             program_name='HIV' group by patient_id) disc ON disc.patient_id = fup.patient_id WHERE disc.location_id=:defaultLocation AND fup.location_id=:defaultLocation AND e.location_id=:defaultLocation\n" +
                 "GROUP BY fup.patient_id\n" +
                 "HAVING (\n" +
                 "          (date(latest_tca) > date(:endDate)\n" +
@@ -1529,12 +1540,13 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "              (\n" +
                 "                  (date(latest_tca) BETWEEN date(:startDate) AND date(:endDate)) OR (date(latest_vis_date) BETWEEN date(:startDate) AND date(:endDate))) AND\n" +
                 "           (latest_tca > date(disc_date) OR disc_patient IS NULL))) and on_drugs is null\n" +
-                ") pre_art;";
+                ") pre_art";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("preARTCohort");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Those in care, not started on ARVs");
         return cd;
 
@@ -1563,7 +1575,7 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "                        where date(visit_date) <= date(:endDate) and program_name='HIV'\n" +
                 "                        group by patient_id\n" +
                 "                       ) d on d.patient_id = fup.patient_id\n" +
-                "                where fup.visit_date <= date(:endDate)\n" +
+                "                where fup.visit_date <= date(:endDate) AND fup.location_id=:defaultLocation AND e.location_id=:defaultLocation AND de.location_id=:defaultLocation\n" +
                 "                group by patient_id\n" +
                 "                having (started_on_drugs is not null and started_on_drugs <> '') and\n" +
                 "                     ((((timestampdiff(DAY,date(latest_tca),date(:endDate)) <= 30 or timestampdiff(DAY,date(latest_tca),date(curdate())) <= 30) and ((date(d.effective_disc_date) > date(:endDate) or date(enroll_date) > date(d.effective_disc_date)) or d.effective_disc_date is null))\n" +
@@ -1575,6 +1587,7 @@ public class ETLMoh731GreenCardCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Patients in HIV program and assessed for nutrition");
         return cd;
     }
@@ -1602,7 +1615,7 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "                          where date(visit_date) <= date(:endDate) and program_name='HIV'\n" +
                 "                          group by patient_id\n" +
                 "                         ) d on d.patient_id = fup.patient_id\n" +
-                "                where fup.visit_date <= date(:endDate)\n" +
+                "                where fup.visit_date <= date(:endDate) AND fup.location_id=:defaultLocation AND e.location_id=:defaultLocation AND de.location_id=:defaultLocation\n" +
                 "                group by patient_id\n" +
                 "                having (started_on_drugs is not null and started_on_drugs <> '') and\n" +
                 "                       ((((timestampdiff(DAY,date(latest_tca),date(:endDate)) <= 30 or timestampdiff(DAY,date(latest_tca),date(curdate())) <= 30) and ((date(d.effective_disc_date) > date(:endDate) or date(enroll_date) > date(d.effective_disc_date)) or d.effective_disc_date is null))\n" +
@@ -1613,6 +1626,7 @@ public class ETLMoh731GreenCardCohortLibrary {
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Patients in HIV program and are malnourished");
         return cd;
     }
@@ -1623,13 +1637,13 @@ public class ETLMoh731GreenCardCohortLibrary {
     public CohortDefinition startedOnIPT() {
         String sqlQuery = "select patient_id \n" +
                 "from kenyaemr_etl.etl_ipt_initiation \n" +
-                "where visit_date between date(:startDate) and date(:endDate) and voided=0 " +
-                " ;";
+                "where visit_date between date(:startDate) and date(:endDate) and voided=0 AND location_id=:defaultLocation";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("startedOnIPT");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Patients started on TPT");
         return cd;
 
@@ -1642,12 +1656,12 @@ public class ETLMoh731GreenCardCohortLibrary {
         SqlCohortDefinition cd = new SqlCohortDefinition();
         String sqlQuery = "select patient_id \n" +
                 "from kenyaemr_etl.etl_patient_program \n" +
-                "where program='TPT' and date_completed between date(:startDate) and date(:endDate) and date_enrolled  between DATE_SUB(date(:startDate), INTERVAL 1 YEAR) and DATE_SUB(date(:endDate), INTERVAL 1 YEAR) and outcome=1267 " +
-                ";";
+                "where program='TPT' and date_completed between date(:startDate) and date(:endDate) and date_enrolled  between DATE_SUB(date(:startDate), INTERVAL 1 YEAR) and DATE_SUB(date(:endDate), INTERVAL 1 YEAR) and outcome=1267 AND location_id=:defaultLocation";
         cd.setName("completedIPT12Months");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("TPT 12 months cohort who have completed");
 
         return cd;
@@ -1662,12 +1676,13 @@ public class ETLMoh731GreenCardCohortLibrary {
         String sqlQuery = "select  e.patient_id " +
                 " from kenyaemr_etl.etl_tb_enrollment e " +
                 " join kenyaemr_etl.etl_patient_demographics p on p.patient_id=e.patient_id " +
-                " where date(e.visit_date) between :startDate and :endDate " +
+                " where date(e.visit_date) between :startDate and :endDate AND e.location_id=:defaultLocation" +
                 ";";
         cd.setName("newTBEnrollment");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("New TB Enrollment");
 
         return cd;
@@ -1683,12 +1698,13 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "from kenyaemr_etl.etl_tb_enrollment e \n" +
                 "join kenyaemr_etl.etl_patient_demographics p on p.patient_id=e.patient_id \n" +
                 "inner join kenyaemr_etl.etl_hiv_enrollment he on he.patient_id=e.patient_id and he.visit_date > e.visit_date\n" +
-                "where  date(e.visit_date) between :startDate and :endDate " +
+                "where  date(e.visit_date) between :startDate and :endDate AND e.location_id=:defaultLocation AND he.location_id=:defaultLocation" +
                 ";";
         cd.setName("newTBKnownPositive");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("New TB HIV Known Positive");
 
         return cd;
@@ -1704,12 +1720,13 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "from kenyaemr_etl.etl_tb_enrollment e \n" +
                 "join kenyaemr_etl.etl_patient_demographics p on p.patient_id=e.patient_id \n" +
                 "inner join kenyaemr_etl.etl_hts_test h on h.patient_id=e.patient_id and h.visit_date between :startDate and :endDate\n" +
-                "where  date(e.visit_date) between :startDate and :endDate " +
+                "where  date(e.visit_date) between :startDate and :endDate AND e.location_id=:defaultLocation AND h.location_id=:defaultLocation" +
                 ";";
         cd.setName("newTBKnownPositive");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("New TB HIV Known Positive");
 
         return cd;
@@ -1725,12 +1742,13 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "from kenyaemr_etl.etl_tb_enrollment e \n" +
                 "join kenyaemr_etl.etl_patient_demographics p on p.patient_id=e.patient_id \n" +
                 "inner join kenyaemr_etl.etl_hts_test h on h.patient_id=e.patient_id and h.visit_date between :startDate and :endDate and h.final_test_result=\"Positive\"\n" +
-                "where  date(e.visit_date) between :startDate and :endDate " +
+                "where  date(e.visit_date) between :startDate and :endDate AND e.location_id=:defaultLocation AND h.location_id=:defaultLocation" +
                 ";";
         cd.setName("newTBTestedHIVPositive");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("New TB cases tested HIV Positive");
 
         return cd;
@@ -1746,11 +1764,12 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "from kenyaemr_etl.etl_tb_enrollment e\n" +
                 "join kenyaemr_etl.etl_patient_demographics p on p.patient_id=e.patient_id\n" +
                 "inner join kenyaemr_etl.etl_drug_event d on d.patient_id=e.patient_id and d.date_started < e.visit_date\n" +
-                "where d.program = 'HIV' and date(e.visit_date) between :startDate and :endDate ;";
+                "where d.program = 'HIV' and date(e.visit_date) between :startDate and :endDate AND e.location_id=:defaultLocation AND d.location_id=:defaultLocation";
         cd.setName("tbNewAlreadyOnHAART");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("New TB cases already on HAART");
 
         return cd;
@@ -1766,11 +1785,12 @@ public class ETLMoh731GreenCardCohortLibrary {
                 "from kenyaemr_etl.etl_tb_enrollment e\n" +
                 "join kenyaemr_etl.etl_patient_demographics p on p.patient_id=e.patient_id\n" +
                 "inner join kenyaemr_etl.etl_drug_event d on d.patient_id=e.patient_id and d.date_started between :startDate and :endDate\n" +
-                "where d.program = 'HIV' and date(e.visit_date) between :startDate and :endDate;";
+                "where d.program = 'HIV' and date(e.visit_date) between :startDate and :endDate AND e.location_id=:defaultLocation AND d.location_id=:defaultLocation";
         cd.setName("tbNewStartingHAART");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("New TB cases started on HAART");
 
         return cd;
@@ -1786,11 +1806,12 @@ public class ETLMoh731GreenCardCohortLibrary {
                     "from kenyaemr_etl.etl_tb_enrollment e\n" +
                     "join kenyaemr_etl.etl_patient_demographics p on p.patient_id=e.patient_id\n" +
                     "inner join kenyaemr_etl.etl_drug_event d on d.patient_id=e.patient_id and d.date_started <= :endDate\n" +
-                    "where d.program = 'HIV' and date(e.visit_date) between :startDate and :endDate;";
+                    "where d.program = 'HIV' and date(e.visit_date) between :startDate and :endDate AND e.location_id=:defaultLocation AND d.location_id=:defaultLocation";
         cd.setName("tbNewTotalOnHAART");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("New TB cases on HAART");
 
         return cd;
@@ -1801,12 +1822,12 @@ public class ETLMoh731GreenCardCohortLibrary {
         String sqlQuery = "select f.patient_id \n" +
                 "from kenyaemr_etl.etl_patient_hiv_followup f \n" +
                 "join kenyaemr_etl.etl_patient_demographics p on p.patient_id=f.patient_id \n" +
-                "where  date(f.visit_date) between date(:startDate) and date(:endDate) and f.cacx_screening in(703, 664, 1118) " +
-                ";";
+                "where  date(f.visit_date) between date(:startDate) and date(:endDate) and f.cacx_screening in(703, 664, 1118) AND f.location_id=:defaultLocation ";
         cd.setName("screenedforCaCx");
         cd.setQuery(sqlQuery);
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cd.setDescription("Patients screened for CaCx");
 
         return cd;
