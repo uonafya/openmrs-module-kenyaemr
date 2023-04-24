@@ -58,6 +58,7 @@ public class SGBVLineListReportBuilder extends AbstractHybridReportBuilder {
         return Arrays.asList(
                 new Parameter("startDate", "Start Date", Date.class),
                 new Parameter("endDate", "End Date", Date.class),
+                new Parameter("defaultLocation", "Facility", String.class),
                 new Parameter("dateBasedReporting", "", String.class)
         );
     }
@@ -76,8 +77,9 @@ public class SGBVLineListReportBuilder extends AbstractHybridReportBuilder {
         CohortDefinition cd = new SGBVLineListCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", Date.class));
         cd.setName("SGBV Patients Linelist");
-        return ReportUtils.map(cd, "startDate=${startDate},endDate=${endDate}");
+        return ReportUtils.map(cd, "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}");
     }
 
     @Override
@@ -88,7 +90,7 @@ public class SGBVLineListReportBuilder extends AbstractHybridReportBuilder {
         DataSetDefinition allPatientsDSD = allVisits;
 
         return Arrays.asList(
-                ReportUtils.map(allPatientsDSD, "startDate=${startDate},endDate=${endDate}")
+                ReportUtils.map(allPatientsDSD, "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -101,7 +103,8 @@ public class SGBVLineListReportBuilder extends AbstractHybridReportBuilder {
         dsd.addSortCriteria("DOBAndAge", SortCriteria.SortDirection.DESC);
         dsd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         dsd.addParameter(new Parameter("endDate", "End Date", Date.class));
-        String defParam = "startDate=${startDate},endDate=${endDate}";
+        dsd.addParameter(new Parameter("defaultLocation", "Facility", Date.class));
+        String defParam = "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}";
         ETLNextAppointmentDateDataDefinition nextAppointmentDateDataDefinition = new ETLNextAppointmentDateDataDefinition();
         nextAppointmentDateDataDefinition.addParameter(new Parameter("endDate", "End Date", Date.class));
         SgbvLastScreeningDateDataDefinition sgbvLastScreeningDateDataDefinition = new SgbvLastScreeningDateDataDefinition();
@@ -121,6 +124,7 @@ public class SGBVLineListReportBuilder extends AbstractHybridReportBuilder {
         SGBVLineListCohortDefinition cd = new SGBVLineListCohortDefinition();
         cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cd.addParameter(new Parameter("defaultLocation", "Facility", Date.class));
 
         dsd.addRowFilter(cd, defParam);
         return dsd;
