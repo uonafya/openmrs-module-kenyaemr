@@ -565,7 +565,7 @@ public class DatimIndicatorLibrary {
      * @return the indicator
      */
     public CohortIndicator testedNegativePMTCTANC1() {
-        return cohortIndicator("Tested NegativePMTCT services ANC-1", ReportUtils.<CohortDefinition>map(datimCohorts.negativePMTCTANC1(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Tested NegativePMTCT services ANC-1", ReportUtils.<CohortDefinition>map(datimCohorts.negativePMTCTANC1(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**

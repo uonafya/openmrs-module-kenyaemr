@@ -255,7 +255,7 @@ public class DatimReportBuilder extends AbstractReportBuilder {
         //End of patient contact Disaggregations
         ArrayList<String> priorityPopulation = new ArrayList<String>(Arrays.asList("\"Fisher Folk\"","\"Truck Driver\"","\"Adolescent and Young Girls\"","\"Prisoner\""));
 
-        String indParams = "startDate=${startDate},endDate=${endDate}";
+        String indParams = "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}";
         String endDateParams = "endDate=${endDate}";
 
         //Prevention Indicators

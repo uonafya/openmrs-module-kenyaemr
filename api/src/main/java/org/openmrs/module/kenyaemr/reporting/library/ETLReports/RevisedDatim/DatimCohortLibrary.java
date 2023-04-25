@@ -2068,7 +2068,7 @@ public class DatimCohortLibrary {
     public CohortDefinition testedPositivePmtctANC1() {
         String sqlQuery = "select v.patient_id\n" +
                 "from kenyaemr_etl.etl_mch_antenatal_visit v\n" +
-                "  left join (select t.patient_id, t.visit_date from kenyaemr_etl.etl_hts_test t where t.test_type = 2 and t.final_test_result = 'Positive' and t.hts_entry_point = 160538 and  t.visit_date <= date(:endDate) AND t.location_id=:defaultLocation)t\n" +
+                "  left join (select t.patient_id, t.visit_date from kenyaemr_etl.etl_hts_test t where t.test_type = 2 and t.final_test_result = 'Positive' and t.hts_entry_point = 160538 and  t.visit_date <= date(:endDate) AND t.encounter_location=:defaultLocation)t\n" +
                 "    on v.patient_id = t.patient_id and v.visit_date = t.visit_date\n" +
                 "where v.anc_visit_number = 1 and v.visit_date between date (:startDate) and date(:endDate) and (v.final_test_result = 'Positive' or t.patient_id is not null) AND v.location_id=:defaultLocation";
         SqlCohortDefinition cd = new SqlCohortDefinition();
@@ -2086,7 +2086,7 @@ public class DatimCohortLibrary {
     public CohortDefinition testedNegativePmtctANC1() {
         String sqlQuery = "select v.patient_id\n" +
                 "from kenyaemr_etl.etl_mch_antenatal_visit v\n" +
-                "  left join (select t.patient_id, t.visit_date from kenyaemr_etl.etl_hts_test t where t.test_type = 1 and t.final_test_result = 'Negative' and t.hts_entry_point = 160538 and  t.visit_date <= date(:endDate) AND t.location_id=:defaultLocation)t\n" +
+                "  left join (select t.patient_id, t.visit_date from kenyaemr_etl.etl_hts_test t where t.test_type = 1 and t.final_test_result = 'Negative' and t.hts_entry_point = 160538 and  t.visit_date <= date(:endDate) AND t.encounter_location=:defaultLocation)t\n" +
                 "    on v.patient_id = t.patient_id and v.visit_date = t.visit_date\n" +
                 "where v.anc_visit_number = 1 and v.visit_date between date (:startDate) and date(:endDate) and (v.final_test_result = 'Negative' or t.patient_id is not null) AND v.location_id=:defaultLocation";
         SqlCohortDefinition cd = new SqlCohortDefinition();
@@ -2303,7 +2303,7 @@ public class DatimCohortLibrary {
                 "                where hts.test_strategy =161557\n" +
                 "                and hts.patient_given_result ='Yes'\n" +
                 "                and hts.voided =0 and hts.visit_date\n" +
-                "                between date(:startDate) and date(:endDate) AND hts.location_id=:defaultLocation group by hts.patient_id;";
+                "                between date(:startDate) and date(:endDate) AND hts.encounter_location=:defaultLocation group by hts.patient_id;";
 
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("HTS_TST_IT");
@@ -2327,7 +2327,7 @@ public class DatimCohortLibrary {
                 "                where hts.test_strategy =166606\n" +
                 "                and hts.patient_given_result ='Yes'\n" +
                 "                and hts.voided =0 and hts.visit_date\n" +
-                "                between date(:startDate) and date(:endDate) AND hts.location_id=:defaultLocation group by hts.patient_id ";
+                "                between date(:startDate) and date(:endDate) AND hts.encounter_location=:defaultLocation group by hts.patient_id ";
 
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("HTS_TST_SNS");
@@ -2739,7 +2739,7 @@ public class DatimCohortLibrary {
                 "                    where t.final_test_result = 'Positive'\n" +
                 "                      and t.test_type = 2\n" +
                 "                      and t.hts_entry_point = 162223\n" +
-                "                      and t.visit_date between date(:startDate) and date(:endDate) AND t.location_id=:defaultLocation) t on e.patient_id = t.patient_id\n" +
+                "                      and t.visit_date between date(:startDate) and date(:endDate) AND t.encounter_location=:defaultLocation) t on e.patient_id = t.patient_id\n" +
                 "where e.visit_date between date(:startDate) and date(:endDate) AND e.location_id=:defaultLocation AND ((h.patient_id is not null and e.visit_date >= date(h.hiv_test_date)) or (t.patient_id is not null and e.visit_date >= date(t.visit_date)));";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("VMMC_SITE_HIV_POSITIVE");
@@ -2766,7 +2766,7 @@ public class DatimCohortLibrary {
                 "                    from kenyaemr_etl.etl_hts_test t\n" +
                 "                    where t.final_test_result = 'Negative'\n" +
                 "                      and t.hts_entry_point = 162223\n" +
-                "                      and t.visit_date between date(:startDate) and date(:endDate) AND t.location_id=:defaultLocation) t on e.patient_id = t.patient_id\n" +
+                "                      and t.visit_date between date(:startDate) and date(:endDate) AND t.encounter_location=:defaultLocation) t on e.patient_id = t.patient_id\n" +
                 "where e.visit_date between date(:startDate) AND e.location_id=:defaultLocation and date(:endDate) and ((h.patient_id is not null and e.visit_date >= date(h.hiv_test_date)) or (t.patient_id is not null and e.visit_date >= date(t.visit_date)));";
         SqlCohortDefinition cd = new SqlCohortDefinition();
         cd.setName("VMMC_SITE_HIV_NEGATIVE");
