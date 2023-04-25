@@ -34,14 +34,19 @@ import java.util.List;
 @Component
 @Builds({"kenyaemr.etl.common.report.moh731"})
 public class Moh731ReportBuilder extends AbstractReportBuilder {
-    @Autowired
-    private CommonDimensionLibrary commonDimensions;
+    private final CommonDimensionLibrary commonDimensions;
 
-    @Autowired
-    private ETLMoh731GreenCardIndicatorLibrary moh731GreenCardIndicators;
+    private final ETLMoh731GreenCardIndicatorLibrary moh731GreenCardIndicators;
 
 
     public static final String DATE_FORMAT = "yyyy-MM-dd";
+
+    @Autowired
+    public Moh731ReportBuilder(CommonDimensionLibrary commonDimensions, ETLMoh731GreenCardIndicatorLibrary moh731GreenCardIndicators) {
+
+        this.commonDimensions = commonDimensions;
+        this.moh731GreenCardIndicators = moh731GreenCardIndicators;
+    }
 
     ColumnParameters colInfants = new ColumnParameters(null, "<1", "age=<1");
 
@@ -121,17 +126,19 @@ public class Moh731ReportBuilder extends AbstractReportBuilder {
         return Arrays.asList(
                 new Parameter("startDate", "Start Date", Date.class),
                 new Parameter("endDate", "End Date", Date.class),
+                new Parameter("defaultLocation", "Selected Facility", String.class),
                 new Parameter("dateBasedReporting", "", String.class)
         );
     }
 
     @Override
     protected List<Mapped<DataSetDefinition>> buildDataSets(ReportDescriptor reportDescriptor, ReportDefinition reportDefinition) {
+        String indParams = "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}";
         return Arrays.asList(
-                ReportUtils.map(hivTestingAndCouselingDatasetDefinition(), "startDate=${startDate},endDate=${endDate}"),
-                ReportUtils.map(pmtctDataSet(), "startDate=${startDate},endDate=${endDate}"),
-                ReportUtils.map(careAndTreatmentDataSet(), "startDate=${startDate},endDate=${endDate}"),
-                ReportUtils.map(voluntaryMaleCircumcisionDatasetDefinition(), "startDate=${startDate},endDate=${endDate}")
+                ReportUtils.map(hivTestingAndCouselingDatasetDefinition(), indParams),
+                ReportUtils.map(pmtctDataSet(), indParams),
+                ReportUtils.map(careAndTreatmentDataSet(), indParams),
+                ReportUtils.map(voluntaryMaleCircumcisionDatasetDefinition(), indParams)
         );
     }
 
@@ -146,10 +153,11 @@ public class Moh731ReportBuilder extends AbstractReportBuilder {
         dsd.setDescription("Prevention of Mother-to-Child Transmission");
         dsd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         dsd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        dsd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         dsd.addDimension("age", ReportUtils.map(commonDimensions.moh731GreenCardAgeGroups(), "onDate=${endDate}"));
         dsd.addDimension("gender", ReportUtils.map(commonDimensions.gender()));
 
-        String indParams = "startDate=${startDate},endDate=${endDate}";
+        String indParams = "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}";
 //Updates
         dsd.addColumn("HV02-01", "First ANC Visit", ReportUtils.map(moh731GreenCardIndicators.firstANCVisitMchmsAntenatal(), indParams), "");
         dsd.addColumn("HV02-02", "Delivery from HIV+ Mothers(Labor and Delivery)", ReportUtils.map(moh731GreenCardIndicators.deliveryFromHIVPositiveMothers(), indParams), "");
@@ -230,10 +238,11 @@ public class Moh731ReportBuilder extends AbstractReportBuilder {
         cohortDsd.setName("3");
         cohortDsd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cohortDsd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cohortDsd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cohortDsd.addDimension("age", ReportUtils.map(commonDimensions.moh731GreenCardAgeGroups(), "onDate=${endDate}"));
         cohortDsd.addDimension("gender", ReportUtils.map(commonDimensions.gender()));
 
-        String indParams = "startDate=${startDate},endDate=${endDate}";
+        String indParams = "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}";
 
        /* cohortDsd.addColumn("HV03-01", "HIV Exposed Infants (within 2 months)", ReportUtils.map(moh731GreenCardIndicators.hivExposedInfantsWithin2Months(), indParams), "");
         cohortDsd.addColumn("HV03-02", "HIV Exposed Infants (Eligible for CTX at 2 months)", ReportUtils.map(moh731GreenCardIndicators.hivExposedInfantsWithin2MonthsAndEligibleForCTX(), indParams), "");*/
@@ -309,9 +318,10 @@ public class Moh731ReportBuilder extends AbstractReportBuilder {
         cohortDsd.setName("1");
         cohortDsd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cohortDsd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cohortDsd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cohortDsd.addDimension("age", ReportUtils.map(commonDimensions.moh731GreenCardAgeGroups(), "onDate=${endDate}"));
         cohortDsd.addDimension("gender", ReportUtils.map(commonDimensions.gender()));
-        String indParams = "startDate=${startDate},endDate=${endDate}";
+        String indParams = "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}";
 
         // 3.1 HIV testing and counseling
         EmrReportingUtils.addRow(cohortDsd, "HV01", "Tested", ReportUtils.map(moh731GreenCardIndicators.htsNumberTested(), indParams), disaggregationWithInfants, Arrays.asList("01", "02", "03", "04", "05", "06", "07", "08", "09", "10"));
@@ -346,9 +356,10 @@ public class Moh731ReportBuilder extends AbstractReportBuilder {
         cohortDsd.setDescription("Voluntary Male Circumcision");
         cohortDsd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cohortDsd.addParameter(new Parameter("endDate", "End Date", Date.class));
+        cohortDsd.addParameter(new Parameter("defaultLocation", "Selected Facility", String.class));
         cohortDsd.addDimension("age", ReportUtils.map(commonDimensions.moh731GreenCardAgeGroups(), "onDate=${endDate}"));
         cohortDsd.addDimension("gender", ReportUtils.map(commonDimensions.gender()));
-        String indParams = "startDate=${startDate},endDate=${endDate}";
+        String indParams = "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}";
 
         // 4.1 Voluntary Male Circumcision
         EmrReportingUtils.addRow(cohortDsd, "HV04", "Tested", ReportUtils.map(moh731GreenCardIndicators.numberCircumcised(), indParams), vmmcDisaggregation, Arrays.asList("01", "02", "03", "04", "05", "06", "07"));

@@ -27,10 +27,16 @@ import static org.openmrs.module.kenyaemr.reporting.EmrReportingUtils.cohortIndi
  */
 @Component
 public class ETLMoh731GreenCardIndicatorLibrary {
+
+    private final ETLMoh731GreenCardCohortLibrary moh731Cohorts;
+
+    private final DatimCohortLibrary datimCohorts;
+
     @Autowired
-    private ETLMoh731GreenCardCohortLibrary moh731Cohorts;
-    @Autowired
-    private DatimCohortLibrary datimCohorts;
+    public ETLMoh731GreenCardIndicatorLibrary(ETLMoh731GreenCardCohortLibrary moh731Cohorts, DatimCohortLibrary datimCohorts) {
+        this.moh731Cohorts = moh731Cohorts;
+        this.datimCohorts = datimCohorts;
+    }
 
     // Green card additions
 
@@ -41,7 +47,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTested() {
-        return cohortIndicator("Individuals tested", map(moh731Cohorts.htsNumberTested(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Individuals tested", map(moh731Cohorts.htsNumberTested(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -51,7 +57,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTestedAtFacility() {
-        return cohortIndicator("Individuals tested at the facility", map(moh731Cohorts.htsNumberTestedAtFacility(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Individuals tested at the facility", map(moh731Cohorts.htsNumberTestedAtFacility(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -61,7 +67,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTestedAtCommunity() {
-        return cohortIndicator("Individuals tested at the community", map(moh731Cohorts.htsNumberTestedAtCommunity(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Individuals tested at the community", map(moh731Cohorts.htsNumberTestedAtCommunity(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -71,7 +77,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTestedNew() {
-        return cohortIndicator("New tests", map(moh731Cohorts.htsNumberTestedNew(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("New tests", map(moh731Cohorts.htsNumberTestedNew(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -81,7 +87,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTestedRepeat() {
-        return cohortIndicator("Repeat tests", map(moh731Cohorts.htsNumberTestedRepeat(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Repeat tests", map(moh731Cohorts.htsNumberTestedRepeat(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -91,7 +97,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTestedAsCouple() {
-        return cohortIndicator("Couple testing", map(moh731Cohorts.htsNumberTestedAsCouple(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Couple testing", map(moh731Cohorts.htsNumberTestedAsCouple(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -101,7 +107,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTestedKeyPopulation() {
-        return cohortIndicator("Key population testing", map(moh731Cohorts.htsNumberTestedKeyPopulation(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Key population testing", map(moh731Cohorts.htsNumberTestedKeyPopulation(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -111,7 +117,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTestedPositive() {
-        return cohortIndicator("HIV Positive tests", map(moh731Cohorts.htsNumberTestedPositive(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("HIV Positive tests", map(moh731Cohorts.htsNumberTestedPositive(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -121,7 +127,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTestedNegative() {
-        return cohortIndicator("HIV Negative tests", map(moh731Cohorts.htsNumberTestedNegative(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("HIV Negative tests", map(moh731Cohorts.htsNumberTestedNegative(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -131,7 +137,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTestedDiscordant() {
-        return cohortIndicator("Discordant couples", map(moh731Cohorts.htsNumberTestedDiscordant(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Discordant couples", map(moh731Cohorts.htsNumberTestedDiscordant(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -141,7 +147,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTestedKeypopPositive() {
-        return cohortIndicator("Key Pop - positives", map(moh731Cohorts.htsNumberTestedKeypopPositive(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Key Pop - positives", map(moh731Cohorts.htsNumberTestedKeypopPositive(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -151,7 +157,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTestedPositiveAndLinked() {
-        return cohortIndicator("Positive and linked to care", map(moh731Cohorts.htsNumberTestedPositiveAndLinked(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Positive and linked to care", map(moh731Cohorts.htsNumberTestedPositiveAndLinked(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -161,7 +167,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator htsNumberTestedPositiveThreeMonthsAgo() {
-        return cohortIndicator("tested Positive 3 months ago", map(moh731Cohorts.htsNumberTestedPositiveThreeMonthsAgo(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("tested Positive 3 months ago", map(moh731Cohorts.htsNumberTestedPositiveThreeMonthsAgo(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -169,7 +175,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return
      */
     public CohortIndicator numberAssessedForHIVRisk() {
-        return cohortIndicator("Assessed for HIV risk", map(moh731Cohorts.numberAssessedForHIVRisk(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Assessed for HIV risk", map(moh731Cohorts.numberAssessedForHIVRisk(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -180,7 +186,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator firstANCVisitMchmsAntenatal() {
         return cohortIndicator(null,
-                map(moh731Cohorts.firstANCVisitMchmsAntenatal(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.firstANCVisitMchmsAntenatal(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -192,7 +198,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator deliveryFromHIVPositiveMothers() {
         return cohortIndicator(null,
-                map(moh731Cohorts.deliveryFromHIVPositiveMothers(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.deliveryFromHIVPositiveMothers(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -204,7 +210,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator knownPositiveAtFirstANC() {
         return cohortIndicator(null,
-                map(moh731Cohorts.knownPositiveAtFirstANC(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.knownPositiveAtFirstANC(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -216,7 +222,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator initialHIVTestInMchmsAntenatal() {
         return cohortIndicator(null,
-                map(moh731Cohorts.initialHIVTestInMchmsAntenatal(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.initialHIVTestInMchmsAntenatal(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -228,7 +234,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator testedForHivInMchmsDelivery() {
         return cohortIndicator(null,
-                map(moh731Cohorts.testedForHivInMchmsDelivery(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.testedForHivInMchmsDelivery(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -240,7 +246,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator initialTestAtPNCUpto6Weeks() {
         return cohortIndicator(null,
-                map(moh731Cohorts.initialTestAtPNCUpto6Weeks(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.initialTestAtPNCUpto6Weeks(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -252,7 +258,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator testedForHivInMchms() {
         return cohortIndicator(null,
-                map(moh731Cohorts.testedForHivInMchmsTotal(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.testedForHivInMchmsTotal(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -264,7 +270,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator pncRetestUpto6Weeks() {
         return cohortIndicator(null,
-                map(moh731Cohorts.pncRetestUpto6Weeks(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.pncRetestUpto6Weeks(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -276,7 +282,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator pncTestBtwn6WeeksAnd6Months() {
         return cohortIndicator(null,
-                map(moh731Cohorts.pncTestBtwn6WeeksAnd6Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.pncTestBtwn6WeeksAnd6Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -289,7 +295,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
     public CohortIndicator knownHivPositiveAtFirstANC() {
 
         return cohortIndicator(null,
-                map(moh731Cohorts.knownPositiveAtFirstANC(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.knownPositiveAtFirstANC(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -301,7 +307,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator testedHivPositiveInMchmsAntenatal() {
         return cohortIndicator(null,
-                map(moh731Cohorts.testedHivPositiveInMchmsAntenatal(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.testedHivPositiveInMchmsAntenatal(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -313,7 +319,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator testedHivPositiveInMchmsDelivery() {
         return cohortIndicator(null,
-                map(moh731Cohorts.positiveHIVResultsAtLabourAndDelivery(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.positiveHIVResultsAtLabourAndDelivery(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -325,7 +331,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator testedHivPositiveInPNCWithin6Weeks() {
         return cohortIndicator(null,
-                map(moh731Cohorts.testedHivPositiveInPNCWithin6Weeks(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.testedHivPositiveInPNCWithin6Weeks(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -337,19 +343,18 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator totalHivPositiveInMchms() {
         return cohortIndicator(null,
-                map(moh731Cohorts.totalHivPositiveMothersInMchms(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.totalHivPositiveMothersInMchms(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
     /**
-     * Number of infant patients who took pcr test aged between 7 weeks and 6 months and confirmed Positive
-     * Positive PNC >6 Weeks to 6 months HV02-15
+     * Number of infant patients who took pcr test aged between 7 weeks and 6 months and confirmed Positive     *  PNC >6 Weeks to 6 months HV02-15
      *
      * @return the indicator
      */
     public CohortIndicator pncHIVPositiveBetween7weeksAnd6Months() {
         return cohortIndicator("PNC HIV Positive between 7 weeks and 6 months",
-                map(moh731Cohorts.totalHivPositivePNC6WeeksTo6monthsInMchms(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.totalHivPositivePNC6WeeksTo6monthsInMchms(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -361,7 +366,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator onHAARTAtFirstANC() {
         return cohortIndicator("On HAART At first ANC",
-                map(moh731Cohorts.totalOnHAARTAtFirstANC(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.totalOnHAARTAtFirstANC(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -373,7 +378,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator startHAARTANC() {
         return cohortIndicator("Started HAART At ANC",
-                map(moh731Cohorts.startedHAARTAtANC(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.startedHAARTAtANC(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -385,7 +390,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator startedHAARTLabourAndDelivery() {
         return cohortIndicator("Started HAART during labour and delivery",
-                map(moh731Cohorts.totalStartedHAARTAtLabourAndDelivery(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.totalStartedHAARTAtLabourAndDelivery(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -397,7 +402,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator startedHAARTPNCUpto6Weeks() {
         return cohortIndicator("Started HAART within 6 weeks of PNC",
-                map(moh731Cohorts.totalStartedHAARTAtPNCUpto6Weeks(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.totalStartedHAARTAtPNCUpto6Weeks(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -420,7 +425,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator onHAARTFrom7WeeksTo6Months() {
         return cohortIndicator("Started HAART between 7 weeks and 6 months",
-                map(moh731Cohorts.totalStartedOnHAARTBtw7WeeksAnd6Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.totalStartedOnHAARTBtw7WeeksAnd6Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -432,7 +437,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator onHAARTUpto12Months() {
         return cohortIndicator("On Maternal HAART upto 12 months",
-                map(moh731Cohorts.onHAARTUpto12Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.onHAARTUpto12Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -444,7 +449,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator netCohortAt12Months() {
         return cohortIndicator("Net cohort at 12 months",
-                map(moh731Cohorts.netCohortAt12Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.netCohortAt12Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -456,19 +461,18 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator syphilisScreenedAtANC() {
         return cohortIndicator("Screened for Syphilis at ANC",
-                map(moh731Cohorts.syphilisScreenedAtANC(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.syphilisScreenedAtANC(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
     /**
-     * Number of Patients screened positive for syphilis
-     * Syphilis screened positive HV02-25
+     * Number of Patients screened positive for syphilis     *  screened positive HV02-25
      *
      * @return the indicator
      */
     public CohortIndicator syphilisScreenedPositive() {
         return cohortIndicator("Syphilis Screened Positive",
-                map(moh731Cohorts.syphilisScreenedPositive(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.syphilisScreenedPositive(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -480,7 +484,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator syphilisTreated() {
         return cohortIndicator("Treated for syphilis",
-                map(moh731Cohorts.treatedForSyphilis(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.treatedForSyphilis(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -492,7 +496,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator HIVPositiveOnModernFPUpto6Weeks() {
         return cohortIndicator("HIVPositiveOnModernFPUpto6Weeks",
-                map(moh731Cohorts.HIVPositiveOnModernFPUpto6Weeks(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.HIVPositiveOnModernFPUpto6Weeks(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -504,7 +508,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator HIVPositivePNCVisitsAt6Weeks() {
         return cohortIndicator("HIVPositivePNCVisitsAt6Weeks",
-                map(moh731Cohorts.HIVPositivePNCVisitsAt6Weeks(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.HIVPositivePNCVisitsAt6Weeks(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -516,7 +520,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator knownHIVPositive1stContact() {
         return cohortIndicator("knownHIVPositive1stContact",
-                map(moh731Cohorts.knownHIVPositive1stContact(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.knownHIVPositive1stContact(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -528,7 +532,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator initialTestAtANCForMale() {
         return cohortIndicator("initialTestAtANCForMale",
-                map(moh731Cohorts.initialTestAtANCForMale(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.initialTestAtANCForMale(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
     /**
@@ -539,7 +543,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator initialTestAtDeliveryForMale() {
         return cohortIndicator("initialTestAtDeliveryForMale",
-                map(moh731Cohorts.initialTestAtDeliveryForMale(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.initialTestAtDeliveryForMale(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -551,7 +555,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator initialTestAtPNCForMale() {
         return cohortIndicator("initialTestAtPNCForMale",
-                map(moh731Cohorts.initialTestAtPNCForMale(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.initialTestAtPNCForMale(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -575,7 +579,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator firstANCKPAdolescents() {
         return cohortIndicator("firstANCKPAdolescents",
-                map(moh731Cohorts.firstANCKPAdolescents(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.firstANCKPAdolescents(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -587,7 +591,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator adolescentsHIVPositive() {
         return cohortIndicator("adolescentsHIVPositive",
-                map(moh731Cohorts.adolescentsHIVPositive(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.adolescentsHIVPositive(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -599,7 +603,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator adolescentsStartedOnHAART() {
         return cohortIndicator("adolescentsStartedOnHAART",
-                map(moh731Cohorts.adolescentsStartedOnHAART(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.adolescentsStartedOnHAART(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -611,7 +615,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator knownExposureAtPenta1() {
         return cohortIndicator("knownExposureAtPenta1",
-                map(moh731Cohorts.knownExposureAtPenta1(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.knownExposureAtPenta1(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -623,7 +627,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator totalGivenPenta1() {
         return cohortIndicator("totalGivenPenta1",
-                map(moh731Cohorts.totalGivenPenta1(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.totalGivenPenta1(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -635,7 +639,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator infantArvProphylaxisANC() {
         return cohortIndicator("infantArvProphylaxisANC",
-                map(moh731Cohorts.infantArvProphylaxisANC(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.infantArvProphylaxisANC(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -647,7 +651,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator infantArvProphylaxisLabourAndDelivery() {
         return cohortIndicator("infantArvProphylaxisLabourAndDelivery",
-                map(moh731Cohorts.infantArvProphylaxisLabourAndDelivery(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.infantArvProphylaxisLabourAndDelivery(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -659,7 +663,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator infantArvProphylaxisPNCLessThan8Weeks() {
         return cohortIndicator("infantArvProphylaxisPNCLessThan8Weeks",
-                map(moh731Cohorts.infantArvProphylaxisPNCLessThan8Weeks(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.infantArvProphylaxisPNCLessThan8Weeks(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -683,7 +687,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator heiDDSCTXStartLessThan2Months() {
         return cohortIndicator("heiDDSCTXStartLessThan2Months",
-                map(moh731Cohorts.heiDDSCTXStartLessThan2Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.heiDDSCTXStartLessThan2Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -695,7 +699,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator initialPCRLessThan8Weeks() {
         return cohortIndicator("initialPCRLessThan8Weeks",
-                map(moh731Cohorts.initialPCRLessThan8Weeks(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.initialPCRLessThan8Weeks(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -707,7 +711,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator initialPCROver8WeeksTo12Months() {
         return cohortIndicator("initialPCROver8WeeksTo12Months",
-                map(moh731Cohorts.initialPCROver8WeeksTo12Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.initialPCROver8WeeksTo12Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -719,7 +723,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator totalInitialPCRTestLessThan12Months() {
         return cohortIndicator("totalInitialPCRTestLessThan12Months",
-                map(moh731Cohorts.totalInitialPCRTestLessThan12Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.totalInitialPCRTestLessThan12Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -731,7 +735,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator infectedIn24Months() {
         return cohortIndicator("totalInfected24Months",
-                map(moh731Cohorts.totalInfected24Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.totalInfected24Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -743,7 +747,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator uninfectedIn24Months() {
         return cohortIndicator("totalUninfectedIn24Months",
-                map(moh731Cohorts.totalUninfectedIn24Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.totalUninfectedIn24Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -755,7 +759,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator unknownOutcomesIn24Months() {
         return cohortIndicator("unknownOutcomesIn24Months",
-                map(moh731Cohorts.unknownOutcomesIn24Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.unknownOutcomesIn24Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -767,7 +771,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator netCohortHeiIn24Months() {
         return cohortIndicator("netCohortHeiIn24Months",
-                map(moh731Cohorts.netCohortHeiIn24Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.netCohortHeiIn24Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -779,7 +783,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator motherBabyPairsIn24Months() {
         return cohortIndicator("motherBabyPairsIn24Months",
-                map(moh731Cohorts.motherBabyPairsIn24Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.motherBabyPairsIn24Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -791,7 +795,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator pairNetCohortIn24Months() {
         return cohortIndicator("pairNetCohortIn24Months",
-                map(moh731Cohorts.pairNetCohortIn24Months(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.pairNetCohortIn24Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -803,7 +807,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator exclusiveBFAt6Months12MonthCohort() {
         return cohortIndicator("exclusiveBFAt6Months",
-                map(moh731Cohorts.exclusiveBFAt6Months12MonthCohort(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.exclusiveBFAt6Months12MonthCohort(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -815,7 +819,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator exclusiveRFAt6Months12MonthCohort() {
         return cohortIndicator("exclusiveRFAt6Months",
-                map(moh731Cohorts.exclusiveRFAt6Months12MonthCohort(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.exclusiveRFAt6Months12MonthCohort(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -827,7 +831,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator mixedFeedingAt6Months12MonthCohort() {
         return cohortIndicator("mixedFeedingAt6Months",
-                map(moh731Cohorts.mixedFeedingAt6Months12MonthCohort(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.mixedFeedingAt6Months12MonthCohort(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -839,7 +843,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator breastFeedingAt12Months12MonthCohort() {
         return cohortIndicator("breastFeedingAt12Months",
-                map(moh731Cohorts.breastFeedingAt12Months12MonthCohort(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.breastFeedingAt12Months12MonthCohort(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -851,7 +855,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator notBreastFeedingAt12Months12MonthCohort() {
         return cohortIndicator("notBreastFeedingAt12Months",
-                map(moh731Cohorts.notBreastFeedingAt12Months12MonthCohort(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.notBreastFeedingAt12Months12MonthCohort(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -863,7 +867,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator breastFeedingAt18Months24MonthCohort() {
         return cohortIndicator("breastFeedingAt18Months",
-                map(moh731Cohorts.breastFeedingAt18Months24MonthCohort(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.breastFeedingAt18Months24MonthCohort(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -875,7 +879,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     public CohortIndicator notBreastFeedingAt18Months24MonthCohort() {
         return cohortIndicator("notBreastFeedingAt18Months",
-                map(moh731Cohorts.notBreastFeedingAt18Months24MonthCohort(), "startDate=${startDate},endDate=${endDate}")
+                map(moh731Cohorts.notBreastFeedingAt18Months24MonthCohort(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}")
         );
     }
 
@@ -886,7 +890,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator preArtCohort() {
-        return cohortIndicator("pre-art cohort", map(moh731Cohorts.preArtCohort(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("pre-art cohort", map(moh731Cohorts.preArtCohort(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -895,7 +899,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator assessedForNutritionInHIV() {
-        return cohortIndicator("Started on IPT", map(moh731Cohorts.assessedForNutritionInHIV(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Started on IPT", map(moh731Cohorts.assessedForNutritionInHIV(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * patients in HIV program who are malnourished
@@ -903,7 +907,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator malnourishedInHIV() {
-        return cohortIndicator("Started on IPT", map(moh731Cohorts.malnourishedInHIV(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Started on IPT", map(moh731Cohorts.malnourishedInHIV(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * patients started on ipt
@@ -911,13 +915,13 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator startedOnIPT() {
-        return cohortIndicator("Started on IPT", map(moh731Cohorts.startedOnIPT(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Started on IPT", map(moh731Cohorts.startedOnIPT(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * patients who started ipt 12 months ago and have completed
      */
     public CohortIndicator ipt12MonthsCohort() {
-        return cohortIndicator("IPT 12 months cohort", map(moh731Cohorts.completedIPT12Months(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("IPT 12 months cohort", map(moh731Cohorts.completedIPT12Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -925,42 +929,42 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      */
     // tb new cases
     public CohortIndicator tbEnrollment() {
-        return cohortIndicator("New TB cases", map(moh731Cohorts.tbEnrollment(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("New TB cases", map(moh731Cohorts.tbEnrollment(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     // New TB cases known positive
     public CohortIndicator tbNewKnownPositive() {
-        return cohortIndicator("New TB cases with KP status", map(moh731Cohorts.tbNewKnownPositive(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("New TB cases with KP status", map(moh731Cohorts.tbNewKnownPositive(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     // New TB cases tested positive
     public CohortIndicator tbTestedForHIV() {
-        return cohortIndicator("New TB cases tested for HIV", map(moh731Cohorts.tbTestedForHIV(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("New TB cases tested for HIV", map(moh731Cohorts.tbTestedForHIV(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     // new TB cases tested HIV positive
     public CohortIndicator tbNewTestedHIVPositive() {
-        return cohortIndicator("New TB cases tested HIV Positive", map(moh731Cohorts.tbNewTestedHIVPositive(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("New TB cases tested HIV Positive", map(moh731Cohorts.tbNewTestedHIVPositive(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     // new TB cases already on HAART
     public CohortIndicator tbNewAlreadyOnHAART() {
-        return cohortIndicator("New TB cases already on HAART", map(moh731Cohorts.tbNewAlreadyOnHAART(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("New TB cases already on HAART", map(moh731Cohorts.tbNewAlreadyOnHAART(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     // new TB cases started on HAART
     public CohortIndicator tbNewStartingHAART() {
-        return cohortIndicator("New TB cases starting on HAART", map(moh731Cohorts.tbNewStartingHAART(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("New TB cases starting on HAART", map(moh731Cohorts.tbNewStartingHAART(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     // total TB on HAART
     public CohortIndicator tbTotalOnHAART() {
-        return cohortIndicator("Total TB cases on HAART", map(moh731Cohorts.tbTotalOnHAART(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Total TB cases on HAART", map(moh731Cohorts.tbTotalOnHAART(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     // screened for cacx
     public CohortIndicator screenedforCaCx() {
-        return cohortIndicator("Screened for Cacx", map(moh731Cohorts.screenedForCaCx(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Screened for Cacx", map(moh731Cohorts.screenedForCaCx(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
 
@@ -978,11 +982,11 @@ public class ETLMoh731GreenCardIndicatorLibrary {
     }
 
     public CohortIndicator newHivEnrollment() {
-        return cohortIndicator("New Enrollment in care (excludes transfers)", ReportUtils.map(moh731Cohorts.hivEnrollment(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("New Enrollment in care (excludes transfers)", ReportUtils.map(moh731Cohorts.hivEnrollment(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     public CohortIndicator hivEnrolledKPs() {
-        return cohortIndicator("KPs newly Enrolled in care (excludes transfers)", ReportUtils.map(moh731Cohorts.hivEnrolledKPs(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("KPs newly Enrolled in care (excludes transfers)", ReportUtils.map(moh731Cohorts.hivEnrolledKPs(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -991,7 +995,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return the indicator
      */
     public CohortIndicator currentlyOnArt() {
-        return cohortIndicator("Currently on ART", ReportUtils.map(moh731Cohorts.currentlyOnArt(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Currently on ART", ReportUtils.map(moh731Cohorts.currentlyOnArt(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -999,7 +1003,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return
      */
     public CohortIndicator kpsCurrentlyOnArtOnART() {
-        return cohortIndicator("Currently on ART", ReportUtils.map(moh731Cohorts.kpsCurrentlyOnArtOnART(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Currently on ART", ReportUtils.map(moh731Cohorts.kpsCurrentlyOnArtOnART(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * Number of patients who are ART revisits
@@ -1015,7 +1019,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return
      */
     public CohortIndicator kpsStartedOnART() {
-        return cohortIndicator("KPs started on ART", ReportUtils.map(moh731Cohorts.kpsStartedOnART(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("KPs started on ART", ReportUtils.map(moh731Cohorts.kpsStartedOnART(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -1024,7 +1028,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return the indicator
      */
     public CohortIndicator startedOnArt() {
-        return cohortIndicator("Started on ART", ReportUtils.map(moh731Cohorts.startedOnART(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Started on ART", ReportUtils.map(moh731Cohorts.startedOnART(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
 
@@ -1043,7 +1047,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return the indicator
      */
     public CohortIndicator art12MonthNetCohort() {
-        return cohortIndicator("ART 12 Month Net Cohort", ReportUtils.map(moh731Cohorts.art12MonthNetCohort(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("ART 12 Month Net Cohort", ReportUtils.map(moh731Cohorts.art12MonthNetCohort(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -1079,21 +1083,21 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return the indicator
      */
     public CohortIndicator onTherapyAt12Months() {
-        return cohortIndicator("On therapy at 12 months", ReportUtils.map(moh731Cohorts.onTherapyAt12Months(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("On therapy at 12 months", ReportUtils.map(moh731Cohorts.onTherapyAt12Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * Number of patients with suppressed vl last 12 months     *
      * @return the indicator
      */
     public CohortIndicator patientsWithSuppressedVlLast12Months() {
-        return cohortIndicator("Patients with suppressed vl last 12 months", ReportUtils.map(moh731Cohorts.patientsWithSuppressedVlLast12Months(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Patients with suppressed vl last 12 months", ReportUtils.map(moh731Cohorts.patientsWithSuppressedVlLast12Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * Number of patients with vl results last 12 months     *
      * @return the indicator
      */
     public CohortIndicator patientsWithVLResultsLast12Months() {
-        return cohortIndicator("Patients with vl results last 12 months", ReportUtils.map(moh731Cohorts.patientsWithVLResultsLast12Months(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Patients with vl results last 12 months", ReportUtils.map(moh731Cohorts.patientsWithVLResultsLast12Months(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * Cumulative number of patients screened for TB
@@ -1101,11 +1105,11 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return the indicator
      */
     public CohortIndicator screenedForTb() {
-        return cohortIndicator("Screen for TB", ReportUtils.map(moh731Cohorts.tbScreening(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Screen for TB", ReportUtils.map(moh731Cohorts.tbScreening(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     public CohortIndicator presumedForTb() {
-        return cohortIndicator("Presumed for TB", ReportUtils.map(moh731Cohorts.presumedTb(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Presumed for TB", ReportUtils.map(moh731Cohorts.presumedTb(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -1142,7 +1146,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return the indicator
      */
     public CohortIndicator modernContraceptivesProvided() {
-        return cohortIndicator("patients provided with modern contraceptives", map(moh731Cohorts.modernContraceptivesProvided(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("patients provided with modern contraceptives", map(moh731Cohorts.modernContraceptivesProvided(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -1178,7 +1182,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return the indicator
      */
     public CohortIndicator hivCareVisitsTotal() {
-        return cohortIndicator("HIV care visits", map(moh731Cohorts.hivCareVisitsTotal(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("HIV care visits", map(moh731Cohorts.hivCareVisitsTotal(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -1187,7 +1191,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return the indicator
      */
     public CohortIndicator onCotrimoxazoleProphylaxis() {
-        return cohortIndicator("patients on CTX prophylaxis", map(moh731Cohorts.inHivProgramAndOnCtxProphylaxis(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("patients on CTX prophylaxis", map(moh731Cohorts.inHivProgramAndOnCtxProphylaxis(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -1214,7 +1218,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator numberCircumcised() {
-        return cohortIndicator("Number circumcised", map(datimCohorts.malesCircumcised(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Number circumcised", map(datimCohorts.malesCircumcised(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * VMMC
@@ -1223,7 +1227,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator numberCircumcisedHivPositive() {
-        return cohortIndicator("Number circumcised Hiv Positive", map(datimCohorts.malesCircumcisedTestedHIVPositive(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Number circumcised Hiv Positive", map(datimCohorts.malesCircumcisedTestedHIVPositive(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * VMMC
@@ -1232,7 +1236,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator numberCircumcisedHivNegative() {
-        return cohortIndicator("Number circumcised Hiv Negative", map(datimCohorts.malesCircumcisedTestedHIVNegative(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Number circumcised Hiv Negative", map(datimCohorts.malesCircumcisedTestedHIVNegative(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * VMMC
@@ -1241,7 +1245,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator numberCircumcisedHivUnknown() {
-        return cohortIndicator("Number circumcised Hiv Unknown", map(datimCohorts.malesCircumcisedIndeterminateHIVResult(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Number circumcised Hiv Unknown", map(datimCohorts.malesCircumcisedIndeterminateHIVResult(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * VMMC
@@ -1250,7 +1254,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator numberCircumcisedSurgically() {
-        return cohortIndicator("Number circumcised surgically", map(datimCohorts.vmmcSurgical(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Number circumcised surgically", map(datimCohorts.vmmcSurgical(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * VMMC
@@ -1259,7 +1263,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator numberCircumcisedUsingDevice() {
-        return cohortIndicator("Number circumcised using device method", map(datimCohorts.vmmcDevice(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Number circumcised using device method", map(datimCohorts.vmmcDevice(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * VMMC
@@ -1269,7 +1273,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator circumcisedWithModerateAEDuringProcedure() {
-        return cohortIndicator("Number circumcised with moderate Adverse Events during procedutre", map(moh731Cohorts.circumcisedWithModerateAEDuringProcedure(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Number circumcised with moderate Adverse Events during procedutre", map(moh731Cohorts.circumcisedWithModerateAEDuringProcedure(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * VMMC
@@ -1279,7 +1283,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator circumcisedWithSevereAEDuringProcedure() {
-        return cohortIndicator("Number circumcised with sever Adverse Events during procedutre", map(moh731Cohorts.circumcisedWithSevereAEDuringProcedure(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Number circumcised with sever Adverse Events during procedutre", map(moh731Cohorts.circumcisedWithSevereAEDuringProcedure(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * VMMC
@@ -1289,7 +1293,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator circumcisedWithModerateAEPostProcedure() {
-        return cohortIndicator("Number circumcised with moderate Adverse Events post procedutre", map(moh731Cohorts.circumcisedWithModerateAEPostProcedure(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Number circumcised with moderate Adverse Events post procedutre", map(moh731Cohorts.circumcisedWithModerateAEPostProcedure(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * VMMC
@@ -1299,7 +1303,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator circumcisedWithSevereAEPostProcedure() {
-        return cohortIndicator("Number circumcised with severe Adverse Events post procedutre", map(moh731Cohorts.circumcisedWithSevereAEPostProcedure(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Number circumcised with severe Adverse Events post procedutre", map(moh731Cohorts.circumcisedWithSevereAEPostProcedure(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
     /**
      * VMMC
@@ -1309,7 +1313,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return indicator
      */
     public CohortIndicator followedUpWithin14daysOfVMMCProcedure() {
-        return cohortIndicator("Number circumcised have a followup visit within 14 days post procedutre", map(datimCohorts.followedUpWithin14daysOfVMMCProcedure(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Number circumcised have a followup visit within 14 days post procedutre", map(datimCohorts.followedUpWithin14daysOfVMMCProcedure(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 
     /**
@@ -1317,7 +1321,7 @@ public class ETLMoh731GreenCardIndicatorLibrary {
      * @return
      */
     public CohortIndicator totalInfantARVProphylaxis() {
-        return cohortIndicator("Total Infant ARV prophylaxis", map(moh731Cohorts.totalInfantARVProphylaxis(), "startDate=${startDate},endDate=${endDate}"));
+        return cohortIndicator("Total Infant ARV prophylaxis", map(moh731Cohorts.totalInfantARVProphylaxis(), "startDate=${startDate},endDate=${endDate},defaultLocation=${defaultLocation}"));
     }
 }
 
