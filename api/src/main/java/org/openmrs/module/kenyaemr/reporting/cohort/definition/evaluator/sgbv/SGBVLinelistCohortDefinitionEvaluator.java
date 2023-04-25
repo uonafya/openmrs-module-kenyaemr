@@ -50,7 +50,7 @@ public class SGBVLinelistCohortDefinitionEvaluator implements CohortDefinitionEv
         Cohort newCohort = new Cohort();
 
         String qry="SELECT patient_id FROM kenyaemr_etl.etl_gbv_screening\n" +
-                " where visit_date between date(:startDate) and date(:endDate)\n" +
+                " where visit_date between date(:startDate) and date(:endDate) and location_id in (:defaultLocation)\n" +
                 "GROUP BY patient_id;";
 
         SqlQueryBuilder builder = new SqlQueryBuilder();
@@ -59,6 +59,7 @@ public class SGBVLinelistCohortDefinitionEvaluator implements CohortDefinitionEv
         Date endDate = (Date)context.getParameterValue("endDate");
         builder.addParameter("startDate", startDate);
         builder.addParameter("endDate", endDate);
+        builder.addParameter("defaultLocation", context.getParameterValue("defaultLocation"));
 
         List<Integer> ptIds = evaluationService.evaluateToList(builder, Integer.class, context);
         newCohort.setMemberIds(new HashSet<Integer>(ptIds));

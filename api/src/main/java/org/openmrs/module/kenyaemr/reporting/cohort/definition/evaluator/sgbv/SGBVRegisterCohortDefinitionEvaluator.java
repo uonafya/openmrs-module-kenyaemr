@@ -42,7 +42,7 @@ public class SGBVRegisterCohortDefinitionEvaluator implements EncounterQueryEval
 
         String qry="SELECT encounter_id FROM kenyaemr_etl.etl_gbv_screening\n" +
                 "where visit_date between date(:startDate) and date(:endDate)\n" +
-                " GROUP BY patient_id;";
+                " and location_id in (:defaultLocation) GROUP BY patient_id;";
 
         SqlQueryBuilder builder = new SqlQueryBuilder();
         builder.append(qry);
@@ -50,6 +50,7 @@ public class SGBVRegisterCohortDefinitionEvaluator implements EncounterQueryEval
         Date endDate = (Date)context.getParameterValue("endDate");
         builder.addParameter("endDate", endDate);
         builder.addParameter("startDate", startDate);
+        builder.addParameter("defaultLocation", context.getParameterValue("defaultLocation"));
 
         List<Integer> results = evaluationService.evaluateToList(builder, Integer.class, context);
         queryResult.getMemberIds().addAll(results);
