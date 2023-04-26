@@ -305,16 +305,18 @@ public class EmrUtils {
 	}
 
 	public static List<Location> getFacilityByLoggedInUser() {
-		Person user = Context.getAuthenticatedUser().getPerson();
+		if (Context.getAuthenticatedUser() != null) {
+			Person user = Context.getAuthenticatedUser().getPerson();
 
-		Collection<Provider> provider = Context.getProviderService().getProvidersByPerson(user);
-		for (Provider p : provider) {
-			Collection<ProviderAttribute> attribute = p.getActiveAttributes();
-			for (ProviderAttribute at : attribute) {
-				if (at.getAttributeType().getUuid().equals(CommonMetadata._ProviderAttributeType.PRIMARY_FACILITY)) {
+			Collection<Provider> provider = Context.getProviderService().getProvidersByPerson(user);
+			for (Provider p : provider) {
+				Collection<ProviderAttribute> attribute = p.getActiveAttributes();
+				for (ProviderAttribute at : attribute) {
+					if (at.getAttributeType().getUuid().equals(CommonMetadata._ProviderAttributeType.PRIMARY_FACILITY)) {
 
-					Location primaryFacility = (Location) at.getValue();
-					return Arrays.asList(primaryFacility);
+						Location primaryFacility = (Location) at.getValue();
+						return Arrays.asList(primaryFacility);
+					}
 				}
 			}
 		}
