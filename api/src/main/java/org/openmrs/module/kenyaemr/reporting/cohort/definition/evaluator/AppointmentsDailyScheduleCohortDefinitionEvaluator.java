@@ -46,10 +46,12 @@ public class AppointmentsDailyScheduleCohortDefinitionEvaluator implements Cohor
 
 		Cohort newCohort = new Cohort();
 
-		String qry="select patient_id from kenyaemr_etl.etl_patients_booked_today;";
+		String qry="select patient_id from kenyaemr_etl.etl_patients_booked_today where location_id = :userFacility;";
 
 		SqlQueryBuilder builder = new SqlQueryBuilder();
 		builder.append(qry);
+		int userFacility = (Integer)context.getParameterValue("userFacility");
+		builder.addParameter("userFacility", userFacility);
 		List<Integer> ptIds = evaluationService.evaluateToList(builder, Integer.class, context);
 
 		newCohort.setMemberIds(new HashSet<Integer>(ptIds));

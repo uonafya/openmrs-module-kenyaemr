@@ -12,9 +12,11 @@ package org.openmrs.module.kenyaemr.fragment.controller.facilityDashboard;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
+import org.openmrs.Location;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.kenyaemr.EmrConstants;
 import org.openmrs.module.kenyaemr.reporting.builder.hiv.DashBoardCohorts;
+import org.openmrs.module.kenyaemr.util.EmrUtils;
 import org.openmrs.module.kenyaui.KenyaUiUtils;
 import org.openmrs.module.reporting.evaluation.EvaluationContext;
 import org.openmrs.ui.framework.UiUtils;
@@ -52,11 +54,16 @@ public class MiniFacilityDashboardFragmentController {
 		Date todaysDate = todaysDate();
 		SimpleDateFormat df = new SimpleDateFormat("MMM-yyyy");
 		String reportingPeriod = df.format(endDate);
+		List<Location> defaultFacility = EmrUtils.getFacilityByLoggedInUser();
+
 
 
 		evaluationContext.addParameterValue("startDate", startDate);
 		evaluationContext.addParameterValue("endDate", endDate);
 		evaluationContext.addParameterValue("enrolledOnOrBefore", endDate);
+		if (!defaultFacility.isEmpty()) {
+			evaluationContext.addParameterValue("userFacility", defaultFacility.get(0).getLocationId());
+		}
 
 		Set<Integer> all = DashBoardCohorts.allPatients(evaluationContext).getMemberIds();
 		allPatients = all != null? all.size(): 0;

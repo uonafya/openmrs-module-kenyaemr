@@ -47,12 +47,14 @@ public class ETLPatientsWithSuppressedVLInLast12MonthsCohortDefinitionEvaluator 
 
 		Cohort newCohort = new Cohort();
 
-		String qry="select vt.patient_id from kenyaemr_etl.etl_viral_load_tracker vt where (vt.vl_result < 1000 or vt.vl_result='LDL');";
+		String qry="select vt.patient_id from kenyaemr_etl.etl_viral_load_tracker vt where (vt.vl_result < 1000 or vt.vl_result='LDL')  and location_id = :userFacility;";
 
 		SqlQueryBuilder builder = new SqlQueryBuilder();
 		builder.append(qry);
 		Date endDate = (Date)context.getParameterValue("endDate");
+		int userFacility = (Integer)context.getParameterValue("userFacility");
 		builder.addParameter("endDate", endDate);
+		builder.addParameter("userFacility", userFacility);
 		List<Integer> ptIds = evaluationService.evaluateToList(builder, Integer.class, context);
 
 		newCohort.setMemberIds(new HashSet<Integer>(ptIds));

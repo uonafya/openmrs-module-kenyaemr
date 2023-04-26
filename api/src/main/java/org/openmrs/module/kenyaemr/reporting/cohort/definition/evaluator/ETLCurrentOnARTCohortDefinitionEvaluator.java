@@ -56,17 +56,17 @@ public class ETLCurrentOnARTCohortDefinitionEvaluator implements CohortDefinitio
 				"           d.patient_id as disc_patient,\n" +
 				"           d.effective_disc_date as effective_disc_date,\n" +
 				"           max(d.visit_date) as date_discontinued,\n" +
-				"           de.patient_id as started_on_drugs\n" +
+				"           de.patient_id as started_on_drugs, fup.location_id\n" +
 				"    from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
 				"           join kenyaemr_etl.etl_patient_demographics p on p.patient_id=fup.patient_id\n" +
-				"           join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id\n" +
+				"           join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id and e.location_id = fup.location_id\n" +
 				"           left outer join kenyaemr_etl.etl_drug_event de on e.patient_id = de.patient_id and de.program='HIV' and date(date_started) <= date(:endDate)\n" +
 				"           left outer JOIN\n" +
 				"             (select patient_id, coalesce(date(effective_discontinuation_date),visit_date) visit_date,max(date(effective_discontinuation_date)) as effective_disc_date from kenyaemr_etl.etl_patient_program_discontinuation\n" +
-				"              where date(visit_date) <= date(:endDate) and program_name='HIV'\n" +
+				"              where date(visit_date) <= date(:endDate) and program_name='HIV' and location_id in (:defaultLocation) \n" +
 				"              group by patient_id\n" +
 				"             ) d on d.patient_id = fup.patient_id\n" +
-				"    where fup.visit_date <= date(:endDate)\n" +
+				"    where fup.visit_date <= date(:endDate) and fup.location_id in (:defaultLocation)\n" +
 				"    group by patient_id\n" +
 				"    having (started_on_drugs is not null and started_on_drugs <> '') and (\n" +
 				"        (\n" +
@@ -74,14 +74,16 @@ public class ETLCurrentOnARTCohortDefinitionEvaluator implements CohortDefinitio
 				"              and (date(latest_vis_date) >= date(date_discontinued) or date(latest_tca) >= date(date_discontinued) or disc_patient is null)\n" +
 				"            )\n" +
 				"        )\n" +
-				"    ) t;";
+				"    ) t where t.location_id in (:defaultLocation);";
 
 		SqlQueryBuilder builder = new SqlQueryBuilder();
 		builder.append(qry);
 		Date startDate = (Date)context.getParameterValue("startDate");
 		Date endDate = (Date)context.getParameterValue("endDate");
+		int userFacility = (Integer)context.getParameterValue("userFacility");
 		builder.addParameter("endDate", endDate);
 		builder.addParameter("startDate", startDate);
+		builder.addParameter("defaultLocation", userFacility);
 		List<Integer> ptIds = evaluationService.evaluateToList(builder, Integer.class, context);
 
 		newCohort.setMemberIds(new HashSet<Integer>(ptIds));

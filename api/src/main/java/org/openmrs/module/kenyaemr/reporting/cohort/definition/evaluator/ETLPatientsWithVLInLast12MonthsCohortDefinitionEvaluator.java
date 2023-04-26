@@ -12,8 +12,10 @@ package org.openmrs.module.kenyaemr.reporting.cohort.definition.evaluator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Cohort;
+import org.openmrs.Location;
 import org.openmrs.annotation.Handler;
 import org.openmrs.module.kenyaemr.reporting.cohort.definition.ETLPatientsWithVLInLast12MonthsCohortDefinition;
+import org.openmrs.module.kenyaemr.util.EmrUtils;
 import org.openmrs.module.reporting.cohort.EvaluatedCohort;
 import org.openmrs.module.reporting.cohort.definition.CohortDefinition;
 import org.openmrs.module.reporting.cohort.definition.evaluator.CohortDefinitionEvaluator;
@@ -26,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Evaluator for Current on ART
@@ -42,19 +45,21 @@ public class ETLPatientsWithVLInLast12MonthsCohortDefinitionEvaluator implements
 
 		ETLPatientsWithVLInLast12MonthsCohortDefinition definition = (ETLPatientsWithVLInLast12MonthsCohortDefinition) cohortDefinition;
 
-        if (definition == null)
+		List<Location> defaultFacility = EmrUtils.getFacilityByLoggedInUser();
+
+		if (definition == null)
             return null;
 
 		Cohort newCohort = new Cohort();
 
-		String qry="select vt.patient_id from kenyaemr_etl.etl_viral_load_tracker vt;";
+		String qry="select vt.patient_id from kenyaemr_etl.etl_viral_load_tracker vt where location_id = :userFacility;";
 
 		SqlQueryBuilder builder = new SqlQueryBuilder();
 		builder.append(qry);
 		Date endDate = (Date)context.getParameterValue("endDate");
-		//Date startDate = (Date)context.getParameterValue("startDate");
-		//builder.addParameter("startDate", startDate);
+		int userFacility = (Integer)context.getParameterValue("userFacility");
 		builder.addParameter("endDate", endDate);
+		builder.addParameter("userFacility", userFacility);
 		List<Integer> ptIds = evaluationService.evaluateToList(builder, Integer.class, context);
 
 		newCohort.setMemberIds(new HashSet<Integer>(ptIds));

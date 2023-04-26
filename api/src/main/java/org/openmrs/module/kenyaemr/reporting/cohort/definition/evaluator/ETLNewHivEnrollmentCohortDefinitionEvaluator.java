@@ -47,14 +47,16 @@ public class ETLNewHivEnrollmentCohortDefinitionEvaluator implements CohortDefin
 
 		Cohort newCohort = new Cohort();
 
-		String qry=" SELECT patient_id FROM kenyaemr_etl.etl_last_month_newly_enrolled_in_care;";
+		String qry=" SELECT patient_id FROM kenyaemr_etl.etl_last_month_newly_enrolled_in_care where location_id = :defaultLocation;";
 
 		SqlQueryBuilder builder = new SqlQueryBuilder();
 		builder.append(qry);
 		Date startDate = (Date)context.getParameterValue("startDate");
 		Date endDate = (Date)context.getParameterValue("endDate");
+		int userFacility = (Integer)context.getParameterValue("userFacility");
 		builder.addParameter("endDate", endDate);
 		builder.addParameter("startDate", startDate);
+		builder.addParameter("defaultLocation", userFacility);
 		List<Integer> ptIds = evaluationService.evaluateToList(builder, Integer.class, context);
 
 		newCohort.setMemberIds(new HashSet<Integer>(ptIds));
