@@ -59,7 +59,7 @@ public class DashBoardCohorts {
      */
     public static EvaluatedCohort allPatients(EvaluationContext context) {
         try {
-            return getService().evaluate(new AllPatientsCohortDefinition(), context);
+            return getService().evaluate(new AllKenyaEmrPatientsCohortDefinition(), context);
         } catch (EvaluationException e) {
             throw new IllegalStateException("Error evaluating allPatients", e);
         }

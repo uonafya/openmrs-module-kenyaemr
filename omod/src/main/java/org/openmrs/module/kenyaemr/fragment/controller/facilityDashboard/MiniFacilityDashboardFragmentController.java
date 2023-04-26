@@ -62,9 +62,9 @@ public class MiniFacilityDashboardFragmentController {
 		evaluationContext.addParameterValue("endDate", endDate);
 		evaluationContext.addParameterValue("enrolledOnOrBefore", endDate);
 		if (!defaultFacility.isEmpty()) {
-			evaluationContext.addParameterValue("userFacility", defaultFacility.get(0).getLocationId());
+			evaluationContext.addParameterValue("defaultLocation", defaultFacility.get(0).getLocationId());
 		}
-
+		System.out.println("The evaluation context has the following >>"+evaluationContext.getParameterValues());
 		Set<Integer> all = DashBoardCohorts.allPatients(evaluationContext).getMemberIds();
 		allPatients = all != null? all.size(): 0;
 
