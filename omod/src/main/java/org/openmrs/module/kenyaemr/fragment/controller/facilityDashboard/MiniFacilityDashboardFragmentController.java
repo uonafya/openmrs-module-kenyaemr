@@ -95,7 +95,7 @@ public class MiniFacilityDashboardFragmentController {
 		Set<Integer> patientsWithUnscheduledVisit = DashBoardCohorts.unscheduledAppointments(evaluationContext).getMemberIds();
 		unscheduledVisits = patientsWithUnscheduledVisit != null? patientsWithUnscheduledVisit.size(): 0;
 
-		Set<Integer> cummulativeEnrolledInHiv = DashBoardCohorts.enrolledInHiv(evaluationContext).getMemberIds();
+		Set<Integer> cummulativeEnrolledInHiv = DashBoardCohorts.enrolledInHiv(evaluationContext, defaultFacility).getMemberIds();
 		enrolledInHiv = cummulativeEnrolledInHiv != null? cummulativeEnrolledInHiv.size(): 0;
 
 		Set<Integer> newEnrollmentsInHiv = DashBoardCohorts.newlyEnrolledInHiv(evaluationContext).getMemberIds();

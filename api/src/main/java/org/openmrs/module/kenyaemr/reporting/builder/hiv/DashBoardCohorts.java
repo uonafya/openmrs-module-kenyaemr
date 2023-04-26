@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.kenyaemr.reporting.builder.hiv;
 
+import org.openmrs.Location;
 import org.openmrs.Program;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.kenyaemr.metadata.HivMetadata;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import reporting.library.shared.covid.Covid19VaccinationCohortLibrary;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by antony on 09/08/17.
@@ -211,10 +213,13 @@ public class DashBoardCohorts {
      * @param context optional (used to return a cached value if possible)
      * @return
      */
-    public static EvaluatedCohort enrolledInHiv(EvaluationContext context) {
+    public static EvaluatedCohort enrolledInHiv(EvaluationContext context, List<Location> locations) {
         try {
             ProgramEnrollmentCohortDefinition cd = new ProgramEnrollmentCohortDefinition();
             cd.setPrograms(Arrays.asList(MetadataUtils.existing(Program.class, HivMetadata._Program.HIV)));
+            if (!locations.isEmpty()) {
+                cd.setLocationList(locations);
+            }
             return getService().evaluate(cd, context);
         } catch (EvaluationException e) {
             throw new IllegalStateException("Error evaluating patients enrolled in Hiv", e);
