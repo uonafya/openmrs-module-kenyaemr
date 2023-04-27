@@ -45,7 +45,7 @@ public class ETLTransferInPatientsCohortDefinitionEvaluator implements CohortDef
 			return null;
 
 		Cohort newCohort = new Cohort();
-		Integer locationId = (Integer)context.getParameterValue("defaultLocation");
+		String locationId = (String)context.getParameterValue("defaultLocation");
 		String qry=" select patient_id\n" +
 				"from kenyaemr_etl.etl_hiv_enrollment\n" +
 				"where patient_type=160563\n" +
@@ -56,6 +56,7 @@ public class ETLTransferInPatientsCohortDefinitionEvaluator implements CohortDef
 		Date endDate = (Date)context.getParameterValue("endDate");
 		builder.addParameter("endDate", endDate);
 		builder.addParameter("startDate", startDate);
+		builder.addParameter("defaultLocation", locationId);
 		builder.append(qry);
 		List<Integer> ptIds = evaluationService.evaluateToList(builder, Integer.class, context);
 		newCohort.setMemberIds(new HashSet<Integer>(ptIds));
