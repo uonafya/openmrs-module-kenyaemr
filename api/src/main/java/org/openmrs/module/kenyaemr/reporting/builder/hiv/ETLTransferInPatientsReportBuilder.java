@@ -71,7 +71,6 @@ public class ETLTransferInPatientsReportBuilder extends AbstractHybridReportBuil
 	 */
 	@Override
 	protected void addColumns(HybridReportDescriptor report, PatientDataSetDefinition dsd) {
-
 		PatientIdentifierType upn = MetadataUtils.existing(PatientIdentifierType.class, HivMetadata._PatientIdentifierType.UNIQUE_PATIENT_NUMBER);
 		DataConverter identifierFormatter = new ObjectFormatter("{identifier}");
 		DataDefinition identifierDef = new ConvertedPatientDataDefinition("identifier", new PatientIdentifierDataDefinition(upn.getName(), upn), identifierFormatter);
