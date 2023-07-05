@@ -46,7 +46,7 @@
     </modules>
 
     <properties>
-        <openMRSVersion>2.6.0</openMRSVersion>
+        <openMRSVersion>2.6.1</openMRSVersion>
         <openMRSMinorVersion>2.0</openMRSMinorVersion>
         <cielVersion>20150123</cielVersion>
 
@@ -242,7 +242,7 @@
             <version>${bahmniAppointmentsVersion}</version>
             <scope>provided</scope>
         </dependency>
-         <dependency>
+        <dependency>
 
             <groupId>org.openmrs.module</groupId>
             <artifactId>webservices.rest-omod</artifactId>
@@ -274,12 +274,12 @@
             <scope>test</scope>
         </dependency>
 
-<!--        <dependency>
-            <groupId>org.openmrs.module</groupId>
-            <artifactId>hivtestingservices-api</artifactId>
-            <version>${kenyaemrHivTestingVersion}</version>
-            <scope>provided</scope>
-        </dependency>-->
+        <!--        <dependency>
+                    <groupId>org.openmrs.module</groupId>
+                    <artifactId>hivtestingservices-api</artifactId>
+                    <version>${kenyaemrHivTestingVersion}</version>
+                    <scope>provided</scope>
+                </dependency>-->
 
         <!-- End OpenMRS modules -->
 
