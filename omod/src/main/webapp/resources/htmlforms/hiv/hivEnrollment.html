@@ -32,7 +32,6 @@
         var mflCode = <lookup expression="kenyaemr.currentFacilityMFLCode()" />;
         var ENROLLED_IN_HIV = GREENCARD_VELOCITY.split(",")[12].split(":")[1];
         var patientId = <lookup expression="patient.patientId"/>;
-
         //On Ready
         jq(function() {
 
@@ -129,6 +128,84 @@
             if (facility_confirmed != null) {
                 getField('facility-confirmed.value').val(facility_confirmed);
             }
+
+            jq('#selectedFromFacility input[type=text]').attr('readonly','readonly');
+            jq('#selectedTransitFacility input[type=text]').attr('readonly','readonly');
+
+            jq("#btnTransferFromFacility").click(function(e){
+                e.preventDefault();
+                jq("#transferFacility").val('');
+                jq("#theSelect").find('option').remove().end();
+                jq("#dlgSelectFromFacility").dialog({bgiframe: true,
+                    title : "Transferred From Facility",
+                    buttons: {
+                        "Select Facility": updateMflCode,
+                        "Cancel": function () {
+                            jq("#dlgSelectFromFacility").dialog("close");
+                        }
+                    },
+                    height: 350,
+                    width: 600,
+                    modal: true });
+            });
+
+            jq("#btnTransitFacility").click(function(e){
+                e.preventDefault();
+                jq("#transferFacility").val('');
+                jq("#theSelect").find('option').remove().end();
+                jq("#dlgSelectFromFacility").dialog({bgiframe: true,
+                    title : "Facility",
+                    buttons: {
+                        "Select Facility": updateFacilityMflCode,
+                        "Cancel": function () {
+                            jq("#dlgSelectFromFacility").dialog("close");
+                        }
+                    },
+                    height: 350,
+                    width: 600,
+                    modal: true });
+            });
+
+            jq('#transferFacility').keyup(function(){
+                var searchTerm = jq('#transferFacility').val(); 
+                if(searchTerm.length > 2) {
+                    var facilitySelect = jq("#theSelect");
+                    jq("#theSelect").find('option').remove().end();
+
+                    jq.getJSON('/' + ctxPath + '/kenyaemr/search/simpleLocations.action', { q: searchTerm
+                    }, function (data) {
+                        if (data != null) {
+                            if (data.length > 0) {
+                                var optionBlank = jq("<option />");
+                                optionBlank.html('Select facility from list');
+                                optionBlank.val('');
+                                facilitySelect.append(optionBlank);
+                                jq(data).each(function() {
+                                    var option = jq("<option />");
+
+                                    option.html(this.name);
+                                    option.val(this.mflCode);
+                                    facilitySelect.append(option); 
+                                });
+                            }
+                        }
+                     }) 
+                } else {
+                    jq("#theSelect").find('option').remove().end();
+                };
+            });
+
+            function updateMflCode() {
+                var selectedMflCode = jq("#theSelect").find(":selected").val();
+                setValue('selectedFromFacility.value',selectedMflCode);
+                jq("#dlgSelectFromFacility").dialog("close");
+            }
+
+            function updateFacilityMflCode() {
+                var selectedFacilityMflCode = jq("#theSelect").find(":selected").val();
+                setValue('selectedTransitFacility.value',selectedFacilityMflCode);
+                jq("#dlgSelectFromFacility").dialog("close");
+            }
             //TODO: Consider validation for pmtct
             //Not all ART regimens have answers
             //jq('#pmtctChecked input').click(onPmtctSelected);
@@ -197,6 +274,19 @@
 			var Discontinuation_VELOCITY = "<lookup expression="kenyaemr.DiscontinuationVelocityCalculation()" />";
 			var discontinuationDate = Discontinuation_VELOCITY.split(",")[2].split(":")[1];
 			var effectiveDiscDate = "<lookup expression="fn.latestObs(164384).getValueDatetime()"/>";
+            var selectedFromFacilityVal = getValue('selectedFromFacility.value');
+            var selectedTransitFacilityVal = getValue('selectedTransitFacility.value');
+            var rcId = jq('#rt-id input[type=text]').val();
+            var hasRecencyId =getValue('recency-testing.value');
+
+            if (entryPointStatus == TRANSFER_IN &amp;&amp; selectedFromFacilityVal == "") {
+                    getField('selectedFromFacility.error').html('Facility required').show();
+                    return false;
+            }
+            if (entryPointStatus == TRANSIT &amp;&amp; selectedTransitFacilityVal == "") {
+                    getField('selectedTransitFacility.error').html('Facility required').show();
+                    return false;
+            }
 
             if(IS_KDoD_SITE==false){
             if (PATIENT_HAS_UPN) {
@@ -264,6 +354,16 @@
                     getField('art-start-date.error').html('ART start date , should not be later than date first enrolled in HIV care').show();
                     return false;
                 }
+                var isARTStartDateInFutureDate = moment(moment(moment(artStartDate, 'YYYY-MM-DD').toDate()).format('YYYY-MM-DD')).isAfter(moment().format('YYYY-MM-DD'));
+                if (isARTStartDateInFutureDate) {
+                    getField('art-start-date.error').html('ART start date should not be in future').show();
+                    return false;
+                }
+                var firstEnrolledDateInFutureDate = moment(moment(moment(firstEnrolledDate, 'YYYY-MM-DD').toDate()).format('YYYY-MM-DD')).isAfter(moment().format('YYYY-MM-DD'));
+                if (firstEnrolledDateInFutureDate) {
+                    getField('art-start-date.error').html('Date first enrolled in HIV care should not be in future').show();
+                    return false;
+                }
             }
             if (encounterDate =="") {
                 getField('encounter-date.error').html('Enrollment date should not be empty').show();
@@ -290,8 +390,11 @@
                     }
                 }
             }
-			var isEnrollmentDateEqualsDiscontinuationDate = moment(moment(moment(encounterDate, 'YYYY-MM-DD').toDate()).format('YYYY-MM-DD')).isSame(moment(moment(discontinuationDate, 'DD-MMM-YYYY').toDate()).format('YYYY-MM-DD'));
-				if (isEnrollmentDateEqualsDiscontinuationDate) {
+			var formattedEncDate =  moment(moment(encounterDate).toDate()).format("DD-MMM-YYYY");
+			var formattedDiscDate =  moment(moment(Number(discontinuationDate)).toDate()).format("DD-MMM-YYYY");
+			var formattedEffectiveDiscDate =  moment(effectiveDiscDate).format("DD-MMM-YYYY");
+
+			if (moment(formattedEncDate).isSame(formattedDiscDate, 'day') || moment(formattedEncDate).isBefore(formattedDiscDate, 'day')) {
 				getField('encounter-date.error').html('Enrollment date should be after discontinuation encounter date').show();
 				return false;
 			}
@@ -299,8 +402,7 @@
 				getField('encounter-date.error').html('Enrollment date should be after discontinuation encounter date').hide();
 			}
 
-			var isEnrollmentDateEqualsEffectiveDiscDate = moment(moment(moment(encounterDate, 'YYYY-MM-DD').toDate()).format('YYYY-MM-DD')).isSame(moment(moment(effectiveDiscDate, 'DD-MMM-YYYY').toDate()).format('YYYY-MM-DD'));
-			if (isEnrollmentDateEqualsEffectiveDiscDate) {
+			if (moment(formattedEncDate).isSame(formattedEffectiveDiscDate, 'day') || moment(formattedEncDate).isBefore(formattedEffectiveDiscDate, 'day')) {
 				getField('encounter-date.error').html('Enrollment date should be after effective discontinuation date').show();
 				return false;
 			}
@@ -308,7 +410,16 @@
 				getField('encounter-date.error').html('Enrollment date should be after effective discontinuation date').hide();
 			}
 
-            return true;
+            if(IS_Recency_SITE==true){
+                if(hasRecencyId == 1065) {
+                    var recStr = rcId.split("-")[1];
+                    if (/^[0-9]{5}$/.test(recStr) === false) {
+                        jq("#rtError").text("Invalid Recency ID Format! Should be REC" + mflCode + "- and 5 digits serial number").show();
+                        return false;
+                    }
+                }
+            }
+			return true;
         });
         //Ckeckbox to prepopulate default location
         var defaultLocationChange = function () {
@@ -591,6 +702,14 @@
         }
 
 	</script>
+    <ifMode mode="VIEW">
+        <script type="text/javascript">
+            jq(function(){   
+                jq("#btnTransferFromFacility").hide()
+                jq("#btnTransitFacility").hide()
+            });
+        </script>
+    </ifMode>
 
 	<div class="ke-form-header">
 		<table style="width: 100%">
@@ -600,6 +719,8 @@
 						<script type="text/javascript">
                             var patientId = <lookup expression="patient.patientId"/>;
                             jq(function(){
+                                jq('#selectedFromFacility input[type=text]').attr('readonly','readonly');
+                                jq('#selectedTransitFacility input[type=text]').attr('readonly','readonly');
                                 jq("#transfer-in-status input[value=164144]").prop("disabled", false);
                                // setValue("encounter-date.value", "");
                                 if (getValue('art-status.value') == 'true') {
@@ -711,10 +832,11 @@
 					<td>Facility from: </td>
 					<td> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;
 						<obsgroup groupingConceptId="162724AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA">
-							<obs conceptId="161550AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"/>
+							<obs conceptId="161550AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" labelText=" " id="selectedTransitFacility" size="60"/>
 						</obsgroup>
 
 					</td>
+                    <td><button type="button"  style="height:35px;width:200px;font-size:12px" id="btnTransitFacility" class="ke-program-outcome-button">Click to select facility</button></td>
 				</tr>
 			</table>
 			<div id="transfer-details">
@@ -725,16 +847,37 @@
 					</tr>
 					<tr>
 						<td>Transferred from facility:</td>
-						<td><obs conceptId="160535AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"  size="20"/></td>
+                        <td><obs conceptId="160535AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" labelText=" " id="selectedFromFacility" size="60"/></td>
+                        <td><button type="button"  style="height:35px;width:200px;font-size:12px" id="btnTransferFromFacility" class="ke-program-outcome-button">Click to select transferred from facility</button></td>
 					</tr>
 					<tr>
 						<td>Date <i>first</i> enrolled in HIV care:</td>
-						<td><obs conceptId="160555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" id="first-enrolled-date"/></td>
+						<td><obs conceptId="160555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" allowFutureDates="true" id="first-enrolled-date"/></td>
 					</tr>
-					<tr>
+		<tr>
 						<td>Date started ART at transferring facility:</td>
-						<td><obs conceptId="159599AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" id ="art-start-date"/></td>
+						<td><obs conceptId="159599AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" allowFutureDates="true" id ="art-start-date"/></td>
 					</tr>
+                    <tr>
+                        <td>
+                            <div id="dlgSelectFromFacility" style="display: none">
+                                <span class="ui-helper-hidden-accessible"><input type="text"/></span>
+                                <table>
+                                    <tr>
+                                        <td>Select Facility : &#160;&#160;&#160;&#160;</td>
+                                        <td><input type="text" size="30" id="transferFacility" autocomplete="off"/></td>
+                                    </tr>
+                                    <tr></tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <select id="theSelect"></select>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
 				</table>
 			</div>
 		</fieldset>
