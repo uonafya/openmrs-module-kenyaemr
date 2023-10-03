@@ -7,34 +7,32 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.kenyaemr.reporting.data.converter.definition.defaulterTracing;
+package org.openmrs.module.kenyaemr.reporting.data.converter.definition.art;
 
 import org.openmrs.module.reporting.data.BaseDataDefinition;
-import org.openmrs.module.reporting.data.encounter.definition.EncounterDataDefinition;
+import org.openmrs.module.reporting.data.person.definition.PersonDataDefinition;
 import org.openmrs.module.reporting.definition.configuration.ConfigurationPropertyCachingStrategy;
 import org.openmrs.module.reporting.evaluation.caching.Caching;
 
-import java.util.Date;
-
 /**
- * Return To Care Date Column
+ * Most current medical cover status
  */
 @Caching(strategy=ConfigurationPropertyCachingStrategy.class)
-public class HonouredAppointmentDateDataDefinition extends BaseDataDefinition implements EncounterDataDefinition {
+public class MedicalCoverStatusDataDefinition extends BaseDataDefinition implements PersonDataDefinition {
 
     public static final long serialVersionUID = 1L;
 
     /**
      * Default Constructor
      */
-    public HonouredAppointmentDateDataDefinition() {
+    public MedicalCoverStatusDataDefinition() {
         super();
     }
 
     /**
      * Constructor to populate name only
      */
-    public HonouredAppointmentDateDataDefinition(String name) {
+    public MedicalCoverStatusDataDefinition(String name) {
         super(name);
     }
 
@@ -44,6 +42,6 @@ public class HonouredAppointmentDateDataDefinition extends BaseDataDefinition im
      * @see org.openmrs.module.reporting.data.DataDefinition#getDataType()
      */
     public Class<?> getDataType() {
-        return Date.class;
+        return Double.class;
     }
 }

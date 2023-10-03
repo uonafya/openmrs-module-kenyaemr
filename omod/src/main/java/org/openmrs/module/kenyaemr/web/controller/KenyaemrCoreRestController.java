@@ -14,15 +14,21 @@ import org.openmrs.GlobalProperty;
 import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.Visit;
+import org.openmrs.CareSetting;
 import org.openmrs.Encounter;
 import org.openmrs.Obs;
+import org.openmrs.Person;
 import org.openmrs.Program;
 import org.openmrs.PatientProgram;
+import org.openmrs.Relationship;
 import org.openmrs.Order;
+import org.openmrs.OrderType;
+import org.openmrs.DrugOrder;
 import org.openmrs.Concept;
 import org.openmrs.EncounterType;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.AdministrationService;
+import org.openmrs.api.ConceptService;
 import org.openmrs.api.PatientService;
 import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
@@ -50,13 +56,13 @@ import org.openmrs.module.kenyaemr.calculation.EmrCalculationUtils;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.art.LastCd4CountDateCalculation;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.art.WhoStageAtArtStartCalculation;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.art.InitialArtRegimenCalculation;
+import org.openmrs.module.kenyaemr.calculation.library.hiv.art.InitialArtStartDateCalculation;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.LastCd4PercentageCalculation;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.LastWhoStageCalculation;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.HIVEnrollment;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.art.ViralLoadAndLdlCalculation;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.art.BMICalculation;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.art.TransferInDateCalculation;
-import org.openmrs.module.kenyaemr.calculation.library.hiv.art.InitialArtStartDateCalculation;
 import org.openmrs.module.kenyaemr.metadata.CommonMetadata;
 import org.openmrs.module.kenyaemr.EmrConstants;
 import org.openmrs.module.kenyaemr.util.ZScoreUtil;
@@ -67,6 +73,7 @@ import org.openmrs.module.kenyaemr.metadata.OTZMetadata;
 import org.openmrs.module.kenyaemr.metadata.OVCMetadata;
 import org.openmrs.module.kenyaemr.metadata.MchMetadata;
 import org.openmrs.module.kenyaemr.metadata.VMMCMetadata;
+import org.openmrs.module.kenyaemr.regimen.RegimenConfiguration;
 import org.openmrs.module.kenyaemr.calculation.library.ActiveInMCHProgramCalculation;
 import org.openmrs.module.kenyaemr.wrapper.EncounterWrapper;
 import org.openmrs.module.kenyaemr.Dictionary;
@@ -74,6 +81,7 @@ import org.openmrs.module.kenyaemr.util.EncounterBasedRegimenUtils;
 import org.openmrs.module.kenyaemr.wrapper.PatientWrapper;
 import org.openmrs.module.kenyaemr.wrapper.Enrollment;
 import org.openmrs.module.kenyaemr.metadata.IPTMetadata;
+import org.openmrs.api.OrderService;
 import org.openmrs.module.kenyacore.CoreContext;
 import org.openmrs.module.kenyacore.calculation.CalculationManager;
 import org.openmrs.module.kenyacore.calculation.PatientFlagCalculation;
@@ -84,6 +92,8 @@ import org.openmrs.module.kenyacore.program.ProgramManager;
 import org.openmrs.module.kenyacore.calculation.Calculations;
 import org.openmrs.module.kenyacore.calculation.CalculationUtils;
 import org.openmrs.module.kenyacore.CoreUtils;
+import org.openmrs.module.kenyacore.CoreConstants;
+import org.openmrs.ConceptName;
 import org.openmrs.module.kenyaemr.wrapper.EncounterWrapper;
 import org.openmrs.module.kenyaemr.EmrConstants;
 import org.openmrs.module.kenyaemr.util.ZScoreUtil;
@@ -95,7 +105,6 @@ import org.openmrs.module.kenyaemr.calculation.library.tb.TbTreatmentNumberCalcu
 import org.openmrs.module.kenyaemr.calculation.library.tb.PatientInTbProgramCalculation;
 import org.openmrs.module.kenyaemr.calculation.EmrCalculationUtils;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.art.LastCd4CountDateCalculation;
-import org.openmrs.module.kenyaemr.calculation.library.hiv.art.InitialArtStartDateCalculation;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.art.CD4AtARTInitiationCalculation;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.art.CurrentArtRegimenCalculation;
 import org.openmrs.module.kenyaemr.calculation.library.hiv.LastCd4PercentageCalculation;
@@ -133,11 +142,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.xml.sax.SAXException;
 import org.springframework.beans.factory.annotation.Autowired;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
@@ -147,6 +167,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Date;
 import java.util.Calendar;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -157,6 +180,8 @@ import org.joda.time.Years;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Collections;
+import java.util.Locale;
+import java.util.Comparator;
 
 /**
 * The rest controller for exposing resources through kenyacore and kenyaemr modules
@@ -165,6 +190,7 @@ import java.util.Collections;
 @RequestMapping(value = "/rest/" + RestConstants.VERSION_1 + "/kenyaemr")
 public class KenyaemrCoreRestController extends BaseRestController {
     protected final Log log = LogFactory.getLog(getClass());
+    static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yyyy");
 
     @Autowired
     private ProgramManager programManager;
@@ -185,6 +211,13 @@ public class KenyaemrCoreRestController extends BaseRestController {
     public static final String PREP_ENROLLMENT_FORM = "d5ca78be-654e-4d23-836e-a934739be555";
 
     public static final String PREP_DISCONTINUATION_FORM = "467c4cc3-25eb-4330-9cf6-e41b9b14cc10";
+
+    public static final Locale LOCALE = Locale.ENGLISH;
+
+    public String name = null;
+
+    public static String ISONIAZID_DRUG_UUID = "78280AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    public static String RIFAMPIN_ISONIAZID_DRUG_UUID = "1194AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
     /**
      * Gets a list of available/completed forms for a patient
@@ -235,17 +268,6 @@ public class KenyaemrCoreRestController extends BaseRestController {
                         formObj.put("formCategory", "available");
                         formList.add(formObj);
                     }
-                }
-            }
-
-            List<FormDescriptor> completedFormDescriptors = formManager.getCompletedFormsForVisit(patientVisit);
-
-            if (!completedFormDescriptors.isEmpty()) {
-
-                for (FormDescriptor descriptor : completedFormDescriptors) {
-                    ObjectNode formObj = generateFormDescriptorPayload(descriptor);
-                    formObj.put("formCategory", "completed");
-                    formList.add(formObj);
                 }
             }
         }
@@ -330,6 +352,48 @@ public class KenyaemrCoreRestController extends BaseRestController {
         
     }
 
+    /**
+     * Returns regimen history for a patient
+     * @param request
+     * @param category // ARV or TB
+     * @param patientUuid
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/regimenHistory") 
+    @ResponseBody
+    public Object getRegimenHistory(@RequestParam("patientUuid") String patientUuid, @RequestParam("category") String category) {
+        ObjectNode regimenObj = JsonNodeFactory.instance.objectNode();
+        if (StringUtils.isBlank(patientUuid)) {
+            return new ResponseEntity<Object>("You must specify patientUuid in the request!",
+                    new HttpHeaders(), HttpStatus.BAD_REQUEST);
+        }
+
+        Patient patient = Context.getPatientService().getPatientByUuid(patientUuid);
+
+        if (patient == null) {
+            return new ResponseEntity<Object>("The provided patient was not found in the system!",
+                    new HttpHeaders(), HttpStatus.NOT_FOUND);
+        }
+        ArrayNode regimenNode = JsonNodeFactory.instance.arrayNode();
+        List<SimpleObject> obshistory = EncounterBasedRegimenUtils.getRegimenHistoryFromObservations(patient, category);
+        for (SimpleObject obj : obshistory) {
+            ObjectNode node = JsonNodeFactory.instance.objectNode();;
+            node.put("startDate", obj.get("startDate").toString());
+            node.put("endDate", obj.get("endDate").toString());
+            node.put("regimenShortDisplay", obj.get("regimenShortDisplay").toString());
+            node.put("regimenLine", obj.get("regimenLine").toString());
+            node.put("regimenLongDisplay", obj.get("regimenLongDisplay").toString());
+            node.put("changeReasons", obj.get("changeReasons").toString());
+            node.put("regimenUuid", obj.get("regimenUuid").toString());
+            node.put("current", obj.get("current").toString());
+            regimenNode.add(node);
+        }
+
+        regimenObj.put("results", regimenNode);
+		return regimenObj.toString();
+        
+    }
+
 	/**
 	 * Fetches default facility
 	 *
@@ -354,6 +418,62 @@ public class KenyaemrCoreRestController extends BaseRestController {
 		return locationNode.toString();
 
 	}
+
+    /**
+	 * ARV drugs
+	 *
+	 * @return custom ARV drugs object for non standard regimen
+	 */
+	@RequestMapping(method = RequestMethod.GET, value = "/arvDrugs")
+	@ResponseBody
+	public Object getArvDrugs() {
+        ConceptService concService = Context.getConceptService();
+        ArrayNode drugs = JsonNodeFactory.instance.arrayNode();
+        ObjectNode drugsObj = JsonNodeFactory.instance.objectNode();
+
+		List<Concept> arvDrugs = Arrays.asList(
+				concService.getConcept(84309),
+				concService.getConcept(86663),
+				concService.getConcept(84795),
+				concService.getConcept(78643),
+				concService.getConcept(70057),
+				concService.getConcept(75628),
+				concService.getConcept(74807),
+				concService.getConcept(80586),
+				concService.getConcept(75523),
+				concService.getConcept(79040),
+				concService.getConcept(83412),
+				concService.getConcept(71648),
+				concService.getConcept(159810),
+				concService.getConcept(154378),
+				concService.getConcept(74258),
+				concService.getConcept(164967)
+		);
+
+		for (Concept con: arvDrugs) {
+            ObjectNode node = JsonNodeFactory.instance.objectNode();
+            node.put("name", con.getName() != null ? con.getName().toString() : "");
+            node.put("uuid", con.getUuid() != null ? con.getUuid().toString() : "");
+			drugs.add(node);
+		}
+
+        drugsObj.put("results", drugs);
+		return drugsObj.toString();
+
+	}
+
+    /**
+     * Gets the facility name given the facility code
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/facilityName")
+    @ResponseBody
+    public Object getFacilityName(@RequestParam("facilityCode") String facilityCode) {
+        SimpleObject locationResponseObj = new SimpleObject();
+        Location facility = Context.getService(KenyaEmrService.class).getLocationByMflCode(facilityCode);
+        locationResponseObj.put("name", facility.getName());
+        return locationResponseObj;
+    }
 
     /**
      * Get a list of programs a patient is eligible for
@@ -405,6 +525,241 @@ public class KenyaemrCoreRestController extends BaseRestController {
 
         return programList.toString();
     }
+    /**
+     * Gets the last regimen encounter uuid by category
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/lastRegimenEncounter")
+    @ResponseBody
+    public Object getLastRegimenEncounterUuid(@RequestParam("category") String category, @RequestParam("patientUuid") String patientUuid) {
+        ObjectNode encObj = JsonNodeFactory.instance.objectNode();
+        ObjectNode node = JsonNodeFactory.instance.objectNode();
+        Patient patient = Context.getPatientService().getPatientByUuid(patientUuid);
+        String event = null;
+        
+        Encounter enc = EncounterBasedRegimenUtils.getLastEncounterForCategory(patient, category);
+        
+		String ARV_TREATMENT_PLAN_EVENT = "1255AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+        String DATE_REGIMEN_STOPPED = "1191AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+        String endDate = null;
+
+		if (enc != null) {
+			Date latest = null;
+			List<Date> dates = new ArrayList<Date>();
+			for(Obs obs:enc.getObs()) {
+				dates.add(obs.getObsDatetime());
+				latest = Collections.max(dates);
+			}
+
+			for(Obs obs:enc.getObs()) {
+				if(obs.getConcept().getUuid().equals(ARV_TREATMENT_PLAN_EVENT) && obs.getObsDatetime().equals(latest)) {
+					event =obs.getValueCoded() != null ?  obs.getValueCoded().getName().getName() : "";
+				}
+                if (obs.getConcept() != null && obs.getConcept().getUuid().equals(DATE_REGIMEN_STOPPED)) {
+                    if(obs.getValueDatetime() != null){
+                        endDate = DATE_FORMAT.format(obs.getValueDatetime());
+                    }
+                }
+
+			}
+			
+		}
+        node.put("uuid", enc != null ?  enc.getUuid() : "");
+        node.put("startDate", enc != null ? DATE_FORMAT.format(enc.getEncounterDatetime()): "");
+        node.put("endDate", endDate);
+        node.put("event", event);
+        encObj.put("results", node);
+
+		return encObj.toString();
+    }
+
+
+      /**
+     * Get a list of standard regimen
+     * @param request
+     * @param 
+     * @return
+     * @throws IOException
+     * @throws SAXException
+     * @throws ParserConfigurationException
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/standardRegimen")
+    @ResponseBody
+    public Object getStandardRegimen() throws SAXException, IOException, ParserConfigurationException {
+        ArrayNode standardRegimenCategories = JsonNodeFactory.instance.arrayNode();
+
+        ObjectNode resultsObj = JsonNodeFactory.instance.objectNode();
+        for (RegimenConfiguration configuration : Context.getRegisteredComponents(RegimenConfiguration.class)) {
+            InputStream stream = null;
+            try {
+                ClassLoader loader = configuration.getClassLoader();
+                stream = loader.getResourceAsStream(configuration.getDefinitionsPath());
+                if (stream == null || stream.available() == 0) {
+                    throw new RuntimeException("Empty or unavailable stream for " + configuration.getDefinitionsPath());
+                }
+                
+                // XML parsing logic
+                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = dbFactory.newDocumentBuilder();
+                Document document = builder.parse(stream);
+                Element root = document.getDocumentElement();
+                // Category section i.e ARV, TB etc
+                NodeList categoryNodes = root.getElementsByTagName("category");
+                for (int c = 0; c < categoryNodes.getLength(); c++) {
+                    ObjectNode categoryObj = JsonNodeFactory.instance.objectNode();
+                    Element categoryElement = (Element) categoryNodes.item(c);
+                    String categoryCode = categoryElement.getAttribute("code");
+                    categoryObj.put("categoryCode", categoryCode);
+
+                
+                    NodeList groupNodes = categoryElement.getElementsByTagName("group");
+                    ArrayNode standardRegimen = JsonNodeFactory.instance.arrayNode();
+
+                    for (int g = 0; g < groupNodes.getLength(); g++) {
+                    ObjectNode standardRegimenObj = JsonNodeFactory.instance.objectNode();
+                    Element groupElement = (Element) groupNodes.item(g);
+                    String groupName = groupElement.getAttribute("name");
+                    String regimenLineValue = "";
+
+                    if (groupName.equalsIgnoreCase("Adult (first line)")) {
+                        regimenLineValue = "AF";
+                    }else if (groupName.equalsIgnoreCase("Adult (second line)")) {
+                        regimenLineValue = "AS";
+                    }else if (groupName.equalsIgnoreCase("Adult (third line)")) {
+                        regimenLineValue = "AT";
+                    }else if (groupName.equalsIgnoreCase("Child (First Line)")) {
+                        regimenLineValue = "CF";
+                    }else if (groupName.equalsIgnoreCase("Child (Second Line)")) {
+                        regimenLineValue = "CS";
+                    }else if (groupName.equalsIgnoreCase("Child (Third Line)")) {
+                        regimenLineValue = "CT";
+                    }else if (groupName.equalsIgnoreCase("Intensive Phase (Adult)")) {
+                        regimenLineValue = "Intensive Phase (Adult)";
+                    }else if (groupName.equalsIgnoreCase("Intensive Phase (Child)")) {
+                        regimenLineValue = "Intensive Phase (Child)";
+                    }else if (groupName.equalsIgnoreCase("Continuation Phase (Adult)")) {
+                        regimenLineValue = "Continuation Phase (Adult)";
+                    }
+                    
+                    
+                    
+                    
+                    standardRegimenObj.put("regimenline", groupName);
+                    standardRegimenObj.put("regimenLineValue", regimenLineValue);
+                    
+                    ArrayNode regimen = JsonNodeFactory.instance.arrayNode();
+                    NodeList regimenNodes = groupElement.getElementsByTagName("regimen");
+                    for (int r = 0; r < regimenNodes.getLength(); r++) {
+                        ObjectNode regimenObj = JsonNodeFactory.instance.objectNode();
+                        Element regimenElement = (Element) regimenNodes.item(r);
+                        String name = regimenElement.getAttribute("name");
+                        String conceptRef = regimenElement.getAttribute("conceptRef");
+                        regimenObj.put("name", name);
+                        regimenObj.put("conceptRef", conceptRef);
+                        regimen.add(regimenObj);
+                    }
+                    standardRegimenObj.put("regimen", regimen);
+                    standardRegimen.add(standardRegimenObj);
+                }
+                categoryObj.put("category", standardRegimen);
+                standardRegimenCategories.add(categoryObj);
+                
+            }
+                
+            } catch (Exception e) { 
+                e.printStackTrace();
+                throw new RuntimeException("Unable to load " + configuration.getModuleId() + ":" + configuration.getDefinitionsPath(), e);
+            } finally {
+                try {
+                    if (stream != null) {
+                        stream.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+        
+        resultsObj.put("results", standardRegimenCategories);
+
+        return resultsObj.toString();
+    }
+
+
+    /**
+     * Returns regimen change/stop reasons
+     * @param request
+     * @param category // ARV or TB
+     * @param patientUuid
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/regimenReason") 
+    @ResponseBody
+    public Object getRegimenReason() {
+        ObjectNode regimenReasonObj = JsonNodeFactory.instance.objectNode();
+        
+        ArrayNode reasons = JsonNodeFactory.instance.arrayNode();
+        ObjectNode arvReasonsObj = JsonNodeFactory.instance.objectNode();
+        ObjectNode tbReasonsObj = JsonNodeFactory.instance.objectNode();
+        Map<String, String> arvReasonOptionsMap = new HashMap<String, String>(); 
+        Map<String, String> tbReasonOptionsMap = new HashMap<String, String>();
+        arvReasonOptionsMap.put("Toxicity / side effects", "102AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Pregnancy", "1434AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Risk of pregnancy", "160559AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("New diagnosis of TB", "160567AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("New drug available", "160561AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Drugs out of stock", "1754AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Clinical treatment failure", "843AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Immunological failure", "160566AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Virological Failure", "160569AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Poor Adherence", "159598AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Inpatient care or hospitalization", "5485AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Refusal / patient decision", "127750AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Planned treatment interruption", "160016AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Completed total PMTCT", "1253AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Tuberculosis treatment started", "1270AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        arvReasonOptionsMap.put("Patient lacks finance", "819AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+
+        ArrayNode arvReasons = JsonNodeFactory.instance.arrayNode();
+        for (Map.Entry<String, String> entry : arvReasonOptionsMap.entrySet()) {
+            ObjectNode arvCategoryReasonObj = JsonNodeFactory.instance.objectNode();
+            arvCategoryReasonObj.put("label", entry.getKey());
+            arvCategoryReasonObj.put("value", entry.getValue());
+            arvReasons.add(arvCategoryReasonObj);
+        }
+        arvReasonsObj.put("category", "ARV");
+        arvReasonsObj.put("reason", arvReasons);
+        reasons.add(arvReasonsObj);
+
+        tbReasonOptionsMap.put("Toxicity / side effects", "102AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        tbReasonOptionsMap.put("Pregnancy", "1434AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        tbReasonOptionsMap.put("Clinical treatment failure", "843AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        tbReasonOptionsMap.put("Poor Adherence", "159598AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        tbReasonOptionsMap.put("Inpatient care or hospitalization", "5485AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        tbReasonOptionsMap.put("Drugs out of stock", "1754AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        tbReasonOptionsMap.put("Planned treatment interruption", "160016AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        tbReasonOptionsMap.put("Refusal / patient decision", "127750AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        tbReasonOptionsMap.put("Drug formulation changed", "1258AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        tbReasonOptionsMap.put("Patient lacks finance", "819AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+
+
+        ArrayNode tbReasons = JsonNodeFactory.instance.arrayNode();
+        for (Map.Entry<String, String> entry : tbReasonOptionsMap.entrySet()) {
+            ObjectNode tbCategoryReasonObj = JsonNodeFactory.instance.objectNode();
+            tbCategoryReasonObj.put("label", entry.getKey());
+            tbCategoryReasonObj.put("value", entry.getValue());
+            tbReasons.add(tbCategoryReasonObj);
+        }
+        tbReasonsObj.put("category", "TB");
+        tbReasonsObj.put("reason", tbReasons);
+        reasons.add(tbReasonsObj);
+        regimenReasonObj.put("results", reasons);
+		return regimenReasonObj.toString();
+        
+    }
+
+
 
 
     /**
@@ -833,6 +1188,17 @@ public class KenyaemrCoreRestController extends BaseRestController {
                         programDetails.put("whoStage", whoObs.getValueCoded().getName().getName());
                     }
 
+                    //art start date
+                    Date artStartDate = null;
+                    CalculationResult artStartDateResults = EmrCalculationUtils.evaluateForPatient(InitialArtStartDateCalculation.class, null, patient);
+                    if(artStartDateResults != null) {
+                        artStartDate = (Date) artStartDateResults.getValue();
+                        programDetails.put("artStartDate", formatDate((Date) artStartDateResults.getValue()));
+                    }
+                    else {
+                        programDetails.put("artStartDate", "");
+                    }
+
                     if(hivEnrollmentEncounter != null) {
                         for (Obs obs : hivEnrollmentEncounter.getAllObs(true)) {
                             if (obs.getConcept().equals(Dictionary.getConcept(Dictionary.METHOD_OF_ENROLLMENT))) {
@@ -847,6 +1213,11 @@ public class KenyaemrCoreRestController extends BaseRestController {
                                 programDetails.put("cd4Percentage", obs.getValueNumeric().intValue());
                                 programDetails.put("cd4PercentageDate", formatDate(obs.getObsDatetime()));
                             }
+                            Encounter firstEnc = EncounterBasedRegimenUtils.getFirstEncounterForCategory(patient, "ARV");
+                            SimpleObject firstEncDetails = null;
+                            if (firstEnc != null) {
+                                firstEncDetails = EncounterBasedRegimenUtils.buildRegimenChangeObject(firstEnc.getObs(), firstEnc);
+                            }
                             Encounter lastEnc = EncounterBasedRegimenUtils.getLastEncounterForCategory(patient, "ARV");
                             SimpleObject lastEncDetails = null;
                             if (lastEnc != null) {
@@ -854,6 +1225,7 @@ public class KenyaemrCoreRestController extends BaseRestController {
                             }
                             programDetails.put("enrollmentEncounterUuid", hivEnrollmentEncounter.getUuid());
                             programDetails.put("lastEncounter", lastEncDetails);
+                            programDetails.put("firstEncounter", firstEncDetails);
                         }
                     }
                     if(hivCompletionEncounter != null) {
@@ -883,11 +1255,36 @@ public class KenyaemrCoreRestController extends BaseRestController {
                             }
                         }
                         programDetails.put("enrollmentEncounterUuid", tptEnrollmentEncounter.getUuid());
-
                     }
                     if(tptDiscontinuationEncounter != null) {
                         programDetails.put("discontinuationEncounterUuid", tptDiscontinuationEncounter.getUuid());
                     }
+                    // get medication patient is on
+                    List<DrugOrder> allDrugOrders = EmrUtils.drugOrdersFromOrders(patient, null);
+                    List<DrugOrder> tptDrugOrders = new ArrayList<DrugOrder>();
+
+                    for (DrugOrder order : allDrugOrders) {
+                        if(order != null) {
+                            ConceptName cn = order.getConcept().getName(CoreConstants.LOCALE);
+                            if(cn.getUuid().equals(ISONIAZID_DRUG_UUID) || cn.getUuid().equals(RIFAMPIN_ISONIAZID_DRUG_UUID) ) {
+                                tptDrugOrders.add(order);
+                            }
+                        }
+                    }
+                    if (!tptDrugOrders.isEmpty()) {
+
+                        Collections.sort(tptDrugOrders, new Comparator<DrugOrder>() {
+                            @Override
+                            public int compare(DrugOrder order1, DrugOrder order2) {
+                                return order2.getDateCreated().compareTo(order1.getDateCreated());
+                            }
+                        });
+                        DrugOrder drugOrder = (DrugOrder) tptDrugOrders.get(0).cloneForRevision();
+                        // Now you can use the latestDrugOrder as needed
+                        programDetails.put("tptDrugName",drugOrder.getDrug() != null ? drugOrder.getDrug().getFullName(LOCALE) : "");
+                        programDetails.put("tptDrugStartDate", formatDate(drugOrder.getEffectiveStartDate()));
+                    }
+
                     programDetails.put("enrollmentFormUuid", IPTMetadata._Form.IPT_INITIATION);
                     programDetails.put("enrollmentFormName", "IPT Initiation");
                     programDetails.put("discontinuationFormUuid", IPTMetadata._Form.IPT_OUTCOME);
@@ -906,6 +1303,12 @@ public class KenyaemrCoreRestController extends BaseRestController {
                                 programDetails.put("referredFrom", obs.getValueCoded().getName().getName());
                             }
                             programDetails.put("enrollmentEncounterUuid", tbEnrollmentEncounter.getUuid());
+                            Encounter firstEnc = EncounterBasedRegimenUtils.getFirstEncounterForCategory(patient, "TB");
+                            SimpleObject firstEncDetails = null;
+                            if (firstEnc != null) {
+                                firstEncDetails = EncounterBasedRegimenUtils.buildRegimenChangeObject(firstEnc.getObs(), firstEnc);
+                            }
+                            programDetails.put("firstEncounter", firstEncDetails);
                         }
                     }
                     if(tbDiscontinuationEncounter != null) {
@@ -1092,7 +1495,6 @@ public class KenyaemrCoreRestController extends BaseRestController {
                 programDetails.put("active", patientProgram.getActive());
                 programDetails.put("dateEnrolled", formatDate(patientProgram.getDateEnrolled()));
                 programDetails.put("dateCompleted", formatDate(patientProgram.getDateCompleted()));
-                programDetails.put("outcome", patientProgram.getOutcome());
                 enrollmentDetails.add(programDetails);
             }
         }
@@ -1543,13 +1945,9 @@ public class KenyaemrCoreRestController extends BaseRestController {
         }
 
         //first regimen for the patient
-        CalculationResult firstRegimenResults = EmrCalculationUtils.evaluateForPatient(InitialArtRegimenCalculation.class, null, patient);
-        String firstRegimen;
-        if(firstRegimenResults == null || firstRegimenResults.isEmpty()){
-            patientSummary.put("firstRegimen", "");
-        }
-        else {
-            patientSummary.put("firstRegimen", firstRegimenResults.getValue().toString());
+        Encounter firstEnc = EncounterBasedRegimenUtils.getFirstEncounterForCategory(patient, "ARV");
+        if(firstEnc != null) {
+            patientSummary.put("firstRegimen", EncounterBasedRegimenUtils.buildRegimenChangeObject(firstEnc.getObs(), firstEnc));
         }
 
         //previous drugs/regimens and dates
@@ -1606,15 +2004,9 @@ public class KenyaemrCoreRestController extends BaseRestController {
         patientSummary.put("iosResults", iosResults);
 
         //current art regimen
-        CalculationResult currentRegimenResults = EmrCalculationUtils.evaluateForPatient(CurrentArtRegimenCalculation.class, null, patient);
-        if(currentRegimenResults != null) {
-            String roCurrent = currentRegimenResults.toString();
-            if (roCurrent != null) {
-                patientSummary.put("currentArtRegimen", currentRegimenResults.toString());
-            }
-        }
-        else {
-            patientSummary.put("currentArtRegimen", "");
+        Encounter lastEnc = EncounterBasedRegimenUtils.getLastEncounterForCategory(patient, "ARV");
+        if(lastEnc != null) {
+            patientSummary.put("currentArtRegimen", EncounterBasedRegimenUtils.buildRegimenChangeObject(lastEnc.getObs(), lastEnc));
         }
 
         //current who staging
@@ -1801,6 +2193,33 @@ public class KenyaemrCoreRestController extends BaseRestController {
 
         return patientSummary;
 
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/relationship")
+    @ResponseBody
+    public String getRelationship(@RequestParam("patientUuid") String patientUuid, @RequestParam("relationshipType") String relationshipType) {
+        String personRelationshipName = "";
+        Patient patient = Context.getPatientService().getPatientByUuid(patientUuid);
+        List<Person> people = new ArrayList<Person>();
+        for (Relationship relationship : Context.getPersonService().getRelationshipsByPerson(patient)) {
+            if (relationship.getRelationshipType().getaIsToB().equals("Parent")) {
+                if (relationship.getPersonA().getGender().equals("F") && relationshipType.equalsIgnoreCase("Mother")) {
+                    people.add(relationship.getPersonA());
+                }
+                if (relationship.getPersonA().getGender().equals("M") && relationshipType.equalsIgnoreCase("Father")) {
+                    people.add(relationship.getPersonA());
+                }
+            } else {
+                if (relationship.getRelationshipType().getaIsToB().equalsIgnoreCase(relationshipType)) {
+                    people.add(relationship.getPersonA());
+                }
+            }
+        }
+
+        if(people.size() > 0) {
+            personRelationshipName = people.get(0).getPersonName().getFullName();
+        }
+        return  personRelationshipName;
     }
 
     String entryPointAbbriviations(Concept concept) {
@@ -2152,5 +2571,47 @@ public class KenyaemrCoreRestController extends BaseRestController {
     private String formatDate(Date date) {
         DateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
         return date == null?"":dateFormatter.format(date);
+    }
+
+    private String mapConceptNamesToShortNames(String conceptUuid) {
+
+        if (conceptUuid.equalsIgnoreCase("84797AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "TDF";
+        } else if (conceptUuid.equalsIgnoreCase("84309AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "D4T";
+        } else if (conceptUuid.equalsIgnoreCase("86663AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "AZT";
+        } else if (conceptUuid.equalsIgnoreCase("78643AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "3TC";
+        } else if (conceptUuid.equalsIgnoreCase("70057AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "ABC";
+        } else if (conceptUuid.equalsIgnoreCase("75628AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "FTC";
+        } else if (conceptUuid.equalsIgnoreCase("74807AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "DDI";
+        } else if (conceptUuid.equalsIgnoreCase("80586AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "NVP";
+        } else if (conceptUuid.equalsIgnoreCase("75523AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "EFV";
+        } else if (conceptUuid.equalsIgnoreCase("794AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "LPV";
+        } else if (conceptUuid.equalsIgnoreCase("83412AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "RTV";
+        } else if (conceptUuid.equalsIgnoreCase("71648AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "ATV";
+        } else if (conceptUuid.equalsIgnoreCase("159810AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "ETR";
+        } else if (conceptUuid.equalsIgnoreCase("154378AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "RAL";
+        } else if (conceptUuid.equalsIgnoreCase("74258AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "DRV";
+        } else if (conceptUuid.equalsIgnoreCase("d1fd0e18-e0b9-46ae-ac0e-0452a927a94b")) {
+            name = "DTG";
+        } else if (conceptUuid.equalsIgnoreCase("167205AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) {
+            name = "B";
+        }
+
+        return name;
+
     }
 }
