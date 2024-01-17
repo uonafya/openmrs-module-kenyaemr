@@ -67,4 +67,6 @@ public class EmrConstants {
 	public static final String DEFAULT_SUPPORT_PHONE_NUMBER = "0800 722 440";
 	public static final String DEFAULT_SUPPORT_EMAIL_ADDRESS = "help@palladiumgroup.on.spiceworks.com";
 	public static final String DEFAULT_EXTERNAL_HELP_URL = "/help";
+
+	public static final String GP_CONFIGURE_FACILITY_LIST_REFRESH_ON_STARTUP = "kenyaemr.refresh.facility.metadata";
 }
