@@ -166,6 +166,7 @@ public class CommonMetadata extends AbstractMetadataBundle {
 
 	public static final class _VisitType {
 		public static final String OUTPATIENT = "3371a4d4-f66f-4454-a86d-92c7b3da990c";
+		public static final String INPATIENT = "a73e2ac6-263b-47fc-99fc-e0f2c09fc914";
 	}
 
 	/**
@@ -373,6 +374,7 @@ public class CommonMetadata extends AbstractMetadataBundle {
 		install(visitAttributeType("Non-Paying patient category", "If a patient isn't paying for service, The catergory the fall in.", ConceptDatatype.class, null, 0, 1, _VisitAttributeType.NON_PAYING_PATIENT_CATEGORY_UUID));
 		
 		install(visitType("Outpatient", "Visit where the patient is not admitted to the hospital", _VisitType.OUTPATIENT));
+		install(visitType("Inpatient", "Visit where the patient is admitted to the hospital", _VisitType.INPATIENT));
 		uninstall(possible(PersonAttributeType.class, "73d34479-2f9e-4de3-a5e6-1f79a17459bb"), "Became patient identifier"); // National ID attribute type
 
 		//Retiring Lab results form

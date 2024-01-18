@@ -9,9 +9,13 @@
  */
 package org.openmrs.module.kenyaemr.metadata;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Location;
+import org.openmrs.api.AdministrationService;
+import org.openmrs.api.context.Context;
 import org.openmrs.customdatatype.datatype.FreeTextDatatype;
 import org.openmrs.customdatatype.datatype.RegexValidatedTextDatatype;
+import org.openmrs.module.kenyaemr.EmrConstants;
 import org.openmrs.module.kenyaemr.metadata.sync.LocationMflCsvSource;
 import org.openmrs.module.kenyaemr.metadata.sync.LocationMflSynchronization;
 import org.openmrs.module.metadatadeploy.bundle.AbstractMetadataBundle;
@@ -48,7 +52,14 @@ public class FacilityMetadata extends AbstractMetadataBundle {
 	 */
 	@Override
 	public void install() throws Exception {
-		install(true);
+		AdministrationService administrationService = Context.getAdministrationService();
+		final String refreshConfig = (administrationService.getGlobalProperty(EmrConstants.GP_CONFIGURE_FACILITY_LIST_REFRESH_ON_STARTUP));
+
+		if (StringUtils.isNotEmpty(refreshConfig) && refreshConfig.equalsIgnoreCase("true")) {
+			install(true);
+		} else {
+			System.out.println("Skipping refreshing of the facility list ...");
+		}
 	}
 
 	/**
