@@ -169,4 +169,12 @@
 		</description>
 	</globalProperty>
 
+	<globalProperty>
+		<property>kenyaemr.refresh.facility.metadata</property>
+		<defaultValue>false</defaultValue>
+		<description>
+			Configures refresh of the facility metadata during EMR startup. Valid values are true or false
+		</description>
+	</globalProperty>
+
 </module>
