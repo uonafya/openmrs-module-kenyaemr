@@ -305,7 +305,6 @@ public class KenyaemrCoreRestController extends BaseRestController {
 
     /**
      * Returns custom patient object
-     * @param request
      * @param patientUuid
      * @return
      */
@@ -337,7 +336,6 @@ public class KenyaemrCoreRestController extends BaseRestController {
 
     /**
      * Returns regimen history for a patient
-     * @param request
      * @param category // ARV or TB
      * @param patientUuid
      * @return
@@ -559,7 +557,6 @@ public class KenyaemrCoreRestController extends BaseRestController {
 
     /**
      * Get a list of standard regimen
-          * @param request
      * @param
      * @return
      * @throws IOException
@@ -672,9 +669,6 @@ public class KenyaemrCoreRestController extends BaseRestController {
 
     /**
      * Returns regimen change/stop reasons
-          * @param request
-     * @param category // ARV or TB
-     * @param patientUuid
      * @return
      */
     @RequestMapping(method = RequestMethod.GET, value = "/regimenReason")
@@ -2661,6 +2655,20 @@ else {
         }
 
         return name;
+
+    }
+
+    /**
+     *
+     * @param query
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(method = RequestMethod.GET, value = "/sql") // gets all flags for a patient
+    @ResponseBody
+    public List<org.openmrs.module.webservices.rest.SimpleObject> search(@RequestParam("q") String query, HttpServletRequest request) throws Exception {
+        return Context.getService(KenyaEmrService.class).search(query, request.getParameterMap());
 
     }
 }
