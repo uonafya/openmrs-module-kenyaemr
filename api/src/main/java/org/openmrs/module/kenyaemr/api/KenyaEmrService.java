@@ -12,7 +12,9 @@ package org.openmrs.module.kenyaemr.api;
 import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.Visit;
+import org.openmrs.annotation.Authorized;
 import org.openmrs.api.OpenmrsService;
+import org.openmrs.module.webservices.rest.SimpleObject;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
@@ -95,4 +97,14 @@ public interface KenyaEmrService extends OpenmrsService {
 
 	public List<Object> executeSqlQuery(String query, Map<String, Object> substitutions);
 	public List<Object> executeHqlQuery(String query, Map<String, Object> substitutions);
+
+	/**
+	 * Executes a sql query with params.
+	 * Adapted from Bahmni core
+	 * @param sqlQuery
+	 * @param params
+	 * @return
+	 */
+	@Authorized
+	public List<SimpleObject> search(String sqlQuery, Map<String, String[]> params);
 }
