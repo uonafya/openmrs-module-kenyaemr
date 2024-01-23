@@ -36,7 +36,7 @@
 		<require_module version="${uiframeworkVersion}">org.openmrs.module.uiframework</require_module>
 		<require_module version="${kenyaemrOrderentryVersion}">org.openmrs.module.kenyaemrorderentry</require_module>
 		<require_module version="${facilityReportingVersion}">org.openmrs.module.facilityreporting</require_module>
-		<require_module version="${bahmniAppointmentsVersion}">org.bahmni.module.appointments</require_module>
+		<require_module version="${bahmniAppointmentsVersion}">org.kenyahmis.module.appointments</require_module>
 	</require_modules>
 
 	<aware_of_modules>
@@ -66,6 +66,11 @@
 	<advice>
 		<point>org.openmrs.api.EncounterService</point>
 		<class>${project.parent.groupId}.${project.parent.artifactId}.advice.SyncHFEAppointmentsWithBahmniModule</class>
+	</advice>
+
+	<advice>
+		<point>org.openmrs.api.EncounterService</point>
+		<class>${project.parent.groupId}.${project.parent.artifactId}.advice.OutpatientToInpatientCheckinOnAdmissionRequest</class>
 	</advice>
 
 	<messages>
