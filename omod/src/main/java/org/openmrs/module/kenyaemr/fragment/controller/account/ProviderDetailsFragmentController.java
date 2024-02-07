@@ -31,7 +31,9 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Editable Provider details
@@ -41,15 +43,18 @@ public class ProviderDetailsFragmentController {
 	public void controller(@FragmentParam("person") Person person,
 	        @FragmentParam(value = "provider", required = false) Provider provider, FragmentModel model) {
 		Location primaryFacility = null;
-		
-		List<ProviderAttribute> attributes = new ArrayList<ProviderAttribute>(provider.getActiveAttributes());
-		if (attributes.size() > 0) {
-			for (ProviderAttribute attribute : attributes) {
-				if (attribute.getAttributeType().getUuid().equals(CommonMetadata._ProviderAttributeType.PRIMARY_FACILITY)) {
-					primaryFacility = (Location) attribute.getValue();
+
+		if (provider != null) {
+			List<ProviderAttribute> attributes = new ArrayList<ProviderAttribute>(provider.getActiveAttributes());
+			if (!attributes.isEmpty()) {
+				for (ProviderAttribute attribute : attributes) {
+					if (attribute.getAttributeType().getUuid().equals(CommonMetadata._ProviderAttributeType.PRIMARY_FACILITY)) {
+						primaryFacility = (Location) attribute.getValue();
+					}
 				}
 			}
 		}
+
 		List<Location> facilities = Context.getLocationService().getAllLocations();
 		
 		model.addAttribute("person", person);
@@ -109,6 +114,12 @@ public class ProviderDetailsFragmentController {
 				ret.setPerson(person);
 			}
 			User thisUser = Context.getUserService().getUsersByPerson(person, false).get(0);
+			if (!StringUtils.isEmpty(providerFacility)) {
+				Map<String, String> defaultLocation = new HashMap<String, String>();
+				defaultLocation.put("kenyaemr.defaultLocation", providerFacility);
+				thisUser.setUserProperties(defaultLocation);
+				Context.getUserService().saveUser(thisUser);
+			}
 			String userSystemId = thisUser.getSystemId();
 			ret.setIdentifier(userSystemId);
 			
