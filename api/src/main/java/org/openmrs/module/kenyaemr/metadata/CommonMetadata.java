@@ -62,6 +62,7 @@ public class CommonMetadata extends AbstractMetadataBundle {
 		public static final String HIV_SELF_TEST = "8b706d42-b4ae-4b3b-bd83-b14f15294362";
 		public static final String VMMC_PROCEDURE = "35c6fcc2-960b-11ec-b909-0242ac120002" ;
 		public static final String GAD_7 = "899d64ad-be13-4071-a879-2153847206b7";
+		public static final String MAT_CLINICAL_ENCOUNTER = "c3518485-ee22-4a47-b6d4-6d0e8f297b02";
 	}
 
 	public static final class _Form {
@@ -184,6 +185,7 @@ public class CommonMetadata extends AbstractMetadataBundle {
 		install(encounterType("Cervical cancer screening", "Cervical cancer screening", _EncounterType.CACX_SCREENING));
 		install(encounterType("HIV self testing", "Self testing screening", _EncounterType.HIV_SELF_TEST));
 		install(encounterType("Oncology screening", "Oncology screening encounter type", _EncounterType.ONCOLOGY_SCREENING));
+		install(encounterType("MAT Clinical Encounter", "MAT Clinical Encounter", _EncounterType.MAT_CLINICAL_ENCOUNTER));
 
 		install(form("Clinical Encounter", null, _EncounterType.CONSULTATION, "1", _Form.CLINICAL_ENCOUNTER));
 		install(form("Lab Results", null, _EncounterType.LAB_RESULTS, "1", _Form.LAB_RESULTS));
