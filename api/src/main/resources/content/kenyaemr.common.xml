@@ -85,6 +85,8 @@
 				<ref bean="kenyaemr.common.report.moh711"/>
 				<ref bean="kenyaemr.common.report.sgbvlinelist"/>
 				<ref bean="kenyaemr.common.report.sgbvRegister"/>
+				<ref bean="kenyaemr.common.report.moh705A"/>
+				<ref bean="kenyaemr.common.report.moh705B"/>
 			</set>
 		</property>
 	</bean>
@@ -856,4 +858,25 @@
 		<property name="template" value="kenyaemr:sgbv/sgbv_register.xls" />
 		<property name="repeatingSection" value="sheet:1,row:6,dataset:SGBVRegister" />
 	</bean>
+	<bean id="kenyaemr.common.report.moh705A" class="org.openmrs.module.kenyacore.report.IndicatorReportDescriptor">
+		<property name="targetUuid" value="71ec2615-404c-4306-b456-506c1ad9df51" />
+		<property name="name" value="MOH 705A Outpatient summary" />
+		<property name="description" value="MOH 705A Register" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.reports" />
+			</set></property>
+		<property name="template" value="kenyaemr:moh705A.xls" />
+	</bean>
+	<bean id="kenyaemr.common.report.moh705B" class="org.openmrs.module.kenyacore.report.IndicatorReportDescriptor">
+		<property name="targetUuid" value="12091a6a-69dc-437c-be88-90dfd31c3b70" />
+		<property name="name" value="MOH 705B Outpatient summary" />
+		<property name="description" value="MOH 705B Register" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.reports" />
+			</set></property>
+		<property name="template" value="kenyaemr:moh705B.xls" />
+	</bean>
+
 </beans>
