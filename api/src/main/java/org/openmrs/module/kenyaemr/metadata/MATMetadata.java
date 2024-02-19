@@ -9,11 +9,7 @@
  */
 package org.openmrs.module.kenyaemr.metadata;
 
-import org.openmrs.PatientIdentifierType.LocationBehavior;
-import org.openmrs.api.AdministrationService;
-import org.openmrs.api.context.Context;
 import org.openmrs.module.kenyaemr.Dictionary;
-import org.openmrs.module.kenyaemr.Metadata;
 import org.openmrs.module.metadatadeploy.bundle.AbstractMetadataBundle;
 import org.openmrs.module.metadatadeploy.bundle.Requires;
 import org.springframework.stereotype.Component;
@@ -21,7 +17,6 @@ import org.springframework.stereotype.Component;
 import static org.openmrs.module.metadatadeploy.bundle.CoreConstructors.encounterType;
 import static org.openmrs.module.metadatadeploy.bundle.CoreConstructors.form;
 import static org.openmrs.module.metadatadeploy.bundle.CoreConstructors.globalProperty;
-import static org.openmrs.module.metadatadeploy.bundle.CoreConstructors.patientIdentifierType;
 import static org.openmrs.module.metadatadeploy.bundle.CoreConstructors.program;
 
 /**
@@ -36,6 +31,14 @@ public class MATMetadata extends AbstractMetadataBundle {
 	}
 	public static final class _EncounterType {
 		public static final String MAT_CLINICAL_ENCOUNTER = "c3518485-ee22-4a47-b6d4-6d0e8f297b02";
+		public static final String MAT_CESSATION_ENCOUNTER = "b7addaab-bafd-445d-929d-d6631a0de63e";
+		public static final String MAT_CLINICAL_ELIGIBILITY_ASSESSMENT_AND_REFERRAL_ENCOUNTER = "cb0ca111-6142-4d9b-a670-a32a64940cca";
+		public static final String MAT_DISCONTINUATION_ENCOUNTER = "d36bd361-c155-4c3d-a44b-df99f4e111b3";
+		public static final String MAT_INITIAL_REGISTRATION_ENCOUNTER = "b4b87535-90b7-4a26-b224-368576095f11";
+		public static final String MAT_TREATMENT_ENCOUNTER = "9f49a7b8-367c-4a9f-a66e-9f697fc683fe";
+		public static final String MAT_PSYCHIATRIC_INTAKE_AND_FOLLOWUP_ENCOUNTER = "fbf32c5d-e58e-4001-8330-3776c5691d6e";
+		public static final String MAT_PSYCHO_SOCIAL_INTAKE_AND_FOLLOWUP_ENCOUNTER = "5ab99d58-b337-4796-94fb-101381b46618";
+		public static final String MAT_TRANSIT_ENCOUNTER = "1d00fede-7491-485e-86a1-9a9c2bd772fa";
 	}
 
 	public static final class _Form {
@@ -57,5 +60,23 @@ public class MATMetadata extends AbstractMetadataBundle {
 
 		install(program("MAT", "Methadone Assisted Therapy", Dictionary.MAT_PROGRAM, _Program.MAT));
 		install(encounterType("MAT Clinical Encounter", "MAT Clinical Encounter", _EncounterType.MAT_CLINICAL_ENCOUNTER));
+		install(encounterType("MAT Cessation Encounter", "MAT Cessation Encounter", _EncounterType.MAT_CESSATION_ENCOUNTER));
+		install(encounterType("MAT Clinical eligibility assessment and referral Encounter", "MAT Clinical Encounter", _EncounterType.MAT_CLINICAL_ELIGIBILITY_ASSESSMENT_AND_REFERRAL_ENCOUNTER));
+		install(encounterType("MAT Discontinuation Encounter", "MAT Clinical Encounter", _EncounterType.MAT_DISCONTINUATION_ENCOUNTER));
+		install(encounterType("MAT Initial registration Encounter", "MAT Clinical Encounter", _EncounterType.MAT_INITIAL_REGISTRATION_ENCOUNTER));
+		install(encounterType("MAT Treatment Encounter", "MAT Clinical Encounter", _EncounterType.MAT_TREATMENT_ENCOUNTER));
+		install(encounterType("MAT Psychiatric intake and followup Encounter", "MAT Clinical Encounter", _EncounterType.MAT_PSYCHIATRIC_INTAKE_AND_FOLLOWUP_ENCOUNTER));
+		install(encounterType("MAT Psychosocial intake and followup Encounter", "MAT Clinical Encounter", _EncounterType.MAT_PSYCHO_SOCIAL_INTAKE_AND_FOLLOWUP_ENCOUNTER));
+		install(encounterType("MAT Transit/Referral Encounter", "MAT Clinical Encounter", _EncounterType.MAT_TRANSIT_ENCOUNTER));
+
+		install(form("MAT Clinical form", null, _EncounterType.MAT_CLINICAL_ENCOUNTER, "1", _Form.MAT_CLINICAL_ENCOUNTER));
+		install(form("MAT Clinical eligibility assessment and referral form", null, _EncounterType.MAT_CLINICAL_ELIGIBILITY_ASSESSMENT_AND_REFERRAL_ENCOUNTER, "1", _Form.MAT_CLINICAL_ELIGIBILITY_ASSESSMENT_AND_REFERRAL));
+		install(form("MAT Discontinuation form", null, _EncounterType.MAT_DISCONTINUATION_ENCOUNTER, "1", _Form.MAT_DISCONTINUATION));
+		install(form("MAT Initial registration form", "", _EncounterType.MAT_INITIAL_REGISTRATION_ENCOUNTER, "1", _Form.MAT_INITIAL_REGISTRATION_FORM));
+		install(form("MAT Treatment form", "", _EncounterType.MAT_TREATMENT_ENCOUNTER, "1", _Form.MAT_TREATMENT_FORM));
+		install(form("MAT Psychiatric intake and followup form", null, _EncounterType.MAT_PSYCHIATRIC_INTAKE_AND_FOLLOWUP_ENCOUNTER, "1", _Form.MAT_PSYCHIATRIC_INTAKE_AND_FOLLOWUP_FORM));
+		install(form("MAT Psychosocial intake and followup form", null, _EncounterType.MAT_PSYCHO_SOCIAL_INTAKE_AND_FOLLOWUP_ENCOUNTER, "1", _Form.MAT_PSYCHO_SOCIAL_INTAKE_AND_FOLLOWUP_FORM));
+		install(form("MAT Transit/Referral form", null, _EncounterType.MAT_TRANSIT_ENCOUNTER, "1", _Form.MAT_TRANSIT_FORM));
+
 	}
 }
