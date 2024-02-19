@@ -61,16 +61,17 @@ public class MATMetadata extends AbstractMetadataBundle {
 		install(program("MAT", "Methadone Assisted Therapy", Dictionary.MAT_PROGRAM, _Program.MAT));
 		install(encounterType("MAT Clinical Encounter", "MAT Clinical Encounter", _EncounterType.MAT_CLINICAL_ENCOUNTER));
 		install(encounterType("MAT Cessation Encounter", "MAT Cessation Encounter", _EncounterType.MAT_CESSATION_ENCOUNTER));
-		install(encounterType("MAT Clinical eligibility assessment and referral Encounter", "MAT Clinical Encounter", _EncounterType.MAT_CLINICAL_ELIGIBILITY_ASSESSMENT_AND_REFERRAL_ENCOUNTER));
+		install(encounterType("MAT Clinical eligibility assessment", "MAT Clinical Encounter", _EncounterType.MAT_CLINICAL_ELIGIBILITY_ASSESSMENT_AND_REFERRAL_ENCOUNTER));
 		install(encounterType("MAT Discontinuation Encounter", "MAT Clinical Encounter", _EncounterType.MAT_DISCONTINUATION_ENCOUNTER));
 		install(encounterType("MAT Initial registration Encounter", "MAT Clinical Encounter", _EncounterType.MAT_INITIAL_REGISTRATION_ENCOUNTER));
 		install(encounterType("MAT Treatment Encounter", "MAT Clinical Encounter", _EncounterType.MAT_TREATMENT_ENCOUNTER));
-		install(encounterType("MAT Psychiatric intake and followup Encounter", "MAT Clinical Encounter", _EncounterType.MAT_PSYCHIATRIC_INTAKE_AND_FOLLOWUP_ENCOUNTER));
-		install(encounterType("MAT Psychosocial intake and followup Encounter", "MAT Clinical Encounter", _EncounterType.MAT_PSYCHO_SOCIAL_INTAKE_AND_FOLLOWUP_ENCOUNTER));
+		install(encounterType("MAT Psychiatric intake and followup", "MAT Clinical Encounter", _EncounterType.MAT_PSYCHIATRIC_INTAKE_AND_FOLLOWUP_ENCOUNTER));
+		install(encounterType("MAT Psychosocial intake and followup", "MAT Clinical Encounter", _EncounterType.MAT_PSYCHO_SOCIAL_INTAKE_AND_FOLLOWUP_ENCOUNTER));
 		install(encounterType("MAT Transit/Referral Encounter", "MAT Clinical Encounter", _EncounterType.MAT_TRANSIT_ENCOUNTER));
 
 		install(form("MAT Clinical form", null, _EncounterType.MAT_CLINICAL_ENCOUNTER, "1", _Form.MAT_CLINICAL_ENCOUNTER));
-		install(form("MAT Clinical eligibility assessment and referral form", null, _EncounterType.MAT_CLINICAL_ELIGIBILITY_ASSESSMENT_AND_REFERRAL_ENCOUNTER, "1", _Form.MAT_CLINICAL_ELIGIBILITY_ASSESSMENT_AND_REFERRAL));
+		install(form("MAT Cessation form", null, _EncounterType.MAT_CESSATION_ENCOUNTER, "1", _Form.MAT_CESSATION));
+		install(form("MAT Clinical eligibility assessment", null, _EncounterType.MAT_CLINICAL_ELIGIBILITY_ASSESSMENT_AND_REFERRAL_ENCOUNTER, "1", _Form.MAT_CLINICAL_ELIGIBILITY_ASSESSMENT_AND_REFERRAL));
 		install(form("MAT Discontinuation form", null, _EncounterType.MAT_DISCONTINUATION_ENCOUNTER, "1", _Form.MAT_DISCONTINUATION));
 		install(form("MAT Initial registration form", "", _EncounterType.MAT_INITIAL_REGISTRATION_ENCOUNTER, "1", _Form.MAT_INITIAL_REGISTRATION_FORM));
 		install(form("MAT Treatment form", "", _EncounterType.MAT_TREATMENT_ENCOUNTER, "1", _Form.MAT_TREATMENT_FORM));

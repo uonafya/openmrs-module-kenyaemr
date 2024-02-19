@@ -16,33 +16,31 @@
 
 	<!-- ===================== Program ===================== -->
 
-	<bean id="kenyaemr.tb.program" class="org.openmrs.module.kenyacore.program.ProgramDescriptor">
-		<property name="targetUuid" value="${metadata.program.TB}" />
-		<property name="eligibilityCalculation" value="org.openmrs.module.kenyaemr.calculation.library.tb.EligibleForTbProgramCalculation" />
-		<property name="defaultEnrollmentForm" ref="kenyaemr.tb.form.enrollment" />
-		<property name="defaultCompletionForm" ref="kenyaemr.tb.form.completion" />
+	<bean id="kenyaemr.mat.program" class="org.openmrs.module.kenyacore.program.ProgramDescriptor">
+		<property name="targetUuid" value="4b898e20-9b2d-11ee-b9d1-0242ac120002" />
+		<property name="eligibilityCalculation" value="org.openmrs.module.kenyaemr.calculation.library.mat.EligibleForMATProgramCalculation" />
+		<property name="defaultEnrollmentForm" ref="kenyaemr.mat.form.initial.registration.form" />
+		<property name="defaultCompletionForm" ref="kenyaemr.mat.form.discontinuation" />
 		<property name="visitForms">
 			<set>
-				<ref bean="kenyaemr.tb.form.followupVisit" />
+				<ref bean="kenyaemr.mat.form.cessation" />
+				<ref bean="kenyaemr.mat.form.clinical.eligibility.assessment.and.referral" />
+				<ref bean="kenyaemr.mat.form.clinical.encounter" />
+				<ref bean="kenyaemr.mat.form.psychiatric.intake.and.followup" />
+				<ref bean="kenyaemr.mat.form.psychosocial.intake.and.followup" />
+				<ref bean="kenyaemr.mat.form.treatment" />
+				<ref bean="kenyaemr.mat.form.transit.and.referral" />
 			</set>
 		</property>
 		<property name="reports">
 			<set>
-				<!--<ref bean="kenyaemr.tb.report.smear.not.done.ptb.2.8.8.12" />
-				<ref bean="kenyaemr.tb.report.new.smear.negative.ptb.2.8.12.15" />-->
-				<ref bean="kenyaemr.tb.report.inProgram" />
-				<ref bean="kenyaemr.tb.report.needsSputumTest" />
-				<ref bean="kenyaemr.tb.report.missingSputumResults" />
-				<ref bean="kenyaemr.tb.report.tbSuspects" />
-				<ref bean="kenyaemr.tb.report.in.tb.program.missing.pyridoxine" />
-				<ref bean="kenyaemr.tb.report.in.tb.diary" />
 			</set>
 		</property>
 		<property name="fragments">
 			<map>
-				<entry key="enrollment-summary" value="kenyaemr:program/tb/tbEnrollmentSummary" />
-				<entry key="care-panel" value="kenyaemr:program/tb/tbCarePanel" />
-				<entry key="completion-summary" value="kenyaemr:program/tb/tbCompletionSummary" />
+				<entry key="enrollment-summary" value="" />
+				<entry key="care-panel" value="" />
+				<entry key="completion-summary" value="" />
 			</map>
 		</property>
 		<property name="order" value="200" />
@@ -50,17 +48,12 @@
 
 	<!-- ===================== Identifiers ===================== -->
 
-	<!-- District Registration Number -->
-	<bean id="kenyaemr.tb.identifier.districtRegistration" class="org.openmrs.module.kenyacore.identifier.IdentifierDescriptor">
-		<property name="targetUuid" value="${metadata.identifiertype.DISTRICT_REGISTRATION_NUMBER}" />
-		<property name="order" value="60" />
-	</bean>
 
 	<!-- ===================== Forms ===================== -->
 
-	<!-- TB Enrollment -->
-	<bean id="kenyaemr.tb.form.enrollment" class="org.openmrs.module.kenyacore.form.FormDescriptor">
-		<property name="targetUuid" value="89994550-9939-40f3-afa6-173bce445c79" />
+	<!-- MAT initial registration form -->
+	<bean id="kenyaemr.mat.form.initial.registration.form" class="org.openmrs.module.kenyacore.form.FormDescriptor">
+		<property name="targetUuid" value="9a9cadd7-fba1-4a24-94aa-43edfbecf8d9" />
 		<property name="apps">
 			<set>
 				<ref bean="kenyaemr.app.registration" />
@@ -70,12 +63,12 @@
 			</set>
 		</property>
 		<property name="icon" value="kenyaui:forms/generic.png" />
-		<property name="htmlform" value="kenyaemr:tb/tbEnrollment.html" />
+		<property name="htmlform" value="kenyaemr:mat/formDoesNotExistOn2x.html" />
 	</bean>
 
-	<!-- TB Completion -->
-	<bean id="kenyaemr.tb.form.completion" class="org.openmrs.module.kenyacore.form.FormDescriptor">
-		<property name="targetUuid" value="4b296dd0-f6be-4007-9eb8-d0fd4e94fb3a" />
+	<!-- MAT clinical encounter -->
+	<bean id="kenyaemr.mat.form.clinical.encounter" class="org.openmrs.module.kenyacore.form.FormDescriptor">
+		<property name="targetUuid" value="5ed937a0-0933-41c3-b638-63d8a4779845" />
 		<property name="apps">
 			<set>
 				<ref bean="kenyaemr.app.registration" />
@@ -85,12 +78,12 @@
 			</set>
 		</property>
 		<property name="icon" value="kenyaui:forms/completion.png" />
-		<property name="htmlform" value="kenyaemr:tb/tbDiscontinuation.html" />
+		<property name="htmlform" value="kenyaemr:mat/formDoesNotExistOn2x.html" />
 	</bean>
 
-	<!-- TB follow up visit -->
-	<bean id="kenyaemr.tb.form.followupVisit" class="org.openmrs.module.kenyacore.form.FormDescriptor">
-		<property name="targetUuid" value="2daabb77-7ad6-4952-864b-8d23e109c69d" />
+	<!-- MAT discontinuation form -->
+	<bean id="kenyaemr.mat.form.discontinuation" class="org.openmrs.module.kenyacore.form.FormDescriptor">
+		<property name="targetUuid" value="38d6e116-b96c-4916-a821-b4dc83e2041d" />
 		<property name="apps">
 			<set>
 				<ref bean="kenyaemr.app.clinician" />
@@ -98,73 +91,87 @@
 			</set>
 		</property>
 		<property name="icon" value="kenyaui:forms/generic.png" />
-		<property name="htmlform" value="kenyaemr:tb/tbFollowUpVisit.html" />
+		<property name="htmlform" value="kenyaemr:mat/formDoesNotExistOn2x.html" />
 	</bean>
 
+	<!-- MAT clinical eligibility assessment and referral form -->
+	<bean id="kenyaemr.mat.form.clinical.eligibility.assessment.and.referral" class="org.openmrs.module.kenyacore.form.FormDescriptor">
+		<property name="targetUuid" value="7b470a63-4c20-453c-8d5d-d75a7bfb87d1" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.clinician" />
+				<ref bean="kenyaemr.app.chart" />
+			</set>
+		</property>
+		<property name="icon" value="kenyaui:forms/generic.png" />
+		<property name="htmlform" value="kenyaemr:mat/formDoesNotExistOn2x.html" />
+	</bean>
+
+	<!-- MAT cessation form -->
+	<bean id="kenyaemr.mat.form.cessation" class="org.openmrs.module.kenyacore.form.FormDescriptor">
+		<property name="targetUuid" value="fa58cbc1-91c8-4920-813b-fde7fd69533b" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.clinician" />
+				<ref bean="kenyaemr.app.chart" />
+			</set>
+		</property>
+		<property name="icon" value="kenyaui:forms/generic.png" />
+		<property name="htmlform" value="kenyaemr:mat/formDoesNotExistOn2x.html" />
+	</bean>
+
+	<!-- MAT treatment form -->
+	<bean id="kenyaemr.mat.form.treatment" class="org.openmrs.module.kenyacore.form.FormDescriptor">
+		<property name="targetUuid" value="350d93cd-66da-4b7e-ae9a-fdfdc9195add" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.clinician" />
+				<ref bean="kenyaemr.app.chart" />
+			</set>
+		</property>
+		<property name="icon" value="kenyaui:forms/generic.png" />
+		<property name="htmlform" value="kenyaemr:mat/formDoesNotExistOn2x.html" />
+	</bean>
+
+	<!-- MAT Psychiatric intake and followup form -->
+	<bean id="kenyaemr.mat.form.psychiatric.intake.and.followup" class="org.openmrs.module.kenyacore.form.FormDescriptor">
+		<property name="targetUuid" value="fdea46a1-9423-4ef9-b780-93b32b48a528" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.clinician" />
+				<ref bean="kenyaemr.app.chart" />
+			</set>
+		</property>
+		<property name="icon" value="kenyaui:forms/generic.png" />
+		<property name="htmlform" value="kenyaemr:mat/formDoesNotExistOn2x.html" />
+	</bean>
+
+	<!-- MAT psychosocial intake and followup form -->
+	<bean id="kenyaemr.mat.form.psychosocial.intake.and.followup" class="org.openmrs.module.kenyacore.form.FormDescriptor">
+		<property name="targetUuid" value="cfd2109b-63b3-43de-8bb3-682e80c5a965" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.clinician" />
+				<ref bean="kenyaemr.app.chart" />
+			</set>
+		</property>
+		<property name="icon" value="kenyaui:forms/generic.png" />
+		<property name="htmlform" value="kenyaemr:mat/formDoesNotExistOn2x.html" />
+	</bean>
+
+	<!-- MAT transit/referral form -->
+	<bean id="kenyaemr.mat.form.transit.and.referral" class="org.openmrs.module.kenyacore.form.FormDescriptor">
+		<property name="targetUuid" value="b9495048-eceb-4dd2-bfba-330dc4900ee9" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.clinician" />
+				<ref bean="kenyaemr.app.chart" />
+			</set>
+		</property>
+		<property name="icon" value="kenyaui:forms/generic.png" />
+		<property name="htmlform" value="kenyaemr:mat/formDoesNotExistOn2x.html" />
+	</bean>
 	<!-- ===================== Reports ===================== -->
 
-	<bean id="kenyaemr.tb.report.inProgram" class="org.openmrs.module.kenyacore.report.CalculationReportDescriptor">
-		<property name="targetUuid" value="ed001a42-8462-49d3-8e9d-5c7bedc1806d" />
-		<property name="name" value="Patients in TB program" />
-		<property name="calculation" value="org.openmrs.module.kenyaemr.calculation.library.tb.InTbProgramCalculation" />
-		<!--<property name="displayIdentifier" ref="kenyaemr.tb.identifier.districtRegistration" />-->
-		<property name="apps"><set><ref bean="kenyaemr.app.reports" /></set></property>
-	</bean>
-
-	<bean id="kenyaemr.tb.report.needsSputumTest" class="org.openmrs.module.kenyacore.report.CalculationReportDescriptor">
-		<property name="targetUuid" value="316c9d65-fbce-402e-8e89-b5f7e78276cb" />
-		<property name="name" value="Patients due for TB sputum test" />
-		<property name="calculation" value="org.openmrs.module.kenyaemr.calculation.library.tb.NeedsTbSputumTestCalculation" />
-		<!--<property name="displayIdentifier" ref="kenyaemr.tb.identifier.districtRegistration" />-->
-		<property name="apps"><set><ref bean="kenyaemr.app.reports" /></set></property>
-	</bean>
-
-	<bean id="kenyaemr.tb.report.missingSputumResults" class="org.openmrs.module.kenyacore.report.CalculationReportDescriptor">
-		<property name="targetUuid" value="c38e0866-b24b-43e0-aa21-e21638742e63" />
-		<property name="name" value="Patients with missing TB sputum results" />
-		<property name="calculation" value="org.openmrs.module.kenyaemr.calculation.library.tb.MissingTbSputumResultsCalculation" />
-		<!--<property name="displayIdentifier" ref="kenyaemr.tb.identifier.districtRegistration" />-->
-		<property name="apps"><set><ref bean="kenyaemr.app.reports" /></set></property>
-	</bean>
-
-	<bean id="kenyaemr.tb.report.tbSuspects" class="org.openmrs.module.kenyacore.report.CalculationReportDescriptor">
-		<property name="targetUuid" value="e90215ec-21cf-49fa-b4e7-39dde8d3d416" />
-		<property name="name" value="TB Suspects not in TB Program" />
-		<property name="calculation" value="org.openmrs.module.kenyaemr.calculation.library.tb.TbSuspectCalculation" />
-		<!--<property name="displayIdentifier" ref="kenyaemr.tb.identifier.districtRegistration" />-->
-		<property name="apps"><set><ref bean="kenyaemr.app.reports" /></set></property>
-	</bean>
-
-	<bean id="kenyaemr.tb.report.smear.not.done.ptb.2.8.8.12" class="org.openmrs.module.kenyacore.report.IndicatorReportDescriptor">
-		<property name="targetUuid" value="432585b2-1e24-11e4-aac7-87d0570a70cf" />
-		<property name="name" value="PTB Smear Not Done TB Cases" />
-		<property name="description" value="Cohort Report on Results of Treatment of Smear Not Done PTB- Results at 2 and 8 Months (Registered 8-12 months Earlier)" />
-		<property name="template" value="kenyaemr:tb/ptbsmearnotdone2and8months.xls" />
-		<property name="apps"><set><ref bean="kenyaemr.app.reports" /></set></property>
-	</bean>
-
-	<bean id="kenyaemr.tb.report.new.smear.negative.ptb.2.8.12.15" class="org.openmrs.module.kenyacore.report.IndicatorReportDescriptor">
-		<property name="targetUuid" value="fd4b2c88-214b-11e4-878d-135d55706f1d" />
-		<property name="name" value="New Smear Negative - PTB and Extra PTB" />
-		<property name="description" value="Cohort Report on Results of Treatment of New Smear Negative PTB- Results at 2 and 8 Months (Registered 12-15 months Earlier)" />
-		<property name="template" value="kenyaemr:tb/ptbnewsptumsmearnegative2and8.xls" />
-		<property name="apps"><set><ref bean="kenyaemr.app.reports" /></set></property>
-	</bean>
-	
-	<bean id="kenyaemr.tb.report.in.tb.program.missing.pyridoxine" class="org.openmrs.module.kenyacore.report.CalculationReportDescriptor">
-		<property name="targetUuid" value="56ce37f1-094a-40e7-9abf-ee9c78e5ae7e" />
-		<property name="name" value="Patients on TB Treatment missing pyridoxine dose" />
-		<property name="calculation" value="org.openmrs.module.kenyaemr.calculation.library.ipt.NotOnIptNotInTbProgramCalculation" />
-<!-- 		<property name="displayIdentifier" ref="kenyaemr.tb.identifier.districtRegistration" /> -->
-		<property name="apps"><set><ref bean="kenyaemr.app.reports" /></set></property>
-	</bean>
-	
-	<bean id="kenyaemr.tb.report.in.tb.diary" class="org.openmrs.module.kenyacore.report.CalculationReportDescriptor">
-		<property name="targetUuid" value="4ec2dca2-58a2-478c-a71e-98053447b368" />
-		<property name="name" value="TB Patients Diary - Expected Visits" />
-		<property name="calculation" value="org.openmrs.module.kenyaemr.calculation.library.tb.ScheduledVisitOnDayCalculation" />
-<!-- 		<property name="displayIdentifier" ref="kenyaemr.tb.identifier.districtRegistration" /> -->
-		<property name="apps"><set><ref bean="kenyaemr.app.reports" /></set></property>
-	</bean>
 
 </beans>
