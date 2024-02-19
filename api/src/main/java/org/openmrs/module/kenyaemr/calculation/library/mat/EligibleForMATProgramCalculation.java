@@ -24,6 +24,7 @@ import java.util.Map;
  */
 public class EligibleForMATProgramCalculation extends AbstractPatientCalculation {
 
+	public static Integer MAT_ENROLLMENT_ELIGIBILITY_AGE_CUT_OFF = 16;
 	/**
 	 * @see org.openmrs.calculation.patient.PatientCalculation#evaluate(Collection, Map, PatientCalculationContext)
 	 */
@@ -35,7 +36,7 @@ public class EligibleForMATProgramCalculation extends AbstractPatientCalculation
 
 		for (int ptId : cohort) {
 			Integer ageInYears = ((Age) ages.get(ptId).getValue()).getFullYears();
-			boolean eligible = (ageInYears != null && ageInYears > 10); // TODO: we should find the correct age cutoff
+			boolean eligible = (ageInYears != null && ageInYears >= MAT_ENROLLMENT_ELIGIBILITY_AGE_CUT_OFF);
 
 			ret.put(ptId, new BooleanResult(eligible, this));
 		}
