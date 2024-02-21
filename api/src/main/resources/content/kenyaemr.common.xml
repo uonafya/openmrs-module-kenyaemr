@@ -41,6 +41,8 @@
 				<ref bean="kenyaemr.common.form.oncologyScreening"/>
 				<ref bean="kenyaemr.hiv.form.genderBasedViolenceScreening"/>
 				<ref bean="kenyaemr.common.form.hivSelfTesting"/>
+				<ref bean="kenyaemr.common.form.iliSurveillance"/>
+				<ref bean="kenyaemr.common.form.sariSurveillance"/>
 
 				<!--<ref bean="kenyaemr_knh_testing.common.form.inpatientCareForm"/>-->
 			</set>
@@ -87,6 +89,7 @@
 				<ref bean="kenyaemr.common.report.sgbvRegister"/>
 				<ref bean="kenyaemr.common.report.moh705A"/>
 				<ref bean="kenyaemr.common.report.moh705B"/>
+				<ref bean="kenyaemr.common.report.IDSRSuspectedCaseList"/>
 			</set>
 		</property>
 	</bean>
@@ -494,6 +497,41 @@
 		<property name="htmlform" value="kenyaemr:hts/hivSelfTesting.html" />
 		<property name="order" value="201095" />
 	</bean>
+	<!-- ILI Surveillance Form -->
+	<bean id="kenyaemr.common.form.iliSurveillance" class="org.openmrs.module.kenyacore.form.FormDescriptor">
+		<property name="targetUuid" value="05bcb369-5d50-4130-9a15-19c77a80314a" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.registration" />
+				<ref bean="kenyaemr.app.clinician" />
+				<ref bean="kenyaemr.app.chart" />
+				<ref bean="kenyaemr.app.hts" />
+				<ref bean="kenyaemr.app.prep" />
+			</set>
+		</property>
+		<property name="showIfCalculation" value="org.openmrs.module.kenyaemr.calculation.library.EligibleForIliScreeningCalculation" />
+		<property name="icon" value="kenyaui:forms/generic.png" />
+		<property name="htmlform" value="kenyaemr:mat/formDoesNotExistOn2x.html" />
+		<property name="order" value="201097" />
+	</bean>
+
+	<!-- SARI Surveillance Form -->
+	<bean id="kenyaemr.common.form.sariSurveillance" class="org.openmrs.module.kenyacore.form.FormDescriptor">
+		<property name="targetUuid" value="be0f79d3-9e9a-414b-a1ca-6a2974110bc4" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.registration" />
+				<ref bean="kenyaemr.app.clinician" />
+				<ref bean="kenyaemr.app.chart" />
+				<ref bean="kenyaemr.app.hts" />
+				<ref bean="kenyaemr.app.prep" />
+			</set>
+		</property>
+		<property name="showIfCalculation" value="org.openmrs.module.kenyaemr.calculation.library.EligibleForSariScreeningCalculation" />
+		<property name="icon" value="kenyaui:forms/generic.png" />
+		<property name="htmlform" value="kenyaemr:mat/formDoesNotExistOn2x.html" />
+		<property name="order" value="201099" />
+	</bean>
 
 	<!-- ===================== Reports ===================== -->
 
@@ -878,5 +916,18 @@
 			</set></property>
 		<property name="template" value="kenyaemr:moh705B.xls" />
 	</bean>
-
+	<!-- =========================== IDSR Suspected case list Reports =============================-->
+	<bean id="kenyaemr.common.report.IDSRSuspectedCaseList" class="org.openmrs.module.kenyacore.report.HybridReportDescriptor">
+		<property name="targetUuid" value="a90d0a13-f122-43b7-92c5-ad43a0abd2ca" />
+		<property name="name" value="IDSR Suspected case list" />
+		<property name="description" value="IDSR Suspected case list" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.reports" />
+			</set>
+		</property>
+		<property name="template" value="kenyaemr:dmi/idsr.xls" />
+		<property name="repeatingSection" value="sheet:2,row:6,dataset:idsrSuspectedCases | sheet:3,row:6,dataset:ili | sheet:4,row:6,dataset:sari" />
+<!--		<property name="repeatingSection" value="sheet:2,row:6,dataset:idsrSuspectedCases | sheet:3,row:6,dataset:ili | sheet:4,row:6,dataset:sari  | sheet:5,row:6,dataset:dysentery | sheet:6,row:6,dataset:cholera  | sheet:7,row:6,dataset:riftvalleyFever | sheet:8,row:6,dataset:malaria | sheet:9,row:6,dataset:chikungunya | sheet:10,row:6,dataset:poliomyelitis | sheet:11,row:6,dataset:viralHaemorrhagicFever | sheet:12,row:6,dataset:measles" />-->
+	</bean>
 </beans>
