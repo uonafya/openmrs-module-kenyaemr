@@ -87,6 +87,7 @@
 				<ref bean="kenyaemr.common.report.sgbvRegister"/>
 				<ref bean="kenyaemr.common.report.moh705A"/>
 				<ref bean="kenyaemr.common.report.moh705B"/>
+				<ref bean="kenyaemr.common.report.IDSRSuspectedCaseList"/>
 			</set>
 		</property>
 	</bean>
@@ -878,5 +879,18 @@
 			</set></property>
 		<property name="template" value="kenyaemr:moh705B.xls" />
 	</bean>
-
+	<!-- =========================== IDSR Suspected case list Reports =============================-->
+	<bean id="kenyaemr.common.report.IDSRSuspectedCaseList" class="org.openmrs.module.kenyacore.report.HybridReportDescriptor">
+		<property name="targetUuid" value="a90d0a13-f122-43b7-92c5-ad43a0abd2ca" />
+		<property name="name" value="IDSR Suspected case list" />
+		<property name="description" value="IDSR Suspected case list" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.reports" />
+			</set>
+		</property>
+		<property name="template" value="kenyaemr:dmi/idsr.xls" />
+		<property name="repeatingSection" value="sheet:2,row:6,dataset:idsrSuspectedCases | sheet:3,row:6,dataset:ili | sheet:4,row:6,dataset:sari" />
+<!--		<property name="repeatingSection" value="sheet:2,row:6,dataset:idsrSuspectedCases | sheet:3,row:6,dataset:ili | sheet:4,row:6,dataset:sari  | sheet:5,row:6,dataset:dysentery | sheet:6,row:6,dataset:cholera  | sheet:7,row:6,dataset:riftvalleyFever | sheet:8,row:6,dataset:malaria | sheet:9,row:6,dataset:chikungunya | sheet:10,row:6,dataset:poliomyelitis | sheet:11,row:6,dataset:viralHaemorrhagicFever | sheet:12,row:6,dataset:measles" />-->
+	</bean>
 </beans>
