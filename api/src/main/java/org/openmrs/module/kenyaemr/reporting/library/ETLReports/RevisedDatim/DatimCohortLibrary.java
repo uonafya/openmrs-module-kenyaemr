@@ -135,7 +135,7 @@ public class DatimCohortLibrary {
                 "      from kenyaemr_etl.etl_patient_hiv_followup fup\n" +
                 "               join kenyaemr_etl.etl_patient_demographics p on p.patient_id = fup.patient_id\n" +
                 "               join kenyaemr_etl.etl_hiv_enrollment e on fup.patient_id=e.patient_id\n" +
-                "                           ledt join kenyaemr_etl.etl_drug_event de\n" +
+                "                           left join kenyaemr_etl.etl_drug_event de\n" +
                 "                          on e.patient_id = de.patient_id and de.program = 'HIV' and date(de.date_started) <= date(:endDate)\n" +
                 "               left outer JOIN\n" +
                 "           (select patient_id,\n" +
