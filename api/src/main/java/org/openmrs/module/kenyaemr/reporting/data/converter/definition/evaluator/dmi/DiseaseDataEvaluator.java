@@ -52,7 +52,7 @@ public class DiseaseDataEvaluator implements PersonDataEvaluator {
                 "                a.fever_duration_from_days > 2 THEN 'Rift Valley Fever'\n" +
                 "           WHEN FIND_IN_SET(140238, a.complaint) > 0 AND FIND_IN_SET(139084, a.complaint) > 0 AND\n" +
                 "                FIND_IN_SET(871, a.complaint) > 0 AND a.fever_duration_from_days > 1 THEN 'Malaria'\n" +
-                "           WHEN FIND_IN_SET(140238, a.complaint) > 0 AND FIND_IN_SET(116558, a.complaint) > 0 AND a.temperature > 38.5\n" +
+                "           WHEN FIND_IN_SET(140238, a.complaint) > 0 AND FIND_IN_SET(116558, a.complaint) > 0 AND a.temperature > 38.5 AND a.fever_duration_from_days > 2\n" +
                 "               THEN 'Chikungunya'\n" +
                 "           WHEN FIND_IN_SET(157498, a.complaint) > 0 AND timestampdiff(YEAR, a.DOB, a.visit_date) <= 15\n" +
                 "               THEN 'Poliomyelitis'\n" +
@@ -60,7 +60,7 @@ public class DiseaseDataEvaluator implements PersonDataEvaluator {
                 "                a.fever_duration_from_days >= 3 THEN 'Viral Haemorrhagic Fever'\n" +
                 "           WHEN FIND_IN_SET(140238, a.complaint) > 0 AND FIND_IN_SET(512, a.complaint) > 0 AND\n" +
                 "                FIND_IN_SET(106, a.complaint) > 0 AND FIND_IN_SET(516, a.complaint) > 0 AND\n" +
-                "                FIND_IN_SET(143264, a.complaint) > 0 THEN 'Measles'\n" +
+                "                FIND_IN_SET(143264, a.complaint) > 0  AND a.fever_duration_from_days > 2 THEN 'Measles'\n" +
                 "           END AS disease\n" +
                 "from (select c.patient_id,\n" +
                 "             group_concat(c.complaint) as complaint,\n" +
@@ -92,12 +92,12 @@ public class DiseaseDataEvaluator implements PersonDataEvaluator {
                 "       FIND_IN_SET(136443, a.complaint) > 0 AND FIND_IN_SET(135367, a.complaint) > 0 AND a.fever_duration_from_days > 2)\n" +
                 "   OR (FIND_IN_SET(40238, a.complaint) > 0 AND FIND_IN_SET(139084, a.complaint) > 0 AND\n" +
                 "       FIND_IN_SET(871, a.complaint) > 0 AND a.fever_duration_from_days > 1)\n" +
-                "   OR (FIND_IN_SET(140238, a.complaint) > 0 AND FIND_IN_SET(116558, a.complaint) > 0 AND a.temperature > 38.5)\n" +
+                "   OR (FIND_IN_SET(140238, a.complaint) > 0 AND FIND_IN_SET(116558, a.complaint) > 0 AND a.temperature > 38.5 AND a.fever_duration_from_days > 2)\n" +
                 "   OR (a.complaint = 157498 AND timestampdiff(YEAR, a.DOB, a.visit_date) <= 15)\n" +
                 "   OR (FIND_IN_SET(140238, a.complaint) > 0 AND FIND_IN_SET(162628, a.complaint) > 0 AND\n" +
                 "       a.fever_duration_from_days >= 3)\n" +
                 "   OR (FIND_IN_SET(140238, a.complaint) AND FIND_IN_SET(512, a.complaint) AND FIND_IN_SET(106, a.complaint) AND\n" +
-                "       FIND_IN_SET(516, a.complaint) AND FIND_IN_SET(143264, a.complaint) > 0)\n" +
+                "       FIND_IN_SET(516, a.complaint) AND FIND_IN_SET(143264, a.complaint) > 0 AND a.fever_duration_from_days > 2)\n" +
                 "    and date(a.visit_date) between date(:startDate) and date(:endDate)\n" +
                 "group by patient_id;";
 
