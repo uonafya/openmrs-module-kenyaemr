@@ -33,6 +33,7 @@ import java.util.*;
  *
  * @should calculate  diarrhoea
  * @should calculate Visible blood in stool
+ * @should calculate No duration
  */
 public class EligibleForDysenteryCalculation extends AbstractPatientCalculation implements PatientFlagCalculation {
     protected static final Log log = LogFactory.getLog(EligibleForDysenteryCalculation.class);
@@ -48,7 +49,6 @@ public class EligibleForDysenteryCalculation extends AbstractPatientCalculation 
     }
     Integer BLOOD_IN_STOOL = 132494;
     Integer DIARRHEA = 142412;
-    Integer ONSET_DATE = 159948;
     Integer SCREENING_QUESTION = 5219;
 
     @Override
@@ -58,10 +58,6 @@ public class EligibleForDysenteryCalculation extends AbstractPatientCalculation 
         CalculationResultMap ret = new CalculationResultMap();
         for (Integer ptId : alive) {
             boolean result = false;
-            Integer clinicalEncounterDateDifference = 0;
-            Integer greenCardDateDifference = 0;
-            Date clinicalEnounterOnsetDate = null;
-            Date greenCardOnsetDate = null;
             Date dateCreated = null;
             Date currentDate = new Date();
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -74,67 +70,41 @@ public class EligibleForDysenteryCalculation extends AbstractPatientCalculation 
             Concept diarrheaResult = cs.getConcept(DIARRHEA);
             Concept screeningQuestion = cs.getConcept(SCREENING_QUESTION);
             boolean patientBloodyStoolClinicalEncResult = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, bloodyStoolResult) : false;
-            boolean pantientDiarrheaClinicalEncResult = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, diarrheaResult) : false;
+            boolean patientDiarrheaClinicalEncResult = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, diarrheaResult) : false;
             boolean patientBloodyStoolGreenCardResult = lastGreenCardEnc != null ? EmrUtils.encounterThatPassCodedAnswer(lastGreenCardEnc, screeningQuestion, bloodyStoolResult) : false;
-            boolean pantientDiarrheaGreenCardResult = lastGreenCardEnc != null ? EmrUtils.encounterThatPassCodedAnswer(lastGreenCardEnc, screeningQuestion, diarrheaResult) : false;
+            boolean patientDiarrheaGreenCardResult = lastGreenCardEnc != null ? EmrUtils.encounterThatPassCodedAnswer(lastGreenCardEnc, screeningQuestion, diarrheaResult) : false;
 
             if (lastClinicalEncounter != null) {
                 for (Obs obs : lastClinicalEncounter.getObs()) {
-                    if (patientBloodyStoolClinicalEncResult && pantientDiarrheaClinicalEncResult) {
+                    if (patientBloodyStoolClinicalEncResult && patientDiarrheaClinicalEncResult) {
                         dateCreated = obs.getDateCreated();
-                        if (obs.getConcept().getConceptId().equals(ONSET_DATE)) {
-                            clinicalEnounterOnsetDate = obs.getValueDatetime();
-                            clinicalEncounterDateDifference = daysBetween(currentDate, clinicalEnounterOnsetDate);
-                        }
                         if (dateCreated != null) {
                             String createdDate = dateFormat.format(dateCreated);
-                            if (clinicalEncounterDateDifference < 2) {
-                                if (createdDate != null && createdDate.equals(todayDate)) {
-                                    result = true;
-                                    break;
-                                }
+                            if (createdDate.equals(todayDate)) {
+                                result = true;
+                                break;
                             }
-
                         }
                     }
-
                 }
-
             }
-
             if (lastGreenCardEnc != null) {
                 for (Obs obs : lastGreenCardEnc.getObs()) {
-                    if (patientBloodyStoolGreenCardResult && pantientDiarrheaGreenCardResult) {
+                    if (patientBloodyStoolGreenCardResult && patientDiarrheaGreenCardResult) {
                         dateCreated = obs.getDateCreated();
-                        if (obs.getConcept().getConceptId().equals(ONSET_DATE)) {
-                            greenCardOnsetDate = obs.getValueDatetime();
-                            greenCardDateDifference = daysBetween(currentDate, greenCardOnsetDate);
-
-                        }
                         if (dateCreated != null) {
                             String createdDate = dateFormat.format(dateCreated);
-                            if (greenCardDateDifference < 2) {
-                                if (createdDate != null && createdDate.equals(todayDate)) {
-                                    result = true;
-                                    break;
-                                }
+                            if (createdDate.equals(todayDate)) {
+                                result = true;
+                                break;
                             }
                         }
                     }
                 }
-
             }
-
 
             ret.put(ptId, new BooleanResult(result, this));
         }
-
         return ret;
-    }
-
-    private int daysBetween(Date date1, Date date2) {
-        DateTime d1 = new DateTime(date1.getTime());
-        DateTime d2 = new DateTime(date2.getTime());
-        return Math.abs(Days.daysBetween(d1, d2).getDays());
     }
 }

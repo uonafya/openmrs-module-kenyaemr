@@ -47,6 +47,7 @@ import java.util.Set;
  * @should calculate Coryza
  * @should calculate Conjuctivitis( red eyes)
  * @should calculate Cough
+ * @should calculate duration > 2 days
  */
 public class EligibleForMeaslesCalculation extends AbstractPatientCalculation implements PatientFlagCalculation {
     protected static final Log log = LogFactory.getLog(EligibleForMeaslesCalculation.class);
@@ -67,7 +68,7 @@ public class EligibleForMeaslesCalculation extends AbstractPatientCalculation im
     Integer CORYZA = 106;
     Integer CONJUCTIVITIS = 127777;
     Integer COUGH = 143264;
-    Integer ONSET_DATE = 159948;
+    Integer DURATION = 159368;
     Integer SCREENING_QUESTION = 5219;
 
     @Override
@@ -80,10 +81,7 @@ public class EligibleForMeaslesCalculation extends AbstractPatientCalculation im
         for (Integer ptId : alive) {
             boolean eligible = false;
             Date currentDate = new Date();
-            Integer greenCardDateDifference = 0;
-            Integer clinicalEncounterDateDifference = 0;
-            Date greenCardOnsetDate = null;
-            Date clinicalEnounterOnsetDate = null;
+            Double duration = 0.0;
             Date dateCreated = null;
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             String todayDate = dateFormat.format(currentDate);
@@ -115,14 +113,13 @@ public class EligibleForMeaslesCalculation extends AbstractPatientCalculation im
                 if (patientFeverResultGreenCard && patientRashResultGreenCard && patientCoryzaResultGreenCard && patientCoughResultGreenCard && patientConjuctivitisResultGreenCard) {
                     for (Obs obs : lastHivFollowUpEncounter.getObs()) {
                         dateCreated = obs.getDateCreated();
-                        if (obs.getConcept().getConceptId().equals(ONSET_DATE)) {
-                            greenCardOnsetDate = obs.getValueDatetime();
-                            greenCardDateDifference = daysBetween(currentDate, greenCardOnsetDate);
+                        if (obs.getConcept().getConceptId().equals(DURATION)) {
+                            duration = obs.getValueNumeric();
                         }
                         if (dateCreated != null) {
                             String createdDate = dateFormat.format(dateCreated);
-                            if (greenCardDateDifference <= 10) {
-                                if (createdDate != null && createdDate.equals(todayDate)) {
+                            if (duration > 2) {
+                                if (createdDate.equals(todayDate)) {
                                     eligible = true;
                                     break;
                                 }
@@ -135,17 +132,16 @@ public class EligibleForMeaslesCalculation extends AbstractPatientCalculation im
                 if (patientFeverResultClinical && patientRashResultClinical && patientCoryzaResultClinical && patientCoughResultClinical && patientConjuctivitisResultClinical) {
                     for (Obs obs : lastClinicalEncounter.getObs()) {
                         dateCreated = obs.getDateCreated();
-                        if (obs.getConcept().getConceptId().equals(ONSET_DATE)) {
-                            clinicalEnounterOnsetDate = obs.getValueDatetime();
-                            clinicalEncounterDateDifference = daysBetween(currentDate, clinicalEnounterOnsetDate);
+                        if (obs.getConcept().getConceptId().equals(DURATION)) {
+                            duration = obs.getValueNumeric();
                         }
                         if (dateCreated != null) {
                             String createdDate = dateFormat.format(dateCreated);
-                            if (clinicalEncounterDateDifference <= 10) {
-                                if (createdDate != null && createdDate.equals(todayDate)) {
+                            if (duration > 2) {
+                                if (createdDate.equals(todayDate)) {
                                     eligible = true;
+                                    break;
                                 }
-                                break;
                             }
                         }
                     }
@@ -155,11 +151,5 @@ public class EligibleForMeaslesCalculation extends AbstractPatientCalculation im
         }
 
         return ret;
-    }
-
-    private int daysBetween(Date date1, Date date2) {
-        DateTime d1 = new DateTime(date1.getTime());
-        DateTime d2 = new DateTime(date2.getTime());
-        return Math.abs(Days.daysBetween(d1, d2).getDays());
     }
 }

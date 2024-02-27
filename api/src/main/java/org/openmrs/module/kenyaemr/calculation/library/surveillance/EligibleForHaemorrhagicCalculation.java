@@ -45,6 +45,7 @@ import java.util.Set;
  * @should calculate Fever
  * @should calculate Onset at least 72hours.
  * @should calculate bleeding
+ * @should calculate Duration  > 2 days
  */
 public class EligibleForHaemorrhagicCalculation extends AbstractPatientCalculation implements PatientFlagCalculation {
     protected static final Log log = LogFactory.getLog(EligibleForHaemorrhagicCalculation.class);
@@ -54,14 +55,17 @@ public class EligibleForHaemorrhagicCalculation extends AbstractPatientCalculati
 
     public static final EncounterType greenCardEncType = MetadataUtils.existing(EncounterType.class, HivMetadata._EncounterType.HIV_CONSULTATION);
     public static final Form greenCardForm = MetadataUtils.existing(Form.class, HivMetadata._Form.HIV_GREEN_CARD);
+
     @Override
     public String getFlagMessage() {
         return "Suspected Haemorrhagic Fever";
     }
+
     Integer FEVER = 140238;
-    Integer BLEEDING_TENDENCIES  = 159339;
-    Integer ONSET_DATE = 159948;
+    Integer BLEEDING_TENDENCIES = 159339;
+    Integer DURATION = 159368;
     Integer SCREENING_QUESTION = 5219;
+
     @Override
     public CalculationResultMap evaluate(Collection<Integer> cohort, Map<String, Object> parameterValues, PatientCalculationContext context) {
 
@@ -69,13 +73,10 @@ public class EligibleForHaemorrhagicCalculation extends AbstractPatientCalculati
         PatientService patientService = Context.getPatientService();
         CalculationResultMap ret = new CalculationResultMap();
 
-        for (Integer ptId :alive) {
+        for (Integer ptId : alive) {
             boolean eligible = false;
             Date currentDate = new Date();
-            Integer greenCardDateDifference = 0;
-            Integer clinicalEncounterDateDifference = 0;
-            Date greenCardOnsetDate = null;
-            Date clinicalEnounterOnsetDate = null;
+            Double duration = 0.0;
             Date dateCreated = null;
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             String todayDate = dateFormat.format(currentDate);
@@ -94,54 +95,47 @@ public class EligibleForHaemorrhagicCalculation extends AbstractPatientCalculati
             boolean patientFeverResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, feverResult) : false;
             boolean patientBleedingResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, bleedingResult) : false;
 
-               if (lastHivFollowUpEncounter != null) {
-                    if (patientFeverResultGreenCard && patientBleedingResultGreenCard) {
-                        for (Obs obs : lastHivFollowUpEncounter.getObs()) {
-                            dateCreated = obs.getDateCreated();
-                            if (obs.getConcept().getConceptId().equals(ONSET_DATE)) {
-                                greenCardOnsetDate = obs.getValueDatetime();
-                                greenCardDateDifference = daysBetween(currentDate, greenCardOnsetDate);
-                            }
-                            if (dateCreated != null) {
-                                String createdDate = dateFormat.format(dateCreated);
-                                if (greenCardDateDifference <= 3) {
-                                    if (createdDate != null && createdDate.equals(todayDate)) {
-                                        eligible = true;
-                                        break;
-                                    }
-                                }
-                            }
+            if (lastHivFollowUpEncounter != null) {
+                if (patientFeverResultGreenCard && patientBleedingResultGreenCard) {
+                    for (Obs obs : lastHivFollowUpEncounter.getObs()) {
+                        dateCreated = obs.getDateCreated();
+                        if (obs.getConcept().getConceptId().equals(DURATION)) {
+                            duration = obs.getValueNumeric();
                         }
-                    }
-                }
-                if (lastClinicalEncounter != null) {
-                    if (patientFeverResultClinical && patientBleedingResultClinical) {
-                        for (Obs obs : lastClinicalEncounter.getObs()) {
-                            dateCreated = obs.getDateCreated();
-                            if (obs.getConcept().getConceptId().equals(ONSET_DATE)) {
-                                clinicalEnounterOnsetDate = obs.getValueDatetime();
-                                clinicalEncounterDateDifference = daysBetween(currentDate, clinicalEnounterOnsetDate);
-                            }
-                            if (dateCreated != null) {
-                                String createdDate = dateFormat.format(dateCreated);
-                                if (clinicalEncounterDateDifference <= 3) {
-                                    if (createdDate != null && createdDate.equals(todayDate)) {
-                                        eligible = true;
-                                    }
+                        if (dateCreated != null) {
+                            String createdDate = dateFormat.format(dateCreated);
+                            if (duration >= 3) {
+                                if (createdDate.equals(todayDate)) {
+                                    eligible = true;
                                     break;
                                 }
                             }
                         }
                     }
                 }
-                ret.put(ptId, new BooleanResult(eligible, this));
             }
+            if (lastClinicalEncounter != null) {
+                if (patientFeverResultClinical && patientBleedingResultClinical) {
+                    for (Obs obs : lastClinicalEncounter.getObs()) {
+                        dateCreated = obs.getDateCreated();
+                        if (obs.getConcept().getConceptId().equals(DURATION)) {
+                            duration = obs.getValueNumeric();
+                        }
+                        if (dateCreated != null) {
+                            String createdDate = dateFormat.format(dateCreated);
+                            if (duration >= 3) {
+                                if (createdDate.equals(todayDate)) {
+                                    eligible = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ret.put(ptId, new BooleanResult(eligible, this));
+        }
 
         return ret;
-    }
-    private int daysBetween(Date date1, Date date2) {
-        DateTime d1 = new DateTime(date1.getTime());
-        DateTime d2 = new DateTime(date2.getTime());
-        return Math.abs(Days.daysBetween(d1, d2).getDays());
     }
 }

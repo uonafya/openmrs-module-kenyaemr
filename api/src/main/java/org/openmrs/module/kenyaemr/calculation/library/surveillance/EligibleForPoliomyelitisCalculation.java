@@ -40,7 +40,8 @@ import java.util.Set;
  * Calculates the eligibility for Poliomyelitis screening flag for  patients
  *
  * @should calculate Child less than 15years of age.
- * @should calculate
+ * @should calculate limb weakness
+ * @should calculate no duration
  */
 public class EligibleForPoliomyelitisCalculation extends AbstractPatientCalculation implements PatientFlagCalculation {
     protected static final Log log = LogFactory.getLog(EligibleForPoliomyelitisCalculation.class);
@@ -56,7 +57,6 @@ public class EligibleForPoliomyelitisCalculation extends AbstractPatientCalculat
     }
 
     Integer LIMBS_WEAKNESS = 157498;
-    Integer ONSET_DATE = 159948;
     Integer SCREENING_QUESTION = 5219;
 
     @Override
@@ -69,10 +69,6 @@ public class EligibleForPoliomyelitisCalculation extends AbstractPatientCalculat
         for (Integer ptId : alive) {
             boolean eligible = false;
             Date currentDate = new Date();
-            Integer greenCardDateDifference = 0;
-            Integer clinicalEncounterDateDifference = 0;
-            Date greenCardOnsetDate = null;
-            Date clinicalEnounterOnsetDate = null;
             Date dateCreated = null;
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             String todayDate = dateFormat.format(currentDate);
@@ -88,22 +84,16 @@ public class EligibleForPoliomyelitisCalculation extends AbstractPatientCalculat
             boolean patientWeakLimbsResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, limbsWeaknessResult) : false;
             boolean patientWeakLimbsResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, limbsWeaknessResult) : false;
 
-            if (patient.getAge() <= 15) {
+            if (patient.getAge() < 15) {
                 if (lastHivFollowUpEncounter != null) {
                     if (patientWeakLimbsResultGreenCard) {
                         for (Obs obs : lastHivFollowUpEncounter.getObs()) {
                             dateCreated = obs.getDateCreated();
-                            if (obs.getConcept().getConceptId().equals(ONSET_DATE)) {
-                                greenCardOnsetDate = obs.getValueDatetime();
-                                greenCardDateDifference = daysBetween(currentDate, greenCardOnsetDate);
-                            }
                             if (dateCreated != null) {
                                 String createdDate = dateFormat.format(dateCreated);
-                                if (greenCardDateDifference <= 10) {
-                                    if (createdDate != null && createdDate.equals(todayDate)) {
-                                        eligible = true;
-                                        break;
-                                    }
+                                if (createdDate.equals(todayDate)) {
+                                    eligible = true;
+                                    break;
                                 }
                             }
                         }
@@ -113,16 +103,10 @@ public class EligibleForPoliomyelitisCalculation extends AbstractPatientCalculat
                     if (patientWeakLimbsResultClinical) {
                         for (Obs obs : lastClinicalEncounter.getObs()) {
                             dateCreated = obs.getDateCreated();
-                            if (obs.getConcept().getConceptId().equals(ONSET_DATE)) {
-                                clinicalEnounterOnsetDate = obs.getValueDatetime();
-                                clinicalEncounterDateDifference = daysBetween(currentDate, clinicalEnounterOnsetDate);
-                            }
                             if (dateCreated != null) {
                                 String createdDate = dateFormat.format(dateCreated);
-                                if (clinicalEncounterDateDifference <= 10) {
-                                    if (createdDate != null && createdDate.equals(todayDate)) {
-                                        eligible = true;
-                                    }
+                                if (createdDate.equals(todayDate)) {
+                                    eligible = true;
                                     break;
                                 }
                             }
@@ -134,11 +118,5 @@ public class EligibleForPoliomyelitisCalculation extends AbstractPatientCalculat
         }
 
         return ret;
-    }
-
-    private int daysBetween(Date date1, Date date2) {
-        DateTime d1 = new DateTime(date1.getTime());
-        DateTime d2 = new DateTime(date2.getTime());
-        return Math.abs(Days.daysBetween(d1, d2).getDays());
     }
 }

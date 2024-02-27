@@ -8,6 +8,7 @@
  * graphic logo is a trademark of OpenMRS Inc.
  */
 package org.openmrs.module.kenyaemr.calculation.library.surveillance;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
@@ -35,6 +36,7 @@ import java.util.*;
  * @should calculate Headache
  * @should calculate Temperature  >37.5C
  * @should calculate Chills
+ * @should calculate duration > 1 days
  */
 public class EligibleForMalariaCalculation extends AbstractPatientCalculation implements PatientFlagCalculation {
     protected static final Log log = LogFactory.getLog(EligibleForMalariaCalculation.class);
@@ -49,12 +51,14 @@ public class EligibleForMalariaCalculation extends AbstractPatientCalculation im
     public String getFlagMessage() {
         return "Suspected Malaria case";
     }
+
     Integer HEADACHE = 139084;
-    Integer CHILLS  = 871;
-    Integer ONSET_DATE = 159948;
+    Integer CHILLS = 871;
+    Integer DURATION = 159368;
     Integer TEMPERATURE = 5088;
     Integer FEVER = 140238;
     Integer SCREENING_QUESTION = 5219;
+
     /**
      * Evaluates the calculation
      */
@@ -66,23 +70,18 @@ public class EligibleForMalariaCalculation extends AbstractPatientCalculation im
         PatientService patientService = Context.getPatientService();
         CalculationResultMap ret = new CalculationResultMap();
 
-        for (Integer ptId :alive) {
+        for (Integer ptId : alive) {
             boolean eligible = false;
             Date currentDate = new Date();
             Double tempValue = 0.0;
-            Integer triageDateDifference = 0;
-            Integer greenCardDateDifference = 0;
-            Integer clinicalEncounterDateDifference = 0;
-            Date triageOnsetDate = null;
-            Date greenCardOnsetDate = null;
-            Date clinicalEnounterOnsetDate = null;
+            Double duration = 0.0;
             Date dateCreated = null;
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             String todayDate = dateFormat.format(currentDate);
             Patient patient = patientService.getPatient(ptId);
 
             Encounter lastTriageEnc = EmrUtils.lastEncounter(patient, triageEncType, triageScreeningForm);
-            Encounter lastHivFollowUpEncounter = EmrUtils.lastEncounter(patient, greenCardEncType, greenCardForm );   //last greencard followup form
+            Encounter lastHivFollowUpEncounter = EmrUtils.lastEncounter(patient, greenCardEncType, greenCardForm);   //last greencard followup form
             Encounter lastClinicalEncounter = EmrUtils.lastEncounter(patient, consultationEncType, clinicalEncounterForm);   //last clinical encounter form
 
             ConceptService cs = Context.getConceptService();
@@ -105,19 +104,18 @@ public class EligibleForMalariaCalculation extends AbstractPatientCalculation im
                 tempValue = lastTempObs.getValueNumeric();
             }
 
-            if (lastHivFollowUpEncounter !=null) {
+            if (lastHivFollowUpEncounter != null) {
                 if (patientHeadacheResultGreenCard && patientChillsResultGreenCard && patientFeverResultGreenCard) {
                     for (Obs obs : lastHivFollowUpEncounter.getObs()) {
                         dateCreated = obs.getDateCreated();
-                        if (obs.getConcept().getConceptId().equals(ONSET_DATE)) {
-                            greenCardOnsetDate = obs.getValueDatetime();
-                            greenCardDateDifference = daysBetween(currentDate, greenCardOnsetDate);
+                        if (obs.getConcept().getConceptId().equals(DURATION)) {
+                            duration = obs.getValueNumeric();
                         }
                         if (dateCreated != null) {
                             String createdDate = dateFormat.format(dateCreated);
-                            if (greenCardDateDifference <= 1 && tempValue != null && tempValue >= 37.5) {
-                                if (createdDate != null && createdDate.equals(todayDate)) {
-                                        eligible = true;
+                            if (duration > 1 && tempValue != null && tempValue >= 37.5) {
+                                if (createdDate.equals(todayDate)) {
+                                    eligible = true;
                                     break;
                                 }
                             }
@@ -125,34 +123,28 @@ public class EligibleForMalariaCalculation extends AbstractPatientCalculation im
                     }
                 }
             }
-            if (lastClinicalEncounter !=null) {
+            if (lastClinicalEncounter != null) {
                 if (patientHeadacheResultClinical && patientChillsResultClinical && patientFeverResultClinical) {
                     for (Obs obs : lastClinicalEncounter.getObs()) {
                         dateCreated = obs.getDateCreated();
-                        if (obs.getConcept().getConceptId().equals(ONSET_DATE)) {
-                            clinicalEnounterOnsetDate = obs.getValueDatetime();
-                            clinicalEncounterDateDifference = daysBetween(currentDate, clinicalEnounterOnsetDate);
+                        if (obs.getConcept().getConceptId().equals(DURATION)) {
+                            duration = obs.getValueNumeric();
                         }
                         if (dateCreated != null) {
                             String createdDate = dateFormat.format(dateCreated);
-                            if (clinicalEncounterDateDifference <= 1 && tempValue != null && tempValue >= 37.5) {
-                                if (createdDate != null && createdDate.equals(todayDate)) {
-                                       eligible = true;
-                                    }
+                            if (duration > 1 && tempValue != null && tempValue >= 37.5) {
+                                if (createdDate.equals(todayDate)) {
+                                    eligible = true;
                                     break;
                                 }
                             }
                         }
                     }
                 }
-             ret.put(ptId, new BooleanResult(eligible, this));
+            }
+            ret.put(ptId, new BooleanResult(eligible, this));
         }
 
         return ret;
-    }
-    private int daysBetween(Date date1, Date date2) {
-        DateTime d1 = new DateTime(date1.getTime());
-        DateTime d2 = new DateTime(date2.getTime());
-        return Math.abs(Days.daysBetween(d1, d2).getDays());
     }
 }
