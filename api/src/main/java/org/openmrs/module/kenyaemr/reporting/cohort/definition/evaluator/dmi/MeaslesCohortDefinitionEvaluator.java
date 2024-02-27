@@ -48,7 +48,17 @@ public class MeaslesCohortDefinitionEvaluator implements CohortDefinitionEvaluat
 		
 		Cohort newCohort = new Cohort();
 		
-		String qry = "";
+		String qry = "select a.patient_id\n" +
+				"from (select patient_id, c.visit_date,group_concat(c.complaint) as complaint\n" +
+				"      from kenyaemr_etl.etl_allergy_chronic_illness c\n" +
+				"      where c.complaint in (140238,512,106,516,143264)\n" +
+				"        and date(c.visit_date) between date(:startDate) and date(:endDate)\n" +
+				"      group by patient_id) a\n" +
+				"where FIND_IN_SET(140238, a.complaint) > 0\n" +
+				"  and FIND_IN_SET(512, a.complaint) > 0\n" +
+				"  and FIND_IN_SET(106, a.complaint) > 0\n" +
+				"  and FIND_IN_SET(516, a.complaint) > 0\n" +
+				"  and FIND_IN_SET(143264, a.complaint) > 0;";
 		
 		SqlQueryBuilder builder = new SqlQueryBuilder();
 		builder.append(qry);
