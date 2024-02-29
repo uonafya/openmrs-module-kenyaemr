@@ -30,7 +30,7 @@ import java.util.*;
 
 /**
  * Calculates the eligibility for Dysentery screening flag for  patients
- *
+ * @should calculate Active visit
  * @should calculate  diarrhoea
  * @should calculate Visible blood in stool
  * @should calculate No duration
@@ -58,52 +58,55 @@ public class EligibleForDysenteryCalculation extends AbstractPatientCalculation 
         CalculationResultMap ret = new CalculationResultMap();
         for (Integer ptId : alive) {
             boolean result = false;
-            Date dateCreated = null;
-            Date currentDate = new Date();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String todayDate = dateFormat.format(currentDate);
-            Patient patient = patientService.getPatient(ptId);
-            Encounter lastClinicalEncounter = EmrUtils.lastEncounter(patient, consultationEncType, clinicalEncounterForm); //last clinical encounter form
-            Encounter lastGreenCardEnc = EmrUtils.lastEncounter(patient, greenCardEncType, greenCardForm);   //last greencard followup form
-            ConceptService cs = Context.getConceptService();
-            Concept bloodyStoolResult = cs.getConcept(BLOOD_IN_STOOL);
-            Concept diarrheaResult = cs.getConcept(DIARRHEA);
-            Concept screeningQuestion = cs.getConcept(SCREENING_QUESTION);
-            boolean patientBloodyStoolClinicalEncResult = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, bloodyStoolResult) : false;
-            boolean patientDiarrheaClinicalEncResult = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, diarrheaResult) : false;
-            boolean patientBloodyStoolGreenCardResult = lastGreenCardEnc != null ? EmrUtils.encounterThatPassCodedAnswer(lastGreenCardEnc, screeningQuestion, bloodyStoolResult) : false;
-            boolean patientDiarrheaGreenCardResult = lastGreenCardEnc != null ? EmrUtils.encounterThatPassCodedAnswer(lastGreenCardEnc, screeningQuestion, diarrheaResult) : false;
+            List<Visit> activeVisits = Context.getVisitService().getActiveVisitsByPatient(patientService.getPatient(ptId));
+            if (!activeVisits.isEmpty()) {
+                Date dateCreated = null;
+                Date currentDate = new Date();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                String todayDate = dateFormat.format(currentDate);
+                Patient patient = patientService.getPatient(ptId);
+                Encounter lastClinicalEncounter = EmrUtils.lastEncounter(patient, consultationEncType, clinicalEncounterForm); //last clinical encounter form
+                Encounter lastGreenCardEnc = EmrUtils.lastEncounter(patient, greenCardEncType, greenCardForm);   //last greencard followup form
+                ConceptService cs = Context.getConceptService();
+                Concept bloodyStoolResult = cs.getConcept(BLOOD_IN_STOOL);
+                Concept diarrheaResult = cs.getConcept(DIARRHEA);
+                Concept screeningQuestion = cs.getConcept(SCREENING_QUESTION);
+                boolean patientBloodyStoolClinicalEncResult = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, bloodyStoolResult) : false;
+                boolean patientDiarrheaClinicalEncResult = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, diarrheaResult) : false;
+                boolean patientBloodyStoolGreenCardResult = lastGreenCardEnc != null ? EmrUtils.encounterThatPassCodedAnswer(lastGreenCardEnc, screeningQuestion, bloodyStoolResult) : false;
+                boolean patientDiarrheaGreenCardResult = lastGreenCardEnc != null ? EmrUtils.encounterThatPassCodedAnswer(lastGreenCardEnc, screeningQuestion, diarrheaResult) : false;
 
-            if (lastClinicalEncounter != null) {
-                for (Obs obs : lastClinicalEncounter.getObs()) {
-                    if (patientBloodyStoolClinicalEncResult && patientDiarrheaClinicalEncResult) {
-                        dateCreated = obs.getDateCreated();
-                        if (dateCreated != null) {
-                            String createdDate = dateFormat.format(dateCreated);
-                            if (createdDate.equals(todayDate)) {
-                                result = true;
-                                break;
+                if (lastClinicalEncounter != null) {
+                    for (Obs obs : lastClinicalEncounter.getObs()) {
+                        if (patientBloodyStoolClinicalEncResult && patientDiarrheaClinicalEncResult) {
+                            dateCreated = obs.getDateCreated();
+                            if (dateCreated != null) {
+                                String createdDate = dateFormat.format(dateCreated);
+                                if (createdDate.equals(todayDate)) {
+                                    result = true;
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-            }
-            if (lastGreenCardEnc != null) {
-                for (Obs obs : lastGreenCardEnc.getObs()) {
-                    if (patientBloodyStoolGreenCardResult && patientDiarrheaGreenCardResult) {
-                        dateCreated = obs.getDateCreated();
-                        if (dateCreated != null) {
-                            String createdDate = dateFormat.format(dateCreated);
-                            if (createdDate.equals(todayDate)) {
-                                result = true;
-                                break;
+                if (lastGreenCardEnc != null) {
+                    for (Obs obs : lastGreenCardEnc.getObs()) {
+                        if (patientBloodyStoolGreenCardResult && patientDiarrheaGreenCardResult) {
+                            dateCreated = obs.getDateCreated();
+                            if (dateCreated != null) {
+                                String createdDate = dateFormat.format(dateCreated);
+                                if (createdDate.equals(todayDate)) {
+                                    result = true;
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            ret.put(ptId, new BooleanResult(result, this));
+                ret.put(ptId, new BooleanResult(result, this));
+            }
         }
         return ret;
     }
