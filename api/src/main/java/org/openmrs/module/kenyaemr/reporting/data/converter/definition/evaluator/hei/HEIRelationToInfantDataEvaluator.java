@@ -36,9 +36,9 @@ public class HEIRelationToInfantDataEvaluator implements PersonDataEvaluator {
 
         String qry = "select\n" +
                 "  patient_id,\n" +
-                "  (case primary_caregiver when 970 then \"Mother\" when 973 then \"Guardian\" when 972 then \"Guardian\" when 160639 then \"Guardian\" when 5622 then \"Guardian\" else \"\" end) as primary_caregiver\n" +
+                "  (case primary_caregiver when 970 then \"Mother\" when 973 then \"Guardian\" when 972 then \"Guardian\" when 160639 then \"Guardian\" when 5622 then \"Guardian\" end) as primary_caregiver\n" +
                 "from kenyaemr_etl.etl_hei_follow_up_visit\n" +
-                "GROUP BY patient_id DESC";
+                "GROUP BY patient_id;";
 
         SqlQueryBuilder queryBuilder = new SqlQueryBuilder();
         queryBuilder.append(qry);
