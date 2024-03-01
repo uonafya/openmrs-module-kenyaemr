@@ -19,6 +19,7 @@ import org.openmrs.EncounterType;
 import org.openmrs.Form;
 import org.openmrs.Obs;
 import org.openmrs.Patient;
+import org.openmrs.Visit;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
@@ -36,12 +37,13 @@ import org.openmrs.module.metadatadeploy.MetadataUtils;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Calculates the eligibility for Haemorrhagic fever screening flag for  patients
- *
+ * @should calculate Active visit
  * @should calculate Fever
  * @should calculate Onset at least 72hours.
  * @should calculate bleeding
@@ -75,67 +77,69 @@ public class EligibleForHaemorrhagicCalculation extends AbstractPatientCalculati
 
         for (Integer ptId : alive) {
             boolean eligible = false;
-            Date currentDate = new Date();
-            Double duration = 0.0;
-            Date dateCreated = null;
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String todayDate = dateFormat.format(currentDate);
-            Patient patient = patientService.getPatient(ptId);
+            List<Visit> activeVisits = Context.getVisitService().getActiveVisitsByPatient(patientService.getPatient(ptId));
+            if (!activeVisits.isEmpty()) {
+                Date currentDate = new Date();
+                Double duration = 0.0;
+                Date dateCreated = null;
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                String todayDate = dateFormat.format(currentDate);
+                Patient patient = patientService.getPatient(ptId);
 
-            Encounter lastHivFollowUpEncounter = EmrUtils.lastEncounter(patient, greenCardEncType, greenCardForm);   //last greencard followup form
-            Encounter lastClinicalEncounter = EmrUtils.lastEncounter(patient, consultationEncType, clinicalEncounterForm);   //last clinical encounter form
+                Encounter lastHivFollowUpEncounter = EmrUtils.lastEncounter(patient, greenCardEncType, greenCardForm);   //last greencard followup form
+                Encounter lastClinicalEncounter = EmrUtils.lastEncounter(patient, consultationEncType, clinicalEncounterForm);   //last clinical encounter form
 
-            ConceptService cs = Context.getConceptService();
-            Concept feverResult = cs.getConcept(FEVER);
-            Concept bleedingResult = cs.getConcept(BLEEDING_TENDENCIES);
-            Concept screeningQuestion = cs.getConcept(SCREENING_QUESTION);
+                ConceptService cs = Context.getConceptService();
+                Concept feverResult = cs.getConcept(FEVER);
+                Concept bleedingResult = cs.getConcept(BLEEDING_TENDENCIES);
+                Concept screeningQuestion = cs.getConcept(SCREENING_QUESTION);
 
-            boolean patientFeverResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, feverResult) : false;
-            boolean patientBleedingResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, bleedingResult) : false;
-            boolean patientFeverResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, feverResult) : false;
-            boolean patientBleedingResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, bleedingResult) : false;
+                boolean patientFeverResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, feverResult) : false;
+                boolean patientBleedingResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, bleedingResult) : false;
+                boolean patientFeverResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, feverResult) : false;
+                boolean patientBleedingResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, bleedingResult) : false;
 
-            if (lastHivFollowUpEncounter != null) {
-                if (patientFeverResultGreenCard && patientBleedingResultGreenCard) {
-                    for (Obs obs : lastHivFollowUpEncounter.getObs()) {
-                        dateCreated = obs.getDateCreated();
-                        if (obs.getConcept().getConceptId().equals(DURATION)) {
-                            duration = obs.getValueNumeric();
-                        }
-                        if (dateCreated != null) {
-                            String createdDate = dateFormat.format(dateCreated);
-                            if (duration >= 3) {
-                                if (createdDate.equals(todayDate)) {
-                                    eligible = true;
-                                    break;
+                if (lastHivFollowUpEncounter != null) {
+                    if (patientFeverResultGreenCard && patientBleedingResultGreenCard) {
+                        for (Obs obs : lastHivFollowUpEncounter.getObs()) {
+                            dateCreated = obs.getDateCreated();
+                            if (obs.getConcept().getConceptId().equals(DURATION)) {
+                                duration = obs.getValueNumeric();
+                            }
+                            if (dateCreated != null) {
+                                String createdDate = dateFormat.format(dateCreated);
+                                if (duration >= 3) {
+                                    if (createdDate.equals(todayDate)) {
+                                        eligible = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            if (lastClinicalEncounter != null) {
-                if (patientFeverResultClinical && patientBleedingResultClinical) {
-                    for (Obs obs : lastClinicalEncounter.getObs()) {
-                        dateCreated = obs.getDateCreated();
-                        if (obs.getConcept().getConceptId().equals(DURATION)) {
-                            duration = obs.getValueNumeric();
-                        }
-                        if (dateCreated != null) {
-                            String createdDate = dateFormat.format(dateCreated);
-                            if (duration >= 3) {
-                                if (createdDate.equals(todayDate)) {
-                                    eligible = true;
-                                    break;
+                if (lastClinicalEncounter != null) {
+                    if (patientFeverResultClinical && patientBleedingResultClinical) {
+                        for (Obs obs : lastClinicalEncounter.getObs()) {
+                            dateCreated = obs.getDateCreated();
+                            if (obs.getConcept().getConceptId().equals(DURATION)) {
+                                duration = obs.getValueNumeric();
+                            }
+                            if (dateCreated != null) {
+                                String createdDate = dateFormat.format(dateCreated);
+                                if (duration >= 3) {
+                                    if (createdDate.equals(todayDate)) {
+                                        eligible = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                ret.put(ptId, new BooleanResult(eligible, this));
             }
-            ret.put(ptId, new BooleanResult(eligible, this));
         }
-
         return ret;
     }
 }

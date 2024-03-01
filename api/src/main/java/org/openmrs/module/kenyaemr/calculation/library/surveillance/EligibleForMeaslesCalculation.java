@@ -19,6 +19,7 @@ import org.openmrs.EncounterType;
 import org.openmrs.Form;
 import org.openmrs.Obs;
 import org.openmrs.Patient;
+import org.openmrs.Visit;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
@@ -36,12 +37,13 @@ import org.openmrs.module.metadatadeploy.MetadataUtils;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Calculates the eligibility for Measles screening flag for  patients
- *
+ * @should calculate Active visit
  * @should calculate Fever
  * @should calculate Generalised Rash
  * @should calculate Coryza
@@ -80,74 +82,77 @@ public class EligibleForMeaslesCalculation extends AbstractPatientCalculation im
 
         for (Integer ptId : alive) {
             boolean eligible = false;
-            Date currentDate = new Date();
-            Double duration = 0.0;
-            Date dateCreated = null;
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String todayDate = dateFormat.format(currentDate);
-            Patient patient = patientService.getPatient(ptId);
+            List<Visit> activeVisits = Context.getVisitService().getActiveVisitsByPatient(patientService.getPatient(ptId));
+            if (!activeVisits.isEmpty()) {
+                Date currentDate = new Date();
+                Double duration = 0.0;
+                Date dateCreated = null;
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                String todayDate = dateFormat.format(currentDate);
+                Patient patient = patientService.getPatient(ptId);
 
-            Encounter lastHivFollowUpEncounter = EmrUtils.lastEncounter(patient, greenCardEncType, greenCardForm);   //last greencard followup form
-            Encounter lastClinicalEncounter = EmrUtils.lastEncounter(patient, consultationEncType, clinicalEncounterForm);   //last clinical encounter form
+                Encounter lastHivFollowUpEncounter = EmrUtils.lastEncounter(patient, greenCardEncType, greenCardForm);   //last greencard followup form
+                Encounter lastClinicalEncounter = EmrUtils.lastEncounter(patient, consultationEncType, clinicalEncounterForm);   //last clinical encounter form
 
-            ConceptService cs = Context.getConceptService();
-            Concept feverResult = cs.getConcept(FEVER);
-            Concept rashResult = cs.getConcept(RASH);
-            Concept coryzaResult = cs.getConcept(CORYZA);
-            Concept coughResult = cs.getConcept(COUGH);
-            Concept conjuctivitisResult = cs.getConcept(CONJUCTIVITIS);
-            Concept screeningQuestion = cs.getConcept(SCREENING_QUESTION);
+                ConceptService cs = Context.getConceptService();
+                Concept feverResult = cs.getConcept(FEVER);
+                Concept rashResult = cs.getConcept(RASH);
+                Concept coryzaResult = cs.getConcept(CORYZA);
+                Concept coughResult = cs.getConcept(COUGH);
+                Concept conjuctivitisResult = cs.getConcept(CONJUCTIVITIS);
+                Concept screeningQuestion = cs.getConcept(SCREENING_QUESTION);
 
-            boolean patientFeverResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, feverResult) : false;
-            boolean patientRashResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, rashResult) : false;
-            boolean patientCoryzaResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, coryzaResult) : false;
-            boolean patientCoughResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, coughResult) : false;
-            boolean patientConjuctivitisResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, conjuctivitisResult) : false;
-            boolean patientFeverResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, feverResult) : false;
-            boolean patientRashResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, rashResult) : false;
-            boolean patientCoryzaResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, coryzaResult) : false;
-            boolean patientCoughResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, coughResult) : false;
-            boolean patientConjuctivitisResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, conjuctivitisResult) : false;
+                boolean patientFeverResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, feverResult) : false;
+                boolean patientRashResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, rashResult) : false;
+                boolean patientCoryzaResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, coryzaResult) : false;
+                boolean patientCoughResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, coughResult) : false;
+                boolean patientConjuctivitisResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, conjuctivitisResult) : false;
+                boolean patientFeverResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, feverResult) : false;
+                boolean patientRashResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, rashResult) : false;
+                boolean patientCoryzaResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, coryzaResult) : false;
+                boolean patientCoughResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, coughResult) : false;
+                boolean patientConjuctivitisResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, conjuctivitisResult) : false;
 
-            if (lastHivFollowUpEncounter != null) {
-                if (patientFeverResultGreenCard && patientRashResultGreenCard && patientCoryzaResultGreenCard && patientCoughResultGreenCard && patientConjuctivitisResultGreenCard) {
-                    for (Obs obs : lastHivFollowUpEncounter.getObs()) {
-                        dateCreated = obs.getDateCreated();
-                        if (obs.getConcept().getConceptId().equals(DURATION)) {
-                            duration = obs.getValueNumeric();
-                        }
-                        if (dateCreated != null) {
-                            String createdDate = dateFormat.format(dateCreated);
-                            if (duration > 2) {
-                                if (createdDate.equals(todayDate)) {
-                                    eligible = true;
-                                    break;
+                if (lastHivFollowUpEncounter != null) {
+                    if (patientFeverResultGreenCard && patientRashResultGreenCard && patientCoryzaResultGreenCard && patientCoughResultGreenCard && patientConjuctivitisResultGreenCard) {
+                        for (Obs obs : lastHivFollowUpEncounter.getObs()) {
+                            dateCreated = obs.getDateCreated();
+                            if (obs.getConcept().getConceptId().equals(DURATION)) {
+                                duration = obs.getValueNumeric();
+                            }
+                            if (dateCreated != null) {
+                                String createdDate = dateFormat.format(dateCreated);
+                                if (duration > 2) {
+                                    if (createdDate.equals(todayDate)) {
+                                        eligible = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            if (lastClinicalEncounter != null) {
-                if (patientFeverResultClinical && patientRashResultClinical && patientCoryzaResultClinical && patientCoughResultClinical && patientConjuctivitisResultClinical) {
-                    for (Obs obs : lastClinicalEncounter.getObs()) {
-                        dateCreated = obs.getDateCreated();
-                        if (obs.getConcept().getConceptId().equals(DURATION)) {
-                            duration = obs.getValueNumeric();
-                        }
-                        if (dateCreated != null) {
-                            String createdDate = dateFormat.format(dateCreated);
-                            if (duration > 2) {
-                                if (createdDate.equals(todayDate)) {
-                                    eligible = true;
-                                    break;
+                if (lastClinicalEncounter != null) {
+                    if (patientFeverResultClinical && patientRashResultClinical && patientCoryzaResultClinical && patientCoughResultClinical && patientConjuctivitisResultClinical) {
+                        for (Obs obs : lastClinicalEncounter.getObs()) {
+                            dateCreated = obs.getDateCreated();
+                            if (obs.getConcept().getConceptId().equals(DURATION)) {
+                                duration = obs.getValueNumeric();
+                            }
+                            if (dateCreated != null) {
+                                String createdDate = dateFormat.format(dateCreated);
+                                if (duration > 2) {
+                                    if (createdDate.equals(todayDate)) {
+                                        eligible = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                ret.put(ptId, new BooleanResult(eligible, this));
             }
-            ret.put(ptId, new BooleanResult(eligible, this));
         }
 
         return ret;

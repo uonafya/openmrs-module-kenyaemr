@@ -33,12 +33,13 @@ import org.openmrs.module.metadatadeploy.MetadataUtils;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Calculates the eligibility for Poliomyelitis screening flag for  patients
- *
+ * @should calculate Active visit
  * @should calculate Child less than 15years of age.
  * @should calculate limb weakness
  * @should calculate no duration
@@ -68,52 +69,55 @@ public class EligibleForPoliomyelitisCalculation extends AbstractPatientCalculat
 
         for (Integer ptId : alive) {
             boolean eligible = false;
-            Date currentDate = new Date();
-            Date dateCreated = null;
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String todayDate = dateFormat.format(currentDate);
-            Patient patient = patientService.getPatient(ptId);
+            List<Visit> activeVisits = Context.getVisitService().getActiveVisitsByPatient(patientService.getPatient(ptId));
+            if (!activeVisits.isEmpty()) {
+                Date currentDate = new Date();
+                Date dateCreated = null;
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                String todayDate = dateFormat.format(currentDate);
+                Patient patient = patientService.getPatient(ptId);
 
-            Encounter lastHivFollowUpEncounter = EmrUtils.lastEncounter(patient, greenCardEncType, greenCardForm);   //last greencard followup form
-            Encounter lastClinicalEncounter = EmrUtils.lastEncounter(patient, consultationEncType, clinicalEncounterForm);   //last clinical encounter form
+                Encounter lastHivFollowUpEncounter = EmrUtils.lastEncounter(patient, greenCardEncType, greenCardForm);   //last greencard followup form
+                Encounter lastClinicalEncounter = EmrUtils.lastEncounter(patient, consultationEncType, clinicalEncounterForm);   //last clinical encounter form
 
-            ConceptService cs = Context.getConceptService();
-            Concept limbsWeaknessResult = cs.getConcept(LIMBS_WEAKNESS);
-            Concept screeningQuestion = cs.getConcept(SCREENING_QUESTION);
+                ConceptService cs = Context.getConceptService();
+                Concept limbsWeaknessResult = cs.getConcept(LIMBS_WEAKNESS);
+                Concept screeningQuestion = cs.getConcept(SCREENING_QUESTION);
 
-            boolean patientWeakLimbsResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, limbsWeaknessResult) : false;
-            boolean patientWeakLimbsResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, limbsWeaknessResult) : false;
+                boolean patientWeakLimbsResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, limbsWeaknessResult) : false;
+                boolean patientWeakLimbsResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, limbsWeaknessResult) : false;
 
-            if (patient.getAge() < 15) {
-                if (lastHivFollowUpEncounter != null) {
-                    if (patientWeakLimbsResultGreenCard) {
-                        for (Obs obs : lastHivFollowUpEncounter.getObs()) {
-                            dateCreated = obs.getDateCreated();
-                            if (dateCreated != null) {
-                                String createdDate = dateFormat.format(dateCreated);
-                                if (createdDate.equals(todayDate)) {
-                                    eligible = true;
-                                    break;
+                if (patient.getAge() < 15) {
+                    if (lastHivFollowUpEncounter != null) {
+                        if (patientWeakLimbsResultGreenCard) {
+                            for (Obs obs : lastHivFollowUpEncounter.getObs()) {
+                                dateCreated = obs.getDateCreated();
+                                if (dateCreated != null) {
+                                    String createdDate = dateFormat.format(dateCreated);
+                                    if (createdDate.equals(todayDate)) {
+                                        eligible = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                if (lastClinicalEncounter != null) {
-                    if (patientWeakLimbsResultClinical) {
-                        for (Obs obs : lastClinicalEncounter.getObs()) {
-                            dateCreated = obs.getDateCreated();
-                            if (dateCreated != null) {
-                                String createdDate = dateFormat.format(dateCreated);
-                                if (createdDate.equals(todayDate)) {
-                                    eligible = true;
-                                    break;
+                    if (lastClinicalEncounter != null) {
+                        if (patientWeakLimbsResultClinical) {
+                            for (Obs obs : lastClinicalEncounter.getObs()) {
+                                dateCreated = obs.getDateCreated();
+                                if (dateCreated != null) {
+                                    String createdDate = dateFormat.format(dateCreated);
+                                    if (createdDate.equals(todayDate)) {
+                                        eligible = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
+                    ret.put(ptId, new BooleanResult(eligible, this));
                 }
-                ret.put(ptId, new BooleanResult(eligible, this));
             }
         }
 
