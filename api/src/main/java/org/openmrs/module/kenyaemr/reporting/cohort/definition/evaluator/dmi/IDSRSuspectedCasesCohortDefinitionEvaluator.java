@@ -69,7 +69,7 @@ public class IDSRSuspectedCasesCohortDefinitionEvaluator implements CohortDefini
 				"                         on c.patient_id = t.patient_id and\n" +
 				"                            date(t.visit_date) between date(:startDate) and date(:endDate)\n" +
 				"      group by patient_id) a\n" +
-				"where (FIND_IN_SET(117671, a.complaint) > 0 AND FIND_IN_SET(142412, a.complaint) > 0)\n" +
+				"where ((FIND_IN_SET(117671, a.complaint) > 0 AND FIND_IN_SET(142412, a.complaint) > 0)\n" +
 				"   OR (FIND_IN_SET(142412, a.complaint) > 0 AND FIND_IN_SET(122983, a.complaint) > 0 AND\n" +
 				"       timestampdiff(YEAR, date(a.DOB), coalesce(date(a.complaint_date), date(a.visit_date))) > 2)\n" +
 				"   OR (FIND_IN_SET(143264, a.complaint) > 0 AND timestampdiff(DAY, date(a.complaint_date), date(a.visit_date)) < 10 AND\n" +
@@ -84,7 +84,7 @@ public class IDSRSuspectedCasesCohortDefinitionEvaluator implements CohortDefini
 				"   OR (FIND_IN_SET(140238, a.complaint) > 0 AND FIND_IN_SET(162628, a.complaint) > 0 AND\n" +
 				"       a.fever_duration_from_days >= 3)\n" +
 				"   OR (FIND_IN_SET(140238, a.complaint) AND FIND_IN_SET(512, a.complaint) AND FIND_IN_SET(106, a.complaint) AND\n" +
-				"       FIND_IN_SET(516, a.complaint) AND FIND_IN_SET(143264, a.complaint) > 0 AND a.fever_duration_from_days > 2)\n" +
+				"       FIND_IN_SET(516, a.complaint) AND FIND_IN_SET(143264, a.complaint) > 0 AND a.fever_duration_from_days > 2))\n" +
 				"    and date(a.visit_date) BETWEEN date(:startDate) AND date(:endDate)\n" +
 				"group by patient_id;";
 		
