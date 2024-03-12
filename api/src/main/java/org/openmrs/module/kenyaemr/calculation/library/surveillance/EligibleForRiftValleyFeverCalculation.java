@@ -49,7 +49,7 @@ import java.util.Set;
  * @should calculate Fever
  * @should calculate Temperature  >37.5C
  * @should calculate Dizziness
- * @should calculate Jaundice
+ * @should calculate Jaundice from general examinations finding
  * @should calculate General body malaise
  * @should calculate Duration > 2
  */
@@ -73,7 +73,8 @@ public class EligibleForRiftValleyFeverCalculation extends AbstractPatientCalcul
     Integer TEMPERATURE = 5088;
     Integer FEVER = 140238;
     Integer DURATION = 159368;
-    Integer SCREENING_QUESTION = 5219;
+    Integer SCREENING_QUESTION_COMPLAINTS= 5219;
+    Integer SCREENING_QUESTION_EXAMINATION= 162737;
 
     @Override
     public CalculationResultMap evaluate(Collection<Integer> cohort, Map<String, Object> parameterValues, PatientCalculationContext context) {
@@ -103,18 +104,19 @@ public class EligibleForRiftValleyFeverCalculation extends AbstractPatientCalcul
                 Concept jaundiceResult = cs.getConcept(JAUNDICE);
                 Concept dizzinessResult = cs.getConcept(DIZZINESS);
                 Concept malaiseResult = cs.getConcept(MALAISE);
-                Concept screeningQuestion = cs.getConcept(SCREENING_QUESTION);
+                Concept screeningQuestionComp = cs.getConcept(SCREENING_QUESTION_COMPLAINTS);
+                Concept screeningQuestionExam = cs.getConcept(SCREENING_QUESTION_EXAMINATION);
 
                 CalculationResultMap tempMap = Calculations.lastObs(cs.getConcept(TEMPERATURE), cohort, context);
 
-                boolean patientJaundiceResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, jaundiceResult) : false;
-                boolean patientDizzinessResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, dizzinessResult) : false;
-                boolean patientMalaiseResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, malaiseResult) : false;
-                boolean patientFeverResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestion, feverResult) : false;
-                boolean patientJaundiceResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, jaundiceResult) : false;
-                boolean patientDizzinessResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, dizzinessResult) : false;
-                boolean patientMalaiseResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, malaiseResult) : false;
-                boolean patientFeverResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestion, feverResult) : false;
+                boolean patientJaundiceResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestionExam, jaundiceResult) : false;
+                boolean patientDizzinessResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestionComp, dizzinessResult) : false;
+                boolean patientMalaiseResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestionComp, malaiseResult) : false;
+                boolean patientFeverResultGreenCard = lastHivFollowUpEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastHivFollowUpEncounter, screeningQuestionComp, feverResult) : false;
+                boolean patientJaundiceResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestionExam, jaundiceResult) : false;
+                boolean patientDizzinessResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestionComp, dizzinessResult) : false;
+                boolean patientMalaiseResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestionComp, malaiseResult) : false;
+                boolean patientFeverResultClinical = lastClinicalEncounter != null ? EmrUtils.encounterThatPassCodedAnswer(lastClinicalEncounter, screeningQuestionComp, feverResult) : false;
 
                 Obs lastTempObs = EmrCalculationUtils.obsResultForPatient(tempMap, ptId);
                 if (lastTempObs != null) {
