@@ -353,7 +353,7 @@ public class SecurityMetadata extends AbstractMetadataBundle {
 		Set<String> privileges = new HashSet<String>();
 
 		for (Privilege privilege : userService.getAllPrivileges()) {
-			if (privilege.getPrivilege().startsWith("App: ") || privilege.getPrivilege().startsWith("Emr: ")) {
+			if (privilege.getPrivilege().startsWith("App: ") || privilege.getPrivilege().startsWith("Emr: ") || privilege.getPrivilege().startsWith("o3: ")) {
 				continue;
 			}
 
