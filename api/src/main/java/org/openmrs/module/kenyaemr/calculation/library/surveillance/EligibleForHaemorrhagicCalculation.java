@@ -47,7 +47,6 @@ import java.util.Set;
  * @should calculate Fever
  * @should calculate Onset at least 72hours.
  * @should calculate bleeding
- * @should calculate Duration  > 2 days
  */
 public class EligibleForHaemorrhagicCalculation extends AbstractPatientCalculation implements PatientFlagCalculation {
     protected static final Log log = LogFactory.getLog(EligibleForHaemorrhagicCalculation.class);
@@ -62,10 +61,8 @@ public class EligibleForHaemorrhagicCalculation extends AbstractPatientCalculati
     public String getFlagMessage() {
         return "Suspected Haemorrhagic Fever";
     }
-
     Integer FEVER = 140238;
-    Integer BLEEDING_TENDENCIES = 159339;
-    Integer DURATION = 159368;
+    Integer BLEEDING_TENDENCIES = 159339;  
     Integer SCREENING_QUESTION = 5219;
 
     @Override
@@ -79,8 +76,7 @@ public class EligibleForHaemorrhagicCalculation extends AbstractPatientCalculati
             boolean eligible = false;
             List<Visit> activeVisits = Context.getVisitService().getActiveVisitsByPatient(patientService.getPatient(ptId));
             if (!activeVisits.isEmpty()) {
-                Date currentDate = new Date();
-                Double duration = 0.0;
+                Date currentDate = new Date();              
                 Date dateCreated = null;
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 String todayDate = dateFormat.format(currentDate);
@@ -103,16 +99,12 @@ public class EligibleForHaemorrhagicCalculation extends AbstractPatientCalculati
                     if (patientFeverResultGreenCard && patientBleedingResultGreenCard) {
                         for (Obs obs : lastHivFollowUpEncounter.getObs()) {
                             dateCreated = obs.getDateCreated();
-                            if (obs.getConcept().getConceptId().equals(DURATION)) {
-                                duration = obs.getValueNumeric();
-                            }
+                          
                             if (dateCreated != null) {
-                                String createdDate = dateFormat.format(dateCreated);
-                                if (duration >= 3) {
+                                String createdDate = dateFormat.format(dateCreated);                              
                                     if (createdDate.equals(todayDate)) {
                                         eligible = true;
-                                        break;
-                                    }
+                                        break;                                    
                                 }
                             }
                         }
@@ -121,17 +113,12 @@ public class EligibleForHaemorrhagicCalculation extends AbstractPatientCalculati
                 if (lastClinicalEncounter != null) {
                     if (patientFeverResultClinical && patientBleedingResultClinical) {
                         for (Obs obs : lastClinicalEncounter.getObs()) {
-                            dateCreated = obs.getDateCreated();
-                            if (obs.getConcept().getConceptId().equals(DURATION)) {
-                                duration = obs.getValueNumeric();
-                            }
+                            dateCreated = obs.getDateCreated();                         
                             if (dateCreated != null) {
-                                String createdDate = dateFormat.format(dateCreated);
-                                if (duration >= 3) {
+                                String createdDate = dateFormat.format(dateCreated);                              
                                     if (createdDate.equals(todayDate)) {
                                         eligible = true;
-                                        break;
-                                    }
+                                        break;                                  
                                 }
                             }
                         }
