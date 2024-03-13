@@ -2665,7 +2665,7 @@ else {
      * @return
      * @throws Exception
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/sql") // gets all flags for a patient
+    @RequestMapping(method = RequestMethod.GET, value = "/sql")
     @ResponseBody
     public List<org.openmrs.module.webservices.rest.SimpleObject> search(@RequestParam("q") String query, HttpServletRequest request) throws Exception {
         return Context.getService(KenyaEmrService.class).search(query, request.getParameterMap());
