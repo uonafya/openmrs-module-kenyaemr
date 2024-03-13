@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Handler for raw SQL
+ */
 public class SqlQueryHelper {
     private final Pattern paramPlaceHolderPattern;
     private static final String PARAM_PLACE_HOLDER_REGEX = "\\$\\{[^{]*\\}";
@@ -35,7 +38,7 @@ public class SqlQueryHelper {
     }
 
     List<String> getParamNamesFromPlaceHolders(String query){
-        List<String> params  = new ArrayList<>();
+        List<String> params  = new ArrayList<String>();
         Matcher matcher = paramPlaceHolderPattern.matcher(query);
         while(matcher.find()){
             params.add(stripDelimiters(matcher.group()));
@@ -60,7 +63,7 @@ public class SqlQueryHelper {
         List<String> paramNamesFromPlaceHolders = getParamNamesFromPlaceHolders(finalQueryString);
         String statement = transformIntoPreparedStatementFormat(finalQueryString);
         PreparedStatement preparedStatement = conn.prepareStatement(statement);
-        if(params != null ){
+        if(params != null && params.size() > 0 ){
             int i=1;
             for (String paramName : paramNamesFromPlaceHolders) {
                 String paramValue = params.get(paramName)[0];

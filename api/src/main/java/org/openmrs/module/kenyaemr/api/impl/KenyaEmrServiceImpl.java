@@ -297,9 +297,8 @@ public class KenyaEmrServiceImpl extends BaseOpenmrsService implements KenyaEmrS
 		Map<String, String[]> updatedParams = new HashMap<String, String[]>(params);
 		if (params.containsKey("location_uuid")) {
 			String locationUuid = params.get("location_uuid")[0];
-			String visitLocation = "";
-			String[] visitLcoationValue = {visitLocation};
-			updatedParams.put("visit_location_uuid", visitLcoationValue);
+			String[] visitLocationValue = {locationUuid};
+			updatedParams.put("visit_location_uuid", visitLocationValue);
 		}
 		return updatedParams;
 	}
