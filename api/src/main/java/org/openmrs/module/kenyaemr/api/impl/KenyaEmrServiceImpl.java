@@ -33,17 +33,20 @@ import org.openmrs.module.kenyaemr.api.db.KenyaEmrDAO;
 import org.openmrs.module.kenyaemr.metadata.CommonMetadata;
 import org.openmrs.module.kenyaemr.metadata.FacilityMetadata;
 import org.openmrs.module.kenyaemr.metadata.HivMetadata;
+import org.openmrs.module.kenyaemr.util.RowMapper;
+import org.openmrs.module.kenyaemr.util.SqlQueryHelper;
 import org.openmrs.module.kenyaemr.wrapper.Facility;
 import org.openmrs.module.metadatadeploy.MetadataUtils;
+import org.openmrs.module.webservices.rest.SimpleObject;
+import org.openmrs.util.DatabaseUpdater;
 import org.openmrs.util.OpenmrsUtil;
 import org.openmrs.util.PrivilegeConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.*;
 
 /**
  * Implementations of business logic methods for KenyaEMR
@@ -257,5 +260,46 @@ public class KenyaEmrServiceImpl extends BaseOpenmrsService implements KenyaEmrS
 	@Override
 	public List<Object> executeHqlQuery(String query, Map<String, Object> substitutions) {
 		return dao.executeHqlQuery(query, substitutions);
+	}
+
+	/**
+	 * @param queryId
+	 * @param params
+	 * @return
+	 */
+	@Override
+	public List<SimpleObject> search(String queryId, Map<String, String[]> params) {
+		Map<String, String[]> updatedParams = conditionallyAddVisitLocation(params);
+		List<SimpleObject> results = new ArrayList<SimpleObject>();
+		SqlQueryHelper sqlQueryHelper = new SqlQueryHelper();
+		String query = getSql(queryId);
+		try(Connection conn = DatabaseUpdater.getConnection();
+			PreparedStatement statement = sqlQueryHelper.constructPreparedStatement(query,updatedParams,conn);
+			ResultSet resultSet = statement.executeQuery()) {
+
+			RowMapper rowMapper = new RowMapper();
+			while (resultSet.next()) {
+				results.add(rowMapper.mapRow(resultSet));
+			}
+			return results;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private String getSql(String queryId) {
+		String query = Context.getAdministrationService().getGlobalProperty(queryId);
+		if (query == null) throw new RuntimeException("No such query:" + queryId);
+		return query;
+	}
+
+	private Map<String, String[]> conditionallyAddVisitLocation(Map<String, String[]> params) {
+		Map<String, String[]> updatedParams = new HashMap<String, String[]>(params);
+		if (params.containsKey("location_uuid")) {
+			String locationUuid = params.get("location_uuid")[0];
+			String[] visitLocationValue = {locationUuid};
+			updatedParams.put("visit_location_uuid", visitLocationValue);
+		}
+		return updatedParams;
 	}
 }
