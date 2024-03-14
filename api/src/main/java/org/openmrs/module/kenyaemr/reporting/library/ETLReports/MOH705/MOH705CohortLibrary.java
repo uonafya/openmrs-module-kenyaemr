@@ -17,6 +17,7 @@ import org.openmrs.module.reporting.evaluation.parameter.Parameter;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Library of cohort definitions for MOH705A
@@ -29,9 +30,9 @@ public class MOH705CohortLibrary {
 	 * For Composition
 	 * @return
 	 */
-	public CohortDefinition patientDiagnosis(Integer diagnosis) {
-
-		String sqlQuery = "select patient_id from encounter_diagnosis  where diagnosis_coded =  " + diagnosis + " and date(date_created) between date(:startDate) and date(:endDate);";
+	public CohortDefinition patientDiagnosis(List<Integer> diagnosisList) {
+		String diagnosis = String.valueOf(diagnosisList).replaceAll("\\[", "(").replaceAll("\\]",")");
+		String sqlQuery = "select patient_id from encounter_diagnosis where diagnosis_coded in " + diagnosis + " and date(date_created) between date(:startDate) and date(:endDate);";
 		SqlCohortDefinition cd = new SqlCohortDefinition();
 		cd.setName("patientsDiagnosis");
 		cd.setQuery(sqlQuery);
@@ -63,7 +64,7 @@ public class MOH705CohortLibrary {
 	 * Composition
 	 * @return
 	 */
-	public CohortDefinition diagnosis(Integer diagnosis, String age) {
+	public CohortDefinition diagnosis(List<Integer> diagnosis, String age) {
 		CompositionCohortDefinition cd = new CompositionCohortDefinition();
 		cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
 		cd.addParameter(new Parameter("endDate", "End Date", Date.class));
