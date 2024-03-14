@@ -14,6 +14,8 @@ import org.openmrs.module.reporting.indicator.CohortIndicator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 import static org.openmrs.module.kenyaemr.reporting.EmrReportingUtils.cohortIndicator;
 
 /**
@@ -28,8 +30,8 @@ public class MOH705IndicatorLibrary {
 	/**
 	 * Diagnosis
 	 */
-	public CohortIndicator diagnosis(Integer diagnosis, String age) {
-		return cohortIndicator("Diagnosis", ReportUtils.map(moh705CohortLibrary.diagnosis(diagnosis,age), "startDate=${startDate},endDate=${endDate}"));
+	public CohortIndicator diagnosis(List<Integer> diagnosislist, String age) {
+		return cohortIndicator("Diagnosis", ReportUtils.map(moh705CohortLibrary.diagnosis(diagnosislist,age), "startDate=${startDate},endDate=${endDate}"));
 	}
 	/**
 	 * Other Diagnosis under five

@@ -13,11 +13,17 @@ import org.openmrs.module.kenyacore.report.ReportDescriptor;
 import org.openmrs.module.kenyacore.report.ReportUtils;
 import org.openmrs.module.kenyacore.report.builder.AbstractReportBuilder;
 import org.openmrs.module.kenyacore.report.builder.Builds;
+import org.openmrs.module.kenyaemr.reporting.EmrReportingUtils;
+import org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils.Moh705ReportDimension;
+import org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils.ReportAddonUtils;
+import org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils.ReportingUtils;
+import org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils.ColumnParameters;
 import org.openmrs.module.kenyaemr.reporting.library.ETLReports.MOH705.MOH705IndicatorLibrary;
 import org.openmrs.module.reporting.dataset.definition.CohortIndicatorDataSetDefinition;
 import org.openmrs.module.reporting.dataset.definition.DataSetDefinition;
 import org.openmrs.module.reporting.evaluation.parameter.Mapped;
 import org.openmrs.module.reporting.evaluation.parameter.Parameter;
+import org.openmrs.module.reporting.indicator.CohortIndicator;
 import org.openmrs.module.reporting.report.definition.ReportDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -105,10 +111,10 @@ public class MOH705AReportBuilder extends AbstractReportBuilder {
 	static final int HYPOXAEMIA = 117312;
 	static final int ALL_OTHER_DISEASES = 0;
 
-
+	
 	@Autowired
 	private MOH705IndicatorLibrary moh705indicatorLibrary;
-
+	
 	@Override
 	protected List<Parameter> getParameters(ReportDescriptor reportDescriptor) {
 		return Arrays.asList(new Parameter("startDate", "Start Date", Date.class), new Parameter("endDate", "End Date",
@@ -122,24 +128,33 @@ public class MOH705AReportBuilder extends AbstractReportBuilder {
 	}
 
 	protected DataSetDefinition moh705ADataset() {
+		String indParams = "startDate=${startDate},endDate=${endDate}";
+
 		CohortIndicatorDataSetDefinition cohortDsd = new CohortIndicatorDataSetDefinition();
 		cohortDsd.addParameter(new Parameter("startDate", "Start Date", Date.class));
 		cohortDsd.addParameter(new Parameter("endDate", "End Date", Date.class));
 		cohortDsd.setName("MOH705A");
-		cohortDsd.setDescription("MOH 705A");
+		cohortDsd.setDescription("MOH 705A");			
+//		cohortDsd.addDimension("day",		
 
-		String indParams = "startDate=${startDate},endDate=${endDate}";
 
+		// populate datasets
+//		EmrReportingUtils.addRow(indicatorDsd,"HV02-01", "First ANC Visit", ReportUtils.map(moh731GreenCardIndicators.firstANCVisitMchmsAntenatal(), indParams), cadreDisaggregation,Arrays.asList("1","2","3"));
+		ReportingUtils.addRow(cohortDsd,"DWND","Diarrhoea with no dehydration",ReportUtils.map(moh705indicatorLibrary.diagnosis(Arrays.asList(DIARRHOEA_WITH_DEHYDRATION),AGE_BELOW_FIVE),indParams),ReportAddonUtils.getAdultChildrenWithGenderColumns());
+//		System.out.println("Cohort indicator dataset def ==>"+cohortDsd);
+		
+		
 		cohortDsd.addColumn("Diarrhoea with no dehydration", "",
-		    ReportUtils.map(moh705indicatorLibrary.diagnosis(DIARRHOEA_WITH_DEHYDRATION,AGE_BELOW_FIVE), indParams), "");
+		    ReportUtils.map(moh705indicatorLibrary.diagnosis(Arrays.asList(DIARRHOEA_WITH_DEHYDRATION),AGE_BELOW_FIVE), indParams), "");
+		/*
 		cohortDsd.addColumn("Diarrhoea with some dehydration", "",
-		    ReportUtils.map(moh705indicatorLibrary.diagnosis(DIARRHOEA_WITH_SOME_DEHYDRATION,AGE_BELOW_FIVE), indParams), "");
+		    ReportUtils.map(moh705indicatorLibrary.diagnosis(Arrays.asList(DIARRHOEA_WITH_SOME_DEHYDRATION),AGE_BELOW_FIVE), indParams), "");
 		cohortDsd.addColumn("Diarrhoea with severe dehydration", "",
-		    ReportUtils.map(moh705indicatorLibrary.diagnosis(DIARRHOEA_WITH_SEVERE_DEHYDRATION,AGE_BELOW_FIVE), indParams), "");
+		    ReportUtils.map(moh705indicatorLibrary.diagnosis(Arrays.asList(DIARRHOEA_WITH_SEVERE_DEHYDRATION),AGE_BELOW_FIVE), indParams), "");
 		cohortDsd.addColumn("Cholera", "",
-		    ReportUtils.map(moh705indicatorLibrary.diagnosis(CHOLERA,AGE_BELOW_FIVE), indParams), "");
+		    ReportUtils.map(moh705indicatorLibrary.diagnosis(DiagnosisLists.getCholeraList(),AGE_BELOW_FIVE), indParams), "");
 		cohortDsd.addColumn("Dysentery", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(DYSENTRY,AGE_BELOW_FIVE), indParams), "");
+				ReportUtils.map(moh705indicatorLibrary.diagnosis(DiagnosisLists.getDysenteryList(),AGE_BELOW_FIVE), indParams), "");
 		cohortDsd.addColumn("Gastroenteritis", "",
 				ReportUtils.map(moh705indicatorLibrary.diagnosis(GASTROENTERITIS,AGE_BELOW_FIVE), indParams), "");
 		cohortDsd.addColumn("Pneumonia", "",
@@ -271,7 +286,7 @@ public class MOH705AReportBuilder extends AbstractReportBuilder {
 		cohortDsd.addColumn("New Attendances", "",
 				ReportUtils.map(moh705indicatorLibrary.newAttendances(AGE_BELOW_FIVE), indParams), "");
 		cohortDsd.addColumn("Re Attendances", "",
-				ReportUtils.map(moh705indicatorLibrary.reAttendances(AGE_BELOW_FIVE), indParams), "");
+				ReportUtils.map(moh705indicatorLibrary.reAttendances(AGE_BELOW_FIVE), indParams), "");*/
 		return cohortDsd;
 		
 	}

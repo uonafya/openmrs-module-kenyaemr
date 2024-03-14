@@ -128,146 +128,146 @@ public class MOH705BReportBuilder extends AbstractReportBuilder {
 
 		String indParams = "startDate=${startDate},endDate=${endDate}";
 
-		cohortDsd.addColumn("Diarrhoea", "",
-		    ReportUtils.map(moh705indicatorLibrary.diagnosis(DIARRHOEA,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Tuberculosis", "",
-		    ReportUtils.map(moh705indicatorLibrary.diagnosis(TUBERCULOSIS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Dysentry", "",
-		    ReportUtils.map(moh705indicatorLibrary.diagnosis(DYSENTRY,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Cholera", "",
-		    ReportUtils.map(moh705indicatorLibrary.diagnosis(CHOLERA,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Meningococcal Meningitis", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(MENINGOCOCCAL_MENINGITIS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Other Meningitis", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(OTHER_MENINGITIS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Tetanus", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(TETANUS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Poliomyelitis", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(POLIOMYELITIS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Chicken Pox", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(CHICKEN_POX,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Measles", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(MEASLES,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Hepatitis", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(HEPATITIS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Mumps", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(MUMPS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Suspected Malaria", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(SUSPECTED_MALARIA,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Tested for Malaria", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(TESTED_FOR_MALARIA,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Confirmed Malaria", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(CONFIRMED_MALARIA,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Malaria in pregnancy", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(MALARIA_IN_PREGNANCY,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Amoebiasis", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(AMOEBIASIS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Typhoid fever", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(TYPHOID_FEVER,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Sexually Transmitted Infections", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(SEXUALLY_TRANSMITTED_INFECTIONS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Urinary Tract Infections", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(URINARY_TRACT_INFECTIONS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Bilharzia", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(BILHARZIA,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Intestinal worms", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(INTESTINAL_WORMS, EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Malnutrition", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(MALNUTRITION,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Anaemia", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(ANAEMIA,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Eye Infections or Conditions", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(EYE_INFECTIONS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Ear Infections or Conditions", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(EAR_INFECTIONS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Upper Respiratory Tract Infections", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(UPPER_RESPIRATORY_TRACT_INFECTIONS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Asthma", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(ASTHMA,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Pneumonia", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(PNEUMONIA,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Other Lower Respiratory Tract Infections", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(OTHER_LOWER_RESPIRATORY_TRACT_INFECTIONS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Abortion", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(ABORTION,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Puerperium at Childbirth", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(PUERPERIUM_AT_CHILDBIRTH,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Hypertension", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(HYPERTENSION,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Mental Disorders", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(MENTAL_DISORDERS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Dental Disorders", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(DENTAL_DISORDERS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Jiggers Infestation", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(JIGGERS_INFESTATION,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Diseases of the skin", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(SKIN_DISEASES,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Arthritis and Joint pains", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(ARTHRITIS_JOINT_PAINS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Poisoning", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(POISONING,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Road Traffic Injuries", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(ROAD_TRAFFIC_INJURIES,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Deaths due to Road Traffic Injuries", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(DEATH_BY_ROAD_TRAFFIC_INJURIES,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Violence related injuries", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(VIOLENCE_RELATED_INJURIES,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Other injuries", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(OTHER_INJURIES,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Sexual Violence", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(SEXUAL_VIOLENCE,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Burns", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(BURNS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Snake Bites", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(SNAKE_BITES,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Dog Bites", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(DOG_BITES,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Other Bites", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(OTHER_BITES,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Diabetes", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(DIABETES,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Epilepsy", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(EPILEPSY,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Brucellosis", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(BRUCELLOSIS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Cardiovascular conditions", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(CARDIOVASCULAR_CONDITIONS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Central Nervous System Conditions", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(CENTRAL_NERVOUS_SYSTEM_CONDITIONS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Overweight", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(OVERWEIGHT,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Muscular skeletal conditions", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(MUSCULAR_SKELETAL_CONDITIONS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Fistula related with Birth", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(FISTULA_BIRTH_RELATED,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Suspected Neoplams and Cancers", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(SUSPECTED_NEOPLAMS_CANCERS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Physical Disability", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(PHYSICAL_DISABILITY,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Trypanosomiasis", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(TRYPONOSOMIASIS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Yellow Fever", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(YELLOW_FEVER,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Viral Haemorrhagic Fever", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(VIRAL_HAEMORRHAGIC_FEVER,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Rift valley fever", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(RIFT_VALLEY_FEVER,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Chikungunya", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(CHIKUNGUNYA,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Dengue fever", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(DENGUE_FEVER,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Leishmaniasis or Kalaazar", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(LEISHMANIASIS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Cutaneous leishmaniasis", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(CUTANEOUS_LEISHMANIASIS,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Suspected Anthrax", "",
-				ReportUtils.map(moh705indicatorLibrary.diagnosis(SUSPECTED_ANTHRAX,EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("All Other Diseases", "",
-				ReportUtils.map(moh705indicatorLibrary.allOtherDiseasesAboveFive(EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("New Attendances", "",
-				ReportUtils.map(moh705indicatorLibrary.newAttendances(EQUAL_AND_OVER_FIVE), indParams), "");
-		cohortDsd.addColumn("Re Attendances", "",
-				ReportUtils.map(moh705indicatorLibrary.reAttendances(EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Diarrhoea", "",
+//		    ReportUtils.map(moh705indicatorLibrary.diagnosis(DIARRHOEA,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Tuberculosis", "",
+//		    ReportUtils.map(moh705indicatorLibrary.diagnosis(TUBERCULOSIS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Dysentry", "",
+//		    ReportUtils.map(moh705indicatorLibrary.diagnosis(DYSENTRY,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Cholera", "",
+//		    ReportUtils.map(moh705indicatorLibrary.diagnosis(CHOLERA,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Meningococcal Meningitis", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(MENINGOCOCCAL_MENINGITIS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Other Meningitis", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(OTHER_MENINGITIS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Tetanus", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(TETANUS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Poliomyelitis", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(POLIOMYELITIS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Chicken Pox", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(CHICKEN_POX,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Measles", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(MEASLES,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Hepatitis", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(HEPATITIS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Mumps", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(MUMPS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Suspected Malaria", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(SUSPECTED_MALARIA,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Tested for Malaria", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(TESTED_FOR_MALARIA,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Confirmed Malaria", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(CONFIRMED_MALARIA,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Malaria in pregnancy", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(MALARIA_IN_PREGNANCY,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Amoebiasis", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(AMOEBIASIS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Typhoid fever", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(TYPHOID_FEVER,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Sexually Transmitted Infections", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(SEXUALLY_TRANSMITTED_INFECTIONS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Urinary Tract Infections", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(URINARY_TRACT_INFECTIONS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Bilharzia", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(BILHARZIA,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Intestinal worms", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(INTESTINAL_WORMS, EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Malnutrition", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(MALNUTRITION,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Anaemia", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(ANAEMIA,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Eye Infections or Conditions", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(EYE_INFECTIONS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Ear Infections or Conditions", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(EAR_INFECTIONS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Upper Respiratory Tract Infections", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(UPPER_RESPIRATORY_TRACT_INFECTIONS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Asthma", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(ASTHMA,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Pneumonia", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(PNEUMONIA,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Other Lower Respiratory Tract Infections", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(OTHER_LOWER_RESPIRATORY_TRACT_INFECTIONS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Abortion", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(ABORTION,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Puerperium at Childbirth", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(PUERPERIUM_AT_CHILDBIRTH,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Hypertension", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(HYPERTENSION,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Mental Disorders", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(MENTAL_DISORDERS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Dental Disorders", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(DENTAL_DISORDERS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Jiggers Infestation", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(JIGGERS_INFESTATION,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Diseases of the skin", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(SKIN_DISEASES,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Arthritis and Joint pains", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(ARTHRITIS_JOINT_PAINS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Poisoning", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(POISONING,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Road Traffic Injuries", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(ROAD_TRAFFIC_INJURIES,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Deaths due to Road Traffic Injuries", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(DEATH_BY_ROAD_TRAFFIC_INJURIES,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Violence related injuries", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(VIOLENCE_RELATED_INJURIES,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Other injuries", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(OTHER_INJURIES,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Sexual Violence", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(SEXUAL_VIOLENCE,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Burns", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(BURNS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Snake Bites", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(SNAKE_BITES,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Dog Bites", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(DOG_BITES,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Other Bites", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(OTHER_BITES,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Diabetes", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(DIABETES,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Epilepsy", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(EPILEPSY,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Brucellosis", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(BRUCELLOSIS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Cardiovascular conditions", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(CARDIOVASCULAR_CONDITIONS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Central Nervous System Conditions", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(CENTRAL_NERVOUS_SYSTEM_CONDITIONS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Overweight", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(OVERWEIGHT,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Muscular skeletal conditions", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(MUSCULAR_SKELETAL_CONDITIONS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Fistula related with Birth", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(FISTULA_BIRTH_RELATED,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Suspected Neoplams and Cancers", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(SUSPECTED_NEOPLAMS_CANCERS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Physical Disability", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(PHYSICAL_DISABILITY,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Trypanosomiasis", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(TRYPONOSOMIASIS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Yellow Fever", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(YELLOW_FEVER,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Viral Haemorrhagic Fever", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(VIRAL_HAEMORRHAGIC_FEVER,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Rift valley fever", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(RIFT_VALLEY_FEVER,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Chikungunya", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(CHIKUNGUNYA,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Dengue fever", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(DENGUE_FEVER,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Leishmaniasis or Kalaazar", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(LEISHMANIASIS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Cutaneous leishmaniasis", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(CUTANEOUS_LEISHMANIASIS,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Suspected Anthrax", "",
+//				ReportUtils.map(moh705indicatorLibrary.diagnosis(SUSPECTED_ANTHRAX,EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("All Other Diseases", "",
+//				ReportUtils.map(moh705indicatorLibrary.allOtherDiseasesAboveFive(EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("New Attendances", "",
+//				ReportUtils.map(moh705indicatorLibrary.newAttendances(EQUAL_AND_OVER_FIVE), indParams), "");
+//		cohortDsd.addColumn("Re Attendances", "",
+//				ReportUtils.map(moh705indicatorLibrary.reAttendances(EQUAL_AND_OVER_FIVE), indParams), "");
 		return cohortDsd;
 	}
 }
