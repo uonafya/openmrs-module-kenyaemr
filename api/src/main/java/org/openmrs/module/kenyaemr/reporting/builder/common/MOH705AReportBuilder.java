@@ -13,17 +13,14 @@ import org.openmrs.module.kenyacore.report.ReportDescriptor;
 import org.openmrs.module.kenyacore.report.ReportUtils;
 import org.openmrs.module.kenyacore.report.builder.AbstractReportBuilder;
 import org.openmrs.module.kenyacore.report.builder.Builds;
-import org.openmrs.module.kenyaemr.reporting.EmrReportingUtils;
-import org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils.Moh705ReportDimension;
 import org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils.ReportAddonUtils;
 import org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils.ReportingUtils;
-import org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils.ColumnParameters;
 import org.openmrs.module.kenyaemr.reporting.library.ETLReports.MOH705.MOH705IndicatorLibrary;
+import org.openmrs.module.kenyaemr.reporting.library.shared.common.CommonDimensionLibrary;
 import org.openmrs.module.reporting.dataset.definition.CohortIndicatorDataSetDefinition;
 import org.openmrs.module.reporting.dataset.definition.DataSetDefinition;
 import org.openmrs.module.reporting.evaluation.parameter.Mapped;
 import org.openmrs.module.reporting.evaluation.parameter.Parameter;
-import org.openmrs.module.reporting.indicator.CohortIndicator;
 import org.openmrs.module.reporting.report.definition.ReportDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -112,9 +109,17 @@ public class MOH705AReportBuilder extends AbstractReportBuilder {
 	static final int ALL_OTHER_DISEASES = 0;
 
 	
-	@Autowired
+
 	private MOH705IndicatorLibrary moh705indicatorLibrary;
-	
+
+	private final CommonDimensionLibrary commonDimensionLibrary;
+
+	@Autowired
+	public MOH705AReportBuilder(MOH705IndicatorLibrary moh705indicatorLibrary, CommonDimensionLibrary commonDimensionLibrary) {
+		this.moh705indicatorLibrary = moh705indicatorLibrary;
+		this.commonDimensionLibrary = commonDimensionLibrary;
+	}
+
 	@Override
 	protected List<Parameter> getParameters(ReportDescriptor reportDescriptor) {
 		return Arrays.asList(new Parameter("startDate", "Start Date", Date.class), new Parameter("endDate", "End Date",
@@ -134,19 +139,19 @@ public class MOH705AReportBuilder extends AbstractReportBuilder {
 		cohortDsd.addParameter(new Parameter("startDate", "Start Date", Date.class));
 		cohortDsd.addParameter(new Parameter("endDate", "End Date", Date.class));
 		cohortDsd.setName("MOH705A");
-		cohortDsd.setDescription("MOH 705A");			
-//		cohortDsd.addDimension("day",		
+		cohortDsd.setDescription("MOH 705A");
+		cohortDsd.addDimension("day", ReportUtils.map(commonDimensionLibrary.encountersOfMonthPerDay(), indParams));
 
 
 		// populate datasets
 //		EmrReportingUtils.addRow(indicatorDsd,"HV02-01", "First ANC Visit", ReportUtils.map(moh731GreenCardIndicators.firstANCVisitMchmsAntenatal(), indParams), cadreDisaggregation,Arrays.asList("1","2","3"));
-		ReportingUtils.addRow(cohortDsd,"DWND","Diarrhoea with no dehydration",ReportUtils.map(moh705indicatorLibrary.diagnosis(Arrays.asList(DIARRHOEA_WITH_DEHYDRATION),AGE_BELOW_FIVE),indParams),ReportAddonUtils.getAdultChildrenWithGenderColumns());
+		ReportingUtils.addRow(cohortDsd,"DWND","Diarrhoea with no dehydration",ReportUtils.map(moh705indicatorLibrary.diagnosis(Arrays.asList(DIARRHOEA_WITH_DEHYDRATION),AGE_BELOW_FIVE),indParams),ReportAddonUtils.getAdultChildrenColumns());
 //		System.out.println("Cohort indicator dataset def ==>"+cohortDsd);
 		
-		
+		/*
 		cohortDsd.addColumn("Diarrhoea with no dehydration", "",
 		    ReportUtils.map(moh705indicatorLibrary.diagnosis(Arrays.asList(DIARRHOEA_WITH_DEHYDRATION),AGE_BELOW_FIVE), indParams), "");
-		/*
+
 		cohortDsd.addColumn("Diarrhoea with some dehydration", "",
 		    ReportUtils.map(moh705indicatorLibrary.diagnosis(Arrays.asList(DIARRHOEA_WITH_SOME_DEHYDRATION),AGE_BELOW_FIVE), indParams), "");
 		cohortDsd.addColumn("Diarrhoea with severe dehydration", "",
