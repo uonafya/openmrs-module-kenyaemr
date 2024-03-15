@@ -15,10 +15,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ReportAddonUtils {
-	
+
 	public static List<ColumnParameters> getAdultChildrenColumns() {
 		ColumnParameters day1 = new ColumnParameters("day1", "Day 1", "day=1", "01");
-		/*ColumnParameters day2 = new ColumnParameters("day2", "Day 2", "day=2", "02");
+		ColumnParameters day2 = new ColumnParameters("day2", "Day 2", "day=2", "02");
 		ColumnParameters day3 = new ColumnParameters("day3", "Day 3", "day=3", "03");
 		ColumnParameters day4 = new ColumnParameters("day4", "Day 4", "day=4", "04");
 		ColumnParameters day5 = new ColumnParameters("day5", "Day 5", "day=5", "05");
@@ -49,11 +49,9 @@ public class ReportAddonUtils {
 		ColumnParameters day30 = new ColumnParameters("day30", "Day 30", "day=30", "30");
 		ColumnParameters day31 = new ColumnParameters("day31", "Day 31", "day=31", "31");
 		ColumnParameters dayTotal = new ColumnParameters("dayTotal", "Total", "", "32");
-		*/
-		return Arrays.asList(day1);
-			/*day2, day3, day4, day5, day6, day7, day8, day9, day10, day11, day12, day13, day14, day15,
-		    day16, day17, day18, day19, day20, day21, day22, day23, day24, day25, day26, day27, day28, day29, day30, day31,
-		    dayTotal);*/
+		return Arrays.asList(day1, day2, day3, day4, day5, day6, day7, day8, day9, day10, day11, day12, day13, day14, day15,
+				day16, day17, day18, day19, day20, day21, day22, day23, day24, day25, day26, day27, day28, day29, day30, day31,
+				dayTotal);
 	}
 	
 	public static List<ColumnParameters> getGeneralOutPatientFilters() {
@@ -161,7 +159,7 @@ public class ReportAddonUtils {
 		return Arrays.asList(malariaTotalUnder5, malariaTotalOver5);
 	}
 	
-	public static List<ColumnParameters> getAdultChildrenWithGenderColumns() {
+	public static List<ColumnParameters> getAdultChildrenWithColumns() {
 		ColumnParameters day1Male = new ColumnParameters("day1Male", "Day 1 Male", "day=1|gender=M", "01");
 		ColumnParameters day2Male = new ColumnParameters("day2Male", "Day 2 male", "day=2|gender=M", "02");
 		ColumnParameters day3Male = new ColumnParameters("day3Male", "Day 3 male", "day=3|gender=M", "03");

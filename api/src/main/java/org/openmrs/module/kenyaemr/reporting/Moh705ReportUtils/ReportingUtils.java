@@ -49,9 +49,6 @@ public class ReportingUtils {
 			String name = baseName + "-" + column.getColumn();
 			String label = baseLabel + " (" + column.getLabel() + ")";
 			cohortDsd.addColumn(name, label, indicator, column.getDimensions());
-			System.out.println("DSDDSDDSDDSD");
-			System.out.println(cohortDsd);
-			break;
 		}
 	}
 	
