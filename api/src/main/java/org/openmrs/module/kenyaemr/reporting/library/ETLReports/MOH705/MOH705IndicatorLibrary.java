@@ -9,7 +9,9 @@
  */
 package org.openmrs.module.kenyaemr.reporting.library.ETLReports.MOH705;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.module.kenyacore.report.ReportUtils;
+import org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils.DiagnosisLists;
 import org.openmrs.module.reporting.indicator.CohortIndicator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -37,13 +39,14 @@ public class MOH705IndicatorLibrary {
 	 * Other Diagnosis under five
 	 */
 	public CohortIndicator allOtherDiseasesUnderFive(String age) {
-		return cohortIndicator("Other Under Five Diagnosis", ReportUtils.map(moh705CohortLibrary.allOtherDiseasesUnderFive(age), "startDate=${startDate},endDate=${endDate}"));
+		return cohortIndicator("Other Under Five Diagnosis", ReportUtils.map(moh705CohortLibrary.allOtherDiseasesUnderFive(age, StringUtils.join(DiagnosisLists.getAllOtherDiseasesListForChildren(),",")), "startDate=${startDate},endDate=${endDate}"));
 	}
 	/**
 	 * Other Diagnosis Over five
 	 */
 	public CohortIndicator allOtherDiseasesAboveFive(String age) {
-		return cohortIndicator("Other Above Five Diagnosis", ReportUtils.map(moh705CohortLibrary.allOtherDiseasesUnderFive(age), "startDate=${startDate},endDate=${endDate}"));
+
+		return cohortIndicator("Other Above Five Diagnosis", ReportUtils.map(moh705CohortLibrary.allOtherDiseasesUnderFive(age, StringUtils.join(DiagnosisLists.getAllOtherDiseasesListForChildren(),",")), "startDate=${startDate},endDate=${endDate}"));
 	}
 
 	public CohortIndicator newAttendances(String age) {

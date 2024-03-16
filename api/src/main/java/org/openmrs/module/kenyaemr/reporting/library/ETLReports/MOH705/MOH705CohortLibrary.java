@@ -78,10 +78,11 @@ public class MOH705CohortLibrary {
 	 * OtherDiseasesUnderFive
 	 * @return
 	 */
-	public CohortDefinition allOtherDiseasesUnderFive(String age) {
+	public CohortDefinition allOtherDiseasesUnderFive(String age , String  diagnosisList) {
+
 		String sqlQuery = "SELECT x.patient_id FROM encounter_diagnosis x\n" +
 				"  INNER JOIN kenyaemr_etl.etl_patient_demographics d on x.patient_id = d.patient_id and timestampdiff(YEAR, date(d.dob),date(:endDate)) "+ age +"\n" +
-				"    WHERE x.diagnosis_coded NOT in (5018,160156,152,145622,134369,124957,5258,892,134561,116986,133671,166623,160148,168740,160152,124,141,112992,111633,117152,116699,134725,121629,140832,71,123093,121375,114100,998,117399,77,78,123964,119022,148432,114088,86,123160,146623,126323,166,119481,155,121005,119270,118994,114413,124078,113217,122759,123112,120743,7592,116350,143074,168741) and date(x.date_created) between date(:startDate) and date(:endDate);\n";
+				"    WHERE x.diagnosis_coded NOT in ("+diagnosisList+") and date(x.date_created) between date(:startDate) and date(:endDate);\n";
 		SqlCohortDefinition cd = new SqlCohortDefinition();
 		cd.setName("allOtherDiseasesUnderFive");
 		cd.setQuery(sqlQuery);
