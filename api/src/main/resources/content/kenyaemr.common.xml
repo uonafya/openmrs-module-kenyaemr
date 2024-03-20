@@ -88,7 +88,7 @@
 				<ref bean="kenyaemr.common.report.sgbvlinelist"/>
 				<ref bean="kenyaemr.common.report.sgbvRegister"/>
 				<ref bean="kenyaemr.common.report.moh705A"/>
-				<ref bean="kenyaemr.common.report.moh705B"/>
+<!--				<ref bean="kenyaemr.common.report.moh705B"/>-->
 				<ref bean="kenyaemr.common.report.IDSRSuspectedCaseList"/>
 			</set>
 		</property>
@@ -904,7 +904,7 @@
 			<set>
 				<ref bean="kenyaemr.app.reports" />
 			</set></property>
-		<property name="template" value="kenyaemr:moh705A.xls" />
+		<property name="template" value="kenyaemr:MOH_705a.xls" />
 	</bean>
 	<bean id="kenyaemr.common.report.moh705B" class="org.openmrs.module.kenyacore.report.IndicatorReportDescriptor">
 		<property name="targetUuid" value="12091a6a-69dc-437c-be88-90dfd31c3b70" />
@@ -914,7 +914,8 @@
 			<set>
 				<ref bean="kenyaemr.app.reports" />
 			</set></property>
-		<property name="template" value="kenyaemr:moh705B.xls" />
+<!--		<property name="template" value="kenyaemr:moh705B.xls" />-->
+		<property name="template" value="kenyaemr:MOH_705b.xls" />
 	</bean>
 	<!-- =========================== IDSR Suspected case list Reports =============================-->
 	<bean id="kenyaemr.common.report.IDSRSuspectedCaseList" class="org.openmrs.module.kenyacore.report.HybridReportDescriptor">
