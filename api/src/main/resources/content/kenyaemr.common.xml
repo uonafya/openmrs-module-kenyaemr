@@ -88,7 +88,7 @@
 				<ref bean="kenyaemr.common.report.sgbvlinelist"/>
 				<ref bean="kenyaemr.common.report.sgbvRegister"/>
 				<ref bean="kenyaemr.common.report.moh705A"/>
-<!--				<ref bean="kenyaemr.common.report.moh705B"/>-->
+				<ref bean="kenyaemr.common.report.moh705B"/>
 				<ref bean="kenyaemr.common.report.IDSRSuspectedCaseList"/>
 			</set>
 		</property>
