@@ -17,6 +17,7 @@ import org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils.DiagnosisLists;
 import org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils.ReportAddonUtils;
 import org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils.ReportingUtils;
 import org.openmrs.module.kenyaemr.reporting.library.ETLReports.MOH705.MOH705IndicatorLibrary;
+import org.openmrs.module.kenyaemr.reporting.library.shared.common.CommonDimensionLibrary;
 import org.openmrs.module.reporting.dataset.definition.CohortIndicatorDataSetDefinition;
 import org.openmrs.module.reporting.dataset.definition.DataSetDefinition;
 import org.openmrs.module.reporting.evaluation.parameter.Mapped;
@@ -113,6 +114,15 @@ public class MOH705BReportBuilder extends AbstractReportBuilder {
     @Autowired
     private MOH705IndicatorLibrary moh705indicatorLibrary;
 
+    private final CommonDimensionLibrary commonDimensionLibrary;
+
+    @Autowired
+    public MOH705BReportBuilder(MOH705IndicatorLibrary moh705indicatorLibrary, CommonDimensionLibrary commonDimensionLibrary) {
+        this.moh705indicatorLibrary = moh705indicatorLibrary;
+        this.commonDimensionLibrary = commonDimensionLibrary;
+    }
+
+
     @Override
     protected List<Parameter> getParameters(ReportDescriptor reportDescriptor) {
         return Arrays.asList(new Parameter("startDate", "Start Date", Date.class), new Parameter("endDate", "End Date",
@@ -126,13 +136,14 @@ public class MOH705BReportBuilder extends AbstractReportBuilder {
     }
 
     protected DataSetDefinition moh705BDataset() {
+        String indParams = "startDate=${startDate},endDate=${endDate}";
+
         CohortIndicatorDataSetDefinition cohortDsd = new CohortIndicatorDataSetDefinition();
         cohortDsd.addParameter(new Parameter("startDate", "Start Date", Date.class));
         cohortDsd.addParameter(new Parameter("endDate", "End Date", Date.class));
         cohortDsd.setName("MOH705B");
         cohortDsd.setDescription("MOH 705B");
-
-        String indParams = "startDate=${startDate},endDate=${endDate}";
+        cohortDsd.addDimension("day", ReportUtils.map(commonDimensionLibrary.encountersOfMonthPerDay(), indParams));
 
 
         ReportingUtils.addRow(cohortDsd, "DA", "Diarrhoea", ReportUtils.map(
