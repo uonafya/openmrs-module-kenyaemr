@@ -906,16 +906,17 @@
 			</set></property>
 		<property name="template" value="kenyaemr:MOH_705a.xls" />
 	</bean>
-<!--	<bean id="kenyaemr.common.report.moh705B" class="org.openmrs.module.kenyacore.report.IndicatorReportDescriptor">-->
-<!--		<property name="targetUuid" value="12091a6a-69dc-437c-be88-90dfd31c3b70" />-->
-<!--		<property name="name" value="MOH 705B Outpatient summary" />-->
-<!--		<property name="description" value="MOH 705B Register" />-->
-<!--		<property name="apps">-->
-<!--			<set>-->
-<!--				<ref bean="kenyaemr.app.reports" />-->
-<!--			</set></property>-->
+	<bean id="kenyaemr.common.report.moh705B" class="org.openmrs.module.kenyacore.report.IndicatorReportDescriptor">
+		<property name="targetUuid" value="12091a6a-69dc-437c-be88-90dfd31c3b70" />
+		<property name="name" value="MOH 705B Outpatient summary" />
+		<property name="description" value="MOH 705B Register" />
+		<property name="apps">
+			<set>
+				<ref bean="kenyaemr.app.reports" />
+			</set></property>
 <!--		<property name="template" value="kenyaemr:moh705B.xls" />-->
-<!--	</bean>-->
+		<property name="template" value="kenyaemr:MOH_705b.xls" />
+	</bean>
 	<!-- =========================== IDSR Suspected case list Reports =============================-->
 	<bean id="kenyaemr.common.report.IDSRSuspectedCaseList" class="org.openmrs.module.kenyacore.report.HybridReportDescriptor">
 		<property name="targetUuid" value="a90d0a13-f122-43b7-92c5-ad43a0abd2ca" />
