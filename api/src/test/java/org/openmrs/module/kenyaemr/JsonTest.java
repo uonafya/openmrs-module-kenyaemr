@@ -7,20 +7,13 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils;
+package org.openmrs.module.kenyaemr;
 
-public class AutismDiagnosisConstants {
-	
-	public static final Integer AUTISM_1 = 121303;
-	
-	public static final Integer AUTISM_2 = 127653;
-	
-	public static final Integer AUTISM_3 = 137557;
-	
-	public static final Integer AUTISM_4 = 149941;
-	
-	public static final Integer AUTISM_5 = 152042;
-	
-	public static final Integer AUTISM_6 = 155013;
-	
+public class JsonTest {
+
+    public static void main(String... args) throws Exception {
+        //setup actor system
+
+        System.out.println("");
+    }
 }

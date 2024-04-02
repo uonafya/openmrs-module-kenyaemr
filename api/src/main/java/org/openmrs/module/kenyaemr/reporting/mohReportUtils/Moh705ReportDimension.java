@@ -7,12 +7,11 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils;
+package org.openmrs.module.kenyaemr.reporting.mohReportUtils;
 import org.openmrs.module.reporting.cohort.definition.CohortDefinition;
 import org.openmrs.module.reporting.cohort.definition.SqlCohortDefinition;
 import org.openmrs.module.reporting.evaluation.parameter.Parameter;
 import org.openmrs.module.reporting.indicator.dimension.CohortDefinitionDimension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -21,10 +20,10 @@ import static org.openmrs.module.kenyacore.report.ReportUtils.map;
 
 @Component
 public class Moh705ReportDimension {
-	
+
 	/**
 	 * Patients with encounters on a given date
-	 * 
+	 *
 	 * @return @{@link org.openmrs.module.reporting.indicator.dimension.CohortDimension}
 	 */
 	public CohortDefinitionDimension encountersOfMonthPerDay() {
@@ -63,10 +62,10 @@ public class Moh705ReportDimension {
 		dim.addCohortDefinition("29", map(getPatientsSeenOnDay(28), "startDate=${startDate},endDate=${endDate}"));
 		dim.addCohortDefinition("30", map(getPatientsSeenOnDay(29), "startDate=${startDate},endDate=${endDate}"));
 		dim.addCohortDefinition("31", map(getPatientsSeenOnDay(30), "startDate=${startDate},endDate=${endDate}"));
-		
+
 		return dim;
 	}
-	
+
 
 	public CohortDefinition getPatientsSeenOnDay(int day) {
 		SqlCohortDefinition cd = new SqlCohortDefinition();
@@ -78,6 +77,6 @@ public class Moh705ReportDimension {
 		        + day + " DAY) AND DATE_ADD(DATE_ADD(DATE_ADD(:startDate, INTERVAL " + day
 		        + " DAY), INTERVAL 23 HOUR), INTERVAL 59 MINUTE) AND e.encounter_datetime <= :endDate");
 		return cd;
-	}	
-	
+	}
+
 }

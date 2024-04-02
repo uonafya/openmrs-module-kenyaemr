@@ -7,7 +7,7 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.kenyaemr.reporting.Moh705ReportUtils;
+package org.openmrs.module.kenyaemr.reporting.mohReportUtils;
 
 import org.openmrs.module.reporting.cohort.definition.CohortDefinition;
 import org.openmrs.module.reporting.dataset.definition.CohortIndicatorDataSetDefinition;
@@ -21,10 +21,10 @@ import java.util.Date;
 import java.util.List;
 
 public class ReportingUtils {
-	
+
 	public ReportingUtils() {
 	}
-	
+
 	public static CohortIndicator cohortIndicator(String name, Mapped<CohortDefinition> cohort) {
 		CohortIndicator ind = new CohortIndicator(name);
 		ind.addParameter(new Parameter("startDate", "Start Date", Date.class));
@@ -32,10 +32,10 @@ public class ReportingUtils {
 		ind.setCohortDefinition(cohort);
 		return ind;
 	}
-	
+
 	/**
 	 * Adds a row to a dataset based on an indicator and a list of column parameters
-	 * 
+	 *
 	 * @param cohortDsd the dataset
 	 * @param baseName the base columm name
 	 * @param baseLabel the base column label
@@ -44,14 +44,14 @@ public class ReportingUtils {
 	 */
 	public static void addRow(CohortIndicatorDataSetDefinition cohortDsd, String baseName, String baseLabel,
 	        Mapped<CohortIndicator> indicator, List<ColumnParameters> columns) {
-		
+
 		for (ColumnParameters column : columns) {
 			String name = baseName + "-" + column.getColumn();
 			String label = baseLabel + " (" + column.getLabel() + ")";
 			cohortDsd.addColumn(name, label, indicator, column.getDimensions());
 		}
 	}
-	
+
 	public static EncounterQuery getEncounterLimitsByDate() {
 		SqlEncounterQuery query = new SqlEncounterQuery();
 		query.setName("Encounter per the given date");
@@ -60,5 +60,5 @@ public class ReportingUtils {
 		query.setQuery("SELECT encounter_id FROM encounter WHERE encounter_datetime BETWEEN :startDate AND :endDate");
 		return query;
 	}
-	
+
 }
