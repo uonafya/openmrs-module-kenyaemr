@@ -143,4 +143,38 @@ public class MOH705CohortLibrary {
 		cd.setDescription("Patients who are revisit attendances");
 		return cd;
 	}
+	/**
+	 * MOH705
+	 * Referrals from other health facilities
+	 * @return
+	 */
+	public CohortDefinition referralsFromOtherFacilities(String age) {
+		String sqlQuery = "SELECT v.patient_id FROM kenyaemr_etl.etl_clinical_encounter v\n" +
+			"INNER JOIN kenyaemr_etl.etl_patient_demographics d on v.patient_id = d.patient_id and timestampdiff(YEAR, date(d.dob),date(:endDate)) "+ age +"\n" +
+			"WHERE v.referral_to = 'This health facility' and date(v.visit_date) between date(:startDate) and date(:endDate);";
+		SqlCohortDefinition cd = new SqlCohortDefinition();
+		cd.setName("referralsFromOther");
+		cd.setQuery(sqlQuery);
+		cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
+		cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+		cd.setDescription("Patients who are referrals To From Other");
+		return cd;
+	}
+	/**
+	 * MOH705
+	 * Referrals to other health facilities
+	 * @return
+	 */
+	public CohortDefinition referralsToOtherFacilities(String age) {
+		String sqlQuery = "SELECT v.patient_id FROM kenyaemr_etl.etl_clinical_encounter v\n" +
+			"INNER JOIN kenyaemr_etl.etl_patient_demographics d on v.patient_id = d.patient_id and timestampdiff(YEAR, date(d.dob),date(:endDate)) "+ age +"\n" +
+			"WHERE v.referral_to = 'Other health facility' and date(v.visit_date) between date(:startDate) and date(:endDate);";
+		SqlCohortDefinition cd = new SqlCohortDefinition();
+		cd.setName("referralsToOther");
+		cd.setQuery(sqlQuery);
+		cd.addParameter(new Parameter("startDate", "Start Date", Date.class));
+		cd.addParameter(new Parameter("endDate", "End Date", Date.class));
+		cd.setDescription("Patients who are referrals To Other");
+		return cd;
+	}
 }

@@ -55,6 +55,12 @@ public class MOH705IndicatorLibrary {
 	public CohortIndicator reAttendances(String age) {
 		return cohortIndicator("Re attendances", ReportUtils.map(moh705CohortLibrary.reAttendances(age), "startDate=${startDate},endDate=${endDate}"));
 	}
+	public CohortIndicator referralsFromOtherFacilities(String age) {
+		return cohortIndicator("referralsFromOtherFacilities", ReportUtils.map(moh705CohortLibrary.referralsFromOtherFacilities(age), "startDate=${startDate},endDate=${endDate}"));
+	}
+	public CohortIndicator referralsToOtherFacilities(String age) {
+		return cohortIndicator("referralsToOtherFacilities", ReportUtils.map(moh705CohortLibrary.referralsToOtherFacilities(age), "startDate=${startDate},endDate=${endDate}"));
+	}
 }
 
 
