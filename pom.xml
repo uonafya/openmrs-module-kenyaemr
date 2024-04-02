@@ -449,8 +449,10 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>format-headers</id>
+                        <phase>process-sources</phase>
                         <goals>
-                            <goal>check</goal>
+                            <goal>format</goal>
                         </goals>
                     </execution>
                 </executions>
