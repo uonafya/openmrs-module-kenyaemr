@@ -1567,6 +1567,7 @@ public class DiagnosisConcepts {
 			public static final Integer MALARIA_SEVERE = 34;
 
 			public static final Integer MALARIA_PRESUMED = 35;
+			
 
 			public static final Integer MALARIA = 123;
 
