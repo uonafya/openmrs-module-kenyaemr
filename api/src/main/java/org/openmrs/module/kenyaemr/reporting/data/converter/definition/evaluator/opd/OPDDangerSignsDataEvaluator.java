@@ -7,10 +7,10 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.kenyaemr.reporting.data.converter.definition.evaluator.anc;
+package org.openmrs.module.kenyaemr.reporting.data.converter.definition.evaluator.opd;
 
 import org.openmrs.annotation.Handler;
-import org.openmrs.module.kenyaemr.reporting.data.converter.definition.anc.ANCWeightDataDefinition;
+import org.openmrs.module.kenyaemr.reporting.data.converter.definition.opd.OPDDangerSignsDataDefinition;
 import org.openmrs.module.reporting.data.encounter.EvaluatedEncounterData;
 import org.openmrs.module.reporting.data.encounter.definition.EncounterDataDefinition;
 import org.openmrs.module.reporting.data.encounter.evaluator.EncounterDataEvaluator;
@@ -24,10 +24,11 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * Evaluates ANC Number of visits
+ * Evaluates Danger signs Saturation 
+ * OPD Register
  */
-@Handler(supports=ANCWeightDataDefinition.class, order=50)
-public class ANCWeightDataEvaluator implements EncounterDataEvaluator {
+@Handler(supports= OPDDangerSignsDataDefinition.class, order=50)
+public class OPDDangerSignsDataEvaluator implements EncounterDataEvaluator {
 
     @Autowired
     private EvaluationService evaluationService;
@@ -36,11 +37,17 @@ public class ANCWeightDataEvaluator implements EncounterDataEvaluator {
         EvaluatedEncounterData c = new EvaluatedEncounterData(definition, context);
 
         String qry = "select\n" +
-                "    v.encounter_id,\n" +
-                "    coalesce(v.weight,t.weight) as weight\n" +
-                "  from kenyaemr_etl.etl_mch_antenatal_visit v\n" +
-                "    LEFT JOIN kenyaemr_etl.etl_patient_triage t ON v.patient_id = t.patient_id AND date(v.visit_date) = date(t.visit_date)\n" +
-                "  where date(v.visit_date) between date(:startDate) and date(:endDate);";
+			"    v.encounter_id,\n" +
+			"    (case a.complaint\n" +
+			"        when 159861 then 1\n" +
+			"        when 6017 then 1\n" +
+			"        when 122983 then 2\n" +
+			"        when 113054 then 3\n" +
+			"        when 144576 then 4\n" +
+			"        when 116334 then 4 end) as danger_signs\n" +
+			"from kenyaemr_etl.etl_clinical_encounter v\n" +
+			"         LEFT JOIN kenyaemr_etl.etl_allergy_chronic_illness a ON v.patient_id = a.patient_id AND date(v.visit_date) = date(a.visit_date)\n" +
+			"where date(v.visit_date) between date(:startDate) and date(:endDate);\n";
 
         SqlQueryBuilder queryBuilder = new SqlQueryBuilder();
         queryBuilder.append(qry);

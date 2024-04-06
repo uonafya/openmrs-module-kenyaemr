@@ -7,10 +7,11 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.kenyaemr.reporting.data.converter.definition.evaluator.anc;
+package org.openmrs.module.kenyaemr.reporting.data.converter.definition.evaluator.opd;
 
 import org.openmrs.annotation.Handler;
-import org.openmrs.module.kenyaemr.reporting.data.converter.definition.anc.ANCWeightDataDefinition;
+import org.openmrs.module.kenyaemr.reporting.data.converter.definition.opd.OPDBloodPressureDataDefinition;
+import org.openmrs.module.kenyaemr.reporting.data.converter.definition.opd.OPDHeightDataDefinition;
 import org.openmrs.module.reporting.data.encounter.EvaluatedEncounterData;
 import org.openmrs.module.reporting.data.encounter.definition.EncounterDataDefinition;
 import org.openmrs.module.reporting.data.encounter.evaluator.EncounterDataEvaluator;
@@ -24,10 +25,11 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * Evaluates ANC Number of visits
+ * Evaluates OPD Height
+ * OPD Register
  */
-@Handler(supports=ANCWeightDataDefinition.class, order=50)
-public class ANCWeightDataEvaluator implements EncounterDataEvaluator {
+@Handler(supports= OPDBloodPressureDataDefinition.class, order=50)
+public class OPDBloodPressureDataEvaluator implements EncounterDataEvaluator {
 
     @Autowired
     private EvaluationService evaluationService;
@@ -35,12 +37,11 @@ public class ANCWeightDataEvaluator implements EncounterDataEvaluator {
     public EvaluatedEncounterData evaluate(EncounterDataDefinition definition, EvaluationContext context) throws EvaluationException {
         EvaluatedEncounterData c = new EvaluatedEncounterData(definition, context);
 
-        String qry = "select\n" +
-                "    v.encounter_id,\n" +
-                "    coalesce(v.weight,t.weight) as weight\n" +
-                "  from kenyaemr_etl.etl_mch_antenatal_visit v\n" +
-                "    LEFT JOIN kenyaemr_etl.etl_patient_triage t ON v.patient_id = t.patient_id AND date(v.visit_date) = date(t.visit_date)\n" +
-                "  where date(v.visit_date) between date(:startDate) and date(:endDate);";
+        String qry = "select v.encounter_id,\n" +
+			"       concat(t.systolic_pressure, '/',t.diastolic_pressure) as blood_pressure\n" +
+			" from kenyaemr_etl.etl_clinical_encounter v\n" +
+			"      LEFT JOIN kenyaemr_etl.etl_patient_triage t ON v.patient_id = t.patient_id AND date(v.visit_date) = date(t.visit_date)\n" +
+			"where date(v.visit_date) between date(:startDate) and date(:endDate);";
 
         SqlQueryBuilder queryBuilder = new SqlQueryBuilder();
         queryBuilder.append(qry);
