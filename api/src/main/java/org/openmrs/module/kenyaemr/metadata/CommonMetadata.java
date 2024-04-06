@@ -113,6 +113,7 @@ public class CommonMetadata extends AbstractMetadataBundle {
 		public static final String ALIEN_ID_NUMBER = Metadata.IdentifierType.ALIEN_ID_NUMBER;
 		public static final String DRIVING_LICENSE = Metadata.IdentifierType.DRIVING_LICENSE;
 		public static final String RECENCY_TESTING_ID = Metadata.IdentifierType.RECENCY_TESTING_ID;
+		public static final String SOCIAL_HEALTH_INSURANCE_NUMBER = Metadata.IdentifierType.SOCIAL_HEALTH_INSURANCE_NUMBER;
 	}
 
 	public static final class _PersonAttributeType {
@@ -296,6 +297,8 @@ public class CommonMetadata extends AbstractMetadataBundle {
 				null, LocationBehavior.NOT_USED, false, _PatientIdentifierType.DRIVING_LICENSE));
 		install(patientIdentifierType("Recency Testing ID", "Recency Testing ID", "", "Allows for alphanumeric format",
 				null, LocationBehavior.NOT_USED, false, _PatientIdentifierType.RECENCY_TESTING_ID));
+		install(patientIdentifierType("Social Health Insurance Number", "Social Health Insurance Number", "", "Allows for alphanumeric format",
+				null, LocationBehavior.NOT_USED, false, _PatientIdentifierType.SOCIAL_HEALTH_INSURANCE_NUMBER));
 
 
 		install(personAttributeType("Telephone contact", "Telephone contact number",
