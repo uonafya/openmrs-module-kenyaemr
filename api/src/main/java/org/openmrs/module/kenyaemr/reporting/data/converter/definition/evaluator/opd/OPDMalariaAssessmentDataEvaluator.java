@@ -7,10 +7,11 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.kenyaemr.reporting.data.converter.definition.evaluator.anc;
+package org.openmrs.module.kenyaemr.reporting.data.converter.definition.evaluator.opd;
 
 import org.openmrs.annotation.Handler;
-import org.openmrs.module.kenyaemr.reporting.data.converter.definition.anc.ANCWeightDataDefinition;
+import org.openmrs.module.kenyaemr.reporting.data.converter.definition.opd.OPDComplaintDurationDataDefinition;
+import org.openmrs.module.kenyaemr.reporting.data.converter.definition.opd.OPDMalariaAssessmentDataDefinition;
 import org.openmrs.module.reporting.data.encounter.EvaluatedEncounterData;
 import org.openmrs.module.reporting.data.encounter.definition.EncounterDataDefinition;
 import org.openmrs.module.reporting.data.encounter.evaluator.EncounterDataEvaluator;
@@ -24,10 +25,11 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * Evaluates ANC Number of visits
+ * Evaluates Malaria assessment  
+ * OPD Register
  */
-@Handler(supports=ANCWeightDataDefinition.class, order=50)
-public class ANCWeightDataEvaluator implements EncounterDataEvaluator {
+@Handler(supports= OPDMalariaAssessmentDataDefinition.class, order=50)
+public class OPDMalariaAssessmentDataEvaluator implements EncounterDataEvaluator {
 
     @Autowired
     private EvaluationService evaluationService;
@@ -36,11 +38,16 @@ public class ANCWeightDataEvaluator implements EncounterDataEvaluator {
         EvaluatedEncounterData c = new EvaluatedEncounterData(definition, context);
 
         String qry = "select\n" +
-                "    v.encounter_id,\n" +
-                "    coalesce(v.weight,t.weight) as weight\n" +
-                "  from kenyaemr_etl.etl_mch_antenatal_visit v\n" +
-                "    LEFT JOIN kenyaemr_etl.etl_patient_triage t ON v.patient_id = t.patient_id AND date(v.visit_date) = date(t.visit_date)\n" +
-                "  where date(v.visit_date) between date(:startDate) and date(:endDate);";
+			"    v.encounter_id,\n" +
+			"       if(ed.diagnosis_coded = 166623 and x.lab_test not in (1643,32,1366), 1,\n" +
+			"+          if(x.lab_test = 1643 and x.test_result = 664, 2,\n" +
+			"+           if(x.lab_test in (32) and x.test_result = 664, 3,\n" +
+			"+            if(x.lab_test in (1643) and x.test_result = 703, 4,\n" +
+			"+               if(x.lab_test in (32) and x.test_result = 703, 5,''))))) as malaria\n" +
+			"from kenyaemr_etl.etl_clinical_encounter v\n" +
+			"         LEFT JOIN encounter_diagnosis ed ON v.patient_id = ed.patient_id and date(ed.date_created)between date(:startDate) and date(:endDate)\n" +
+			"         LEFT JOIN kenyaemr_etl.etl_laboratory_extract x ON v.patient_id = x.patient_id AND date(v.visit_date) between date(:startDate) and date(:endDate)\n" +
+			"where date(v.visit_date) between date(:startDate) and date(:endDate);";
 
         SqlQueryBuilder queryBuilder = new SqlQueryBuilder();
         queryBuilder.append(qry);

@@ -7,10 +7,11 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.kenyaemr.reporting.data.converter.definition.evaluator.anc;
+package org.openmrs.module.kenyaemr.reporting.data.converter.definition.evaluator.opd;
 
 import org.openmrs.annotation.Handler;
-import org.openmrs.module.kenyaemr.reporting.data.converter.definition.anc.ANCWeightDataDefinition;
+import org.openmrs.module.kenyaemr.reporting.data.converter.definition.opd.OPDMalariaAssessmentDataDefinition;
+import org.openmrs.module.kenyaemr.reporting.data.converter.definition.opd.OPDTracerDrugsPrescribedDataDefinition;
 import org.openmrs.module.reporting.data.encounter.EvaluatedEncounterData;
 import org.openmrs.module.reporting.data.encounter.definition.EncounterDataDefinition;
 import org.openmrs.module.reporting.data.encounter.evaluator.EncounterDataEvaluator;
@@ -24,10 +25,11 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * Evaluates ANC Number of visits
+ * Evaluates Tracer drugs prescribed 
+ * OPD Register
  */
-@Handler(supports=ANCWeightDataDefinition.class, order=50)
-public class ANCWeightDataEvaluator implements EncounterDataEvaluator {
+@Handler(supports= OPDTracerDrugsPrescribedDataDefinition.class, order=50)
+public class OPDTracerDrugsPrescribedDataEvaluator implements EncounterDataEvaluator {
 
     @Autowired
     private EvaluationService evaluationService;
@@ -35,12 +37,18 @@ public class ANCWeightDataEvaluator implements EncounterDataEvaluator {
     public EvaluatedEncounterData evaluate(EncounterDataDefinition definition, EvaluationContext context) throws EvaluationException {
         EvaluatedEncounterData c = new EvaluatedEncounterData(definition, context);
 
-        String qry = "select\n" +
-                "    v.encounter_id,\n" +
-                "    coalesce(v.weight,t.weight) as weight\n" +
-                "  from kenyaemr_etl.etl_mch_antenatal_visit v\n" +
-                "    LEFT JOIN kenyaemr_etl.etl_patient_triage t ON v.patient_id = t.patient_id AND date(v.visit_date) = date(t.visit_date)\n" +
-                "  where date(v.visit_date) between date(:startDate) and date(:endDate);";
+        String qry = "select    v.encounter_id,\n" +
+			"    if(d.drug_concept_id = 351, 1,\n" +
+			"      if(d.drug_concept_id = 86672 , 2,\n" +
+			"        if(d.drug_concept_id = 351 , 3,\n" +
+			"         if(d.drug_concept_id = 71161 , 4,\n" +
+			"             if(d.drug_concept_id = 86339 , 5,\n" +
+			"                 if(d.drug_concept_id = 81341 , 6,\n" +
+			"                     if(d.drug_concept_id = 70439 , 7,\n" +
+			"                         if(d.drug_concept_id = 162650 , 8,'')))))))) as tracer_drugs_prescribed\n" +
+			"from kenyaemr_etl.etl_clinical_encounter v\n" +
+			"         INNER JOIN kenyaemr_etl.etl_drug_order d ON v.patient_id = d.patient_id and date(d.visit_date) = date(v.visit_date)\n" +
+			"where date(v.visit_date) between date(:startDate) and date(:endDate);";
 
         SqlQueryBuilder queryBuilder = new SqlQueryBuilder();
         queryBuilder.append(qry);
